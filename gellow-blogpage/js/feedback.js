@@ -220,8 +220,19 @@
   }
 
   function createToast(message, title = "System Notice", variant = "info") {
+    const toastKey = `${variant}::${title}::${message}`;
+    const existingToast = stack.querySelector(`[data-toast-key="${encodeURIComponent(toastKey)}"]`);
+
+    if (existingToast) {
+      existingToast.classList.remove("is-closing");
+      existingToast.classList.add("is-visible");
+      resetToastLifetime(existingToast);
+      return;
+    }
+
     const toast = document.createElement("div");
     toast.className = `toast-card toast-${variant} pixel`;
+    toast.dataset.toastKey = encodeURIComponent(toastKey);
     toast.innerHTML = `
       <h3 class="toast-title">${title}</h3>
       <p class="toast-message">${message}</p>
@@ -234,17 +245,39 @@
 
     window.requestAnimationFrame(() => {
       toast.classList.add("is-visible");
+      resetToastLifetime(toast);
     });
+  }
 
-    const closeToast = () => {
+  function resetToastProgress(toast) {
+    const progressBar = toast.querySelector(".toast-progress-bar");
+    if (!progressBar) {
+      return;
+    }
+
+    progressBar.style.animation = "none";
+    void progressBar.offsetWidth;
+    progressBar.style.animation = "";
+  }
+
+  function resetToastLifetime(toast) {
+    resetToastProgress(toast);
+
+    if (toast.closeTimerId) {
+      window.clearTimeout(toast.closeTimerId);
+    }
+
+    if (toast.removeTimerId) {
+      window.clearTimeout(toast.removeTimerId);
+    }
+
+    toast.closeTimerId = window.setTimeout(() => {
       toast.classList.add("is-closing");
       toast.classList.remove("is-visible");
-      window.setTimeout(() => {
+      toast.removeTimerId = window.setTimeout(() => {
         toast.remove();
       }, 620);
-    };
-
-    window.setTimeout(closeToast, 2000);
+    }, 2000);
   }
 
   window.GellowFeedback = {
