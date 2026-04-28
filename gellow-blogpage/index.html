@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gellow Blog</title>
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+  <header>
+    <div class="wrap nav">
+      <div>
+        <h1 class="title">Gellow Blog</h1>
+        <div class="subtitle">Insert Coin To Read</div>
+      </div>
+      <div class="nav-actions">
+        <nav class="menu">
+          <a class="btn btn-red" href="#latest">Latest</a>
+          <a class="btn btn-red" href="#categories">Categories</a>
+          <a class="btn btn-red" href="#notes">Notes</a>
+          <a class="btn btn-red" href="#links">Links</a>
+        </nav>
+        <a class="btn btn-notes-hub" href="./notes/">Notes Hub</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero" id="top">
+      <div class="hero-main pixel">
+        <div class="badge">Player Blog Online</div>
+        <h2>Pixel Logs<br />And Side Quests</h2>
+        <p>
+          一个像素街机风格的 blog 首页。这里可以放文章、折腾记录、学习日志、
+          还有一些暂时归不了类但你自己会反复回看的东西。
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-yellow" href="#latest">Read Posts</a>
+          <a class="btn btn-green" href="#links">Open Portals</a>
+        </div>
+      </div>
+
+      <aside class="hero-panel pixel">
+        <h2 class="section-title green">System Log</h2>
+        <div class="status-line">[BOOT] blog shell ready</div>
+        <div class="status-line">[LOAD] archive system online</div>
+        <div class="status-line">[TASK] write / learn / record</div>
+        <div class="status-line">[NOTE] content updating later</div>
+      </aside>
+    </section>
+
+    <section class="section" id="latest">
+      <h2 class="section-title yellow">Latest Entries</h2>
+      <div class="layout">
+        <div class="posts">
+          <div id="latest-posts"></div>
+          <div class="latest-actions">
+            <a class="btn btn-blue" href="./blogs/index.html">查看全部 Blog</a>
+          </div>
+        </div>
+
+        <aside class="sidebar">
+          <section class="side-panel pixel">
+            <h3>About Player</h3>
+            <p class="about">
+              这里可以放一小段自我介绍。比如你在写什么、学什么、折腾什么，
+              或者单纯写一句：这是我的记录空间。
+            </p>
+          </section>
+
+          <section class="side-panel pixel" id="categories">
+            <h3>Categories</h3>
+            <div class="categories">
+              <span class="chip">AI</span>
+              <span class="chip">Web</span>
+              <span class="chip">Rust</span>
+              <span class="chip">Tools</span>
+              <span class="chip">Logs</span>
+              <span class="chip">Notes</span>
+            </div>
+          </section>
+
+          <section class="side-panel pixel">
+            <h3>Quick Links</h3>
+            <div class="side-list" id="links">
+              <a class="side-link" href="https://www.gellow.top" target="_blank" rel="noopener noreferrer">www.gellow.top</a>
+              <a class="side-link" href="https://rs.gellow.top" target="_blank" rel="noopener noreferrer">rs.gellow.top</a>
+              <a class="side-link" href="https://notes.gellow.top" target="_blank" rel="noopener noreferrer">notes.gellow.top</a>
+            </div>
+          </section>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section" id="notes">
+      <h2 class="section-title pink" id="mission-notes-title">Mission Notes</h2>
+      <div class="notes" id="mission-notes-list"></div>
+    </section>
+  </main>
+
+  <footer>
+    Gellow Blog · Pixel style blog index
+  </footer>
+
+  <script src="./js/content-api.js"></script>
+  <script src="./js/main.js"></script>
+</body>
+</html>

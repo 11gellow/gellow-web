@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Gellow Home</title>
+        <link rel="icon" type="image/png" href="./assets/favicon.png" />
+        <link rel="apple-touch-icon" href="./assets/favicon.png" />
+        <link rel="stylesheet" href="./css/style.css" />
+    </head>
+    <body>
+        <header>
+            <div class="wrap nav">
+                <div class="brand-block">
+                    <div class="identity-card pixel">
+                        <img
+                            class="avatar"
+                            src="./assets/KindGellow.png"
+                            alt="Profile avatar"
+                        />
+                        <div class="identity-meta">
+                            <div class="presence-line">
+                                <span
+                                    class="online-dot"
+                                    aria-hidden="true"
+                                ></span>
+                                online
+                            </div>
+                            <div class="username">KindGellow</div>
+                        </div>
+                    </div>
+                    <div class="brand-copy">
+                        <h1 class="title">Gellow Home</h1>
+                        <div class="subtitle">Insert Coin To Enter</div>
+                    </div>
+                </div>
+                <nav class="menu">
+                    <a class="btn btn-red" href="#start">Home</a>
+                    <a class="btn btn-red" href="#projects">Projects</a>
+                    <a class="btn btn-red" href="#log">Log</a>
+                    <a class="btn btn-red" href="#portal">Portal</a>
+                </nav>
+            </div>
+        </header>
+
+        <main class="wrap">
+            <section class="hero" id="start">
+                <div class="hero-main pixel">
+                    <section
+                        class="hero-view hero-view-intro"
+                        id="arcade-intro-view"
+                    >
+                        <div class="badge">Player 1 Online</div>
+                        <h2>Pixel Lab<br />For AI Quests</h2>
+                        <p>
+                            一个像素街机风格的个人空间。<br />
+                            来一局吃豆人喵。
+                        </p>
+                        <div class="hero-actions">
+                            <button
+                                class="btn btn-yellow"
+                                type="button"
+                                data-arcade-action="start"
+                            >
+                                Start Game
+                            </button>
+                            <button
+                                class="btn btn-green"
+                                type="button"
+                                data-arcade-action="log"
+                            >
+                                Read Log
+                            </button>
+                        </div>
+                    </section>
+
+                    <section
+                        class="hero-view hero-view-game"
+                        id="arcade-game-view"
+                        hidden
+                    >
+                        <div class="arcade-hud">
+                            <div class="arcade-stat-box">
+                                <span class="arcade-stat-label">Score</span>
+                                <strong id="arcade-score">0</strong>
+                            </div>
+                            <div class="arcade-stat-box">
+                                <span class="arcade-stat-label">Lives</span>
+                                <strong id="arcade-lives">3</strong>
+                            </div>
+                            <div class="arcade-stat-box">
+                                <span class="arcade-stat-label">Pellets</span>
+                                <strong id="arcade-pellets">0</strong>
+                            </div>
+                        </div>
+
+                        <div class="arcade-screen-wrap">
+                            <canvas
+                                id="arcade-canvas"
+                                width="420"
+                                height="364"
+                                aria-label="Pac-Man game board"
+                            ></canvas>
+                        </div>
+
+                        <p class="arcade-help">
+                            Use arrow keys or WASD to move. Clear the pellets,
+                            avoid ghosts, and save your score when the run ends.
+                        </p>
+
+                        <div class="hero-actions hero-actions-game">
+                            <button
+                                class="btn btn-yellow"
+                                type="button"
+                                data-arcade-action="restart"
+                            >
+                                Restart Run
+                            </button>
+                            <button
+                                class="btn btn-green"
+                                type="button"
+                                data-arcade-action="log"
+                            >
+                                View Log
+                            </button>
+                            <button
+                                class="btn btn-red"
+                                type="button"
+                                data-arcade-action="home"
+                            >
+                                Exit
+                            </button>
+                            <div
+                                class="arcade-chip arcade-chip-dark arcade-chip-status"
+                                id="arcade-state-label"
+                            >
+                                Ready
+                            </div>
+                        </div>
+
+                        <form
+                            class="score-entry pixel"
+                            id="score-entry-form"
+                            hidden
+                        >
+                            <h3>Game Over</h3>
+                            <p id="score-entry-message">
+                                Enter your username to save this score.
+                            </p>
+                            <label
+                                class="score-entry-label"
+                                for="score-username"
+                                >Username</label
+                            >
+                            <input
+                                id="score-username"
+                                name="username"
+                                type="text"
+                                maxlength="16"
+                                placeholder="Player1"
+                                required
+                            />
+                            <div class="score-entry-actions">
+                                <button class="btn btn-yellow" type="submit">
+                                    Save Score
+                                </button>
+                                <button
+                                    class="btn btn-green"
+                                    type="button"
+                                    data-arcade-action="dismiss-score"
+                                >
+                                    Skip
+                                </button>
+                            </div>
+                        </form>
+                    </section>
+
+                    <section
+                        class="hero-view hero-view-log"
+                        id="arcade-log-view"
+                        hidden
+                    >
+                        <div class="badge">Score Archive</div>
+                        <h2>PAC-MAN Rankings</h2>
+
+                        <div class="score-log-shell pixel">
+                            <div class="score-log-head">
+                                <span>Rank</span>
+                                <span>Player</span>
+                                <span>Score</span>
+                                <span>Time</span>
+                            </div>
+                            <ol class="score-log-list" id="score-log-list"></ol>
+                            <p class="score-log-empty" id="score-log-empty">
+                                No score saved yet. Start a run first.
+                            </p>
+                        </div>
+
+                        <div class="hero-actions">
+                            <button
+                                class="btn btn-yellow"
+                                type="button"
+                                data-arcade-action="restart"
+                            >
+                                New Run
+                            </button>
+                            <button
+                                class="btn btn-green"
+                                type="button"
+                                data-arcade-action="resume"
+                            >
+                                Resume Run
+                            </button>
+                            <button
+                                class="btn btn-red"
+                                type="button"
+                                data-arcade-action="home"
+                            >
+                                Back Home
+                            </button>
+                        </div>
+                    </section>
+                </div>
+
+                <aside class="status-panel pixel">
+                    <div>
+                        <div class="status-label">System Status</div>
+                        <div class="log-line">[BOOT] domain connected</div>
+                        <div class="log-line">[LOAD] pixel interface ready</div>
+                        <div class="log-line">
+                            [TASK] training / data / scripts
+                        </div>
+                        <div class="log-line">
+                            [NOTE] rust learning in progress
+                        </div>
+                    </div>
+                    <div>
+                        <div class="status-label bonus-label">
+                            Pac-Man Intel
+                        </div>
+                        <div class="log-line" id="arcade-status-line">
+                            [IDLE] press start to begin
+                        </div>
+                        <div class="log-line" id="arcade-score-line">
+                            [SCORE] 0
+                        </div>
+                        <div class="log-line" id="arcade-best-line">
+                            [BEST] no record yet
+                        </div>
+                    </div>
+                </aside>
+            </section>
+
+            <section class="section" id="projects">
+                <h2 class="section-title yellow">Stage</h2>
+                <div class="cards">
+                    <article class="card pixel">
+                        <div class="card-top">
+                            <h3>github</h3>
+                            <span class="lv">LV.01</span>
+                        </div>
+                        <div class="pixel-screen pixel-screen-github"></div>
+                        <p>
+                            github空间主页<br />
+                            给个star求求了喵！！！
+                        </p>
+                        <div class="card-action">
+                            <a
+                                class="btn btn-green"
+                                href="https://github.com/11gellow"
+                                >Enter</a
+                            >
+                        </div>
+                    </article>
+
+                    <article class="card pixel">
+                        <div class="card-top">
+                            <h3>steam</h3>
+                            <span class="lv">LV.02</span>
+                        </div>
+                        <div class="pixel-screen pixel-screen-steam"></div>
+                        <p>快看快看快看我steam</p>
+                        <div class="card-action">
+                            <a
+                                class="btn btn-green"
+                                href="https://steamcommunity.com/profiles/76561198444114302/"
+                                >Enter</a
+                            >
+                        </div>
+                    </article>
+
+                    <article class="card pixel">
+                        <div class="card-top">
+                            <h3>bilibili</h3>
+                            <span class="lv">LV.03</span>
+                        </div>
+                        <div class="pixel-screen pixel-screen-bilibili"></div>
+                        <p>喵喵喵</p>
+                        <div class="card-action">
+                            <a
+                                class="btn btn-green"
+                                href="https://space.bilibili.com/518863790"
+                                >Enter</a
+                            >
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <section class="section split" id="log">
+                <div class="panel panel-a pixel">
+                    <h2 class="section-title yellow">El psy congroo</h2>
+                    <p class="save-text">这就是命运石之门的选择吗？</p>
+                    <div class="stat">skill: python</div>
+                    <div class="stat">focus: ai / models / datasets</div>
+                    <div class="stat">side quest: rust / web</div>
+                </div>
+
+                <div class="panel panel-b pixel">
+                    <h2 class="section-title green">Mission Board</h2>
+                    <div class="board" id="mission-board"></div>
+                </div>
+            </section>
+
+            <section class="section warp pixel" id="portal">
+                <h2 class="section-title pink">Warp Zone</h2>
+                <div class="links">
+                    <a
+                        class="link-card"
+                        href="https://blog.gellow.top"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >blog.gellow.top</a
+                    >
+                    <a
+                        class="link-card"
+                        href="https://rs.gellow.top"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >rs.gellow.top</a
+                    >
+                    <a
+                        class="link-card"
+                        href="https://notes.gellow.top"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >notes.gellow.top</a
+                    >
+                </div>
+            </section>
+        </main>
+
+        <footer>Gellow Arcade · Pixel style landing page demo</footer>
+
+        <script src="./js/main.js"></script>
+    </body>
+</html>

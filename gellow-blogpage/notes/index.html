@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gellow Blog Notes Hub</title>
+  <meta
+    name="description"
+    content="blog.gellow.top/notes 的中文控制台，用来管理文章、首页展示位和常用命令区。"
+  />
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="grid-overlay"></div>
+
+    <header class="site-header">
+      <div class="brand-wrap">
+        <div class="brand-mark">N</div>
+        <div>
+          <p class="eyebrow">BLOG.GELLOW.TOP/NOTES</p>
+          <h1 class="brand-title">内容控制台</h1>
+          <p class="brand-subtitle">文章、展示位和命令区都从这里统一管理</p>
+        </div>
+      </div>
+
+      <nav class="top-nav" aria-label="Primary">
+        <a href="../index.html">返回 Blog</a>
+        <a href="#editor">文章编辑</a>
+        <a href="#display-settings">展示控制</a>
+        <a href="#preview">卡片预览</a>
+      </nav>
+    </header>
+
+    <main class="dashboard-layout">
+      <section class="column column-list glass-panel" aria-labelledby="article-list-title">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">文章库</p>
+            <h2 id="article-list-title">文章列表</h2>
+          </div>
+          <button class="btn btn-primary" id="new-article-btn" type="button">新建文章</button>
+        </div>
+
+        <p class="panel-copy">
+          这里管理所有 blog 内容。文章保存后会进入共享内容库，blog 首页、全部 blog 页面和
+          home 的展示位都会从同一份数据里读取。
+        </p>
+
+        <div class="article-list" id="article-list"></div>
+      </section>
+
+      <section class="column column-editor" id="editor">
+        <div class="glass-panel editor-panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">文章编辑</p>
+              <h2>文章编辑器</h2>
+            </div>
+            <div class="panel-actions">
+              <button class="btn btn-secondary" id="reset-form-btn" type="button">重置表单</button>
+              <button class="btn btn-danger" id="delete-article-btn" type="button">删除文章</button>
+            </div>
+          </div>
+
+          <form id="article-form" class="editor-form">
+            <label class="field">
+              <span>标题（对应卡片 h3）</span>
+              <input id="article-title" name="title" type="text" maxlength="80" required />
+            </label>
+
+            <div class="field-row">
+              <label class="field">
+                <span>Slug（对应卡片 tag）</span>
+                <input id="article-slug" name="slug" type="text" maxlength="80" required />
+              </label>
+
+              <label class="field">
+                <span>状态</span>
+                <select id="article-status" name="status">
+                  <option value="draft">草稿</option>
+                  <option value="published">已发布</option>
+                  <option value="archived">归档</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="field-row">
+              <label class="field">
+                <span>Date（对应卡片 date）</span>
+                <input id="article-date" name="publishedAt" type="date" required />
+              </label>
+
+              <label class="field">
+                <span>摘要（对应 Summary）</span>
+                <textarea id="article-summary" name="summary" rows="3" maxlength="180"></textarea>
+              </label>
+            </div>
+
+            <label class="field">
+              <span>正文（Read More 跳转后的完整内容）</span>
+              <textarea id="article-content" name="content" rows="12" required></textarea>
+            </label>
+
+            <div class="editor-footer">
+              <p class="save-hint" id="save-hint">连接共享内容接口中，保存后前台展示会同步读取这里的数据。</p>
+              <button class="btn btn-primary" type="submit">保存文章</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="glass-panel preview-panel" id="display-settings">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">展示控制</p>
+              <h2>展示控制台</h2>
+            </div>
+          </div>
+
+          <p class="panel-copy">
+            `Latest Entries` 只展示 3 篇，`Home` 的 Mission Board 展示 4 篇，两边互不影响。
+            下面勾选你希望出现在对应区域的文章。
+          </p>
+
+          <div class="settings-grid">
+            <section class="settings-block">
+              <h3>Blog 首页 Latest Entries（3 篇）</h3>
+              <div class="selector-list" id="latest-selector-list"></div>
+            </section>
+
+            <section class="settings-block">
+              <h3>Home 页 Mission Board（4 篇）</h3>
+              <div class="selector-list" id="home-selector-list"></div>
+            </section>
+          </div>
+
+          <section class="settings-block settings-block-full">
+            <h3>命令区内容</h3>
+            <label class="field">
+              <span>命令区标题</span>
+              <input id="mission-notes-title-input" type="text" maxlength="60" />
+            </label>
+            <label class="field">
+              <span>命令区内容（每行一条）</span>
+              <textarea id="mission-notes-items-input" rows="6"></textarea>
+            </label>
+          </section>
+
+          <div class="editor-footer">
+            <p class="save-hint" id="settings-save-hint">修改后点击保存设置，blog 和 home 的展示位会读取新的配置。</p>
+            <button class="btn btn-primary" id="save-settings-btn" type="button">保存设置</button>
+          </div>
+        </div>
+
+        <div class="glass-panel preview-panel" id="preview">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">卡片预览</p>
+              <h2>Latest Entries 预览</h2>
+            </div>
+            <span class="preview-badge" id="preview-status">draft</span>
+          </div>
+
+          <article class="post-card preview-post-card">
+            <div class="post-meta">
+              <span class="tag" id="preview-slug">demo-slug</span>
+              <span class="date" id="preview-date">2026-04-28</span>
+            </div>
+            <h3 id="preview-title">示例标题</h3>
+            <p id="preview-summary">这里会按照 blog 首页 Latest Entries 的格式展示摘要内容。</p>
+            <a class="btn btn-green preview-link" id="preview-read-more" href="../blogs/post.html">阅读全文</a>
+          </article>
+
+          <div class="preview-content" id="preview-content"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="../js/content-api.js"></script>
+  <script src="./js/main.js"></script>
+</body>
+</html>
