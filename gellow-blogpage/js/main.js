@@ -39,7 +39,7 @@ function renderPostCard(post) {
       </div>
       <h3>${escapeHtml(post.title)}</h3>
       <p>${escapeHtml(post.summary)}</p>
-      <a class="btn btn-green" href="./blogs/post.html?slug=${encodeURIComponent(post.slug)}">Read More</a>
+      <a class="btn btn-green" href="./blogs/post.html?slug=${encodeURIComponent(post.slug)}" data-toast-message="文章 ${escapeHtml(post.title)} 已打开">Read More</a>
     </article>
   `;
 }

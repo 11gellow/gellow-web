@@ -44,7 +44,7 @@
                         <a class="btn btn-red" href="#commands">Commands</a>
                         <a class="btn btn-red" href="#entries">Entries</a>
                     </nav>
-                    <a class="btn btn-notes-hub" href="../index.html"
+                    <a class="btn btn-notes-hub" href="../index.html" data-toast-message="Blog Home 已打开"
                         >Back To Blog</a
                     >
                 </div>
@@ -56,12 +56,12 @@
                 <div class="hero-main pixel">
                     <div class="badge">Console Online</div>
                     <h2>Pixel Notes<br />Control Room</h2>
-                    <p>这里负责文章编辑、命令缓存设置和展示入口跳转。</p>
+                    <p>文章编辑、命令缓存设置、展示入口跳转。</p>
                     <div class="hero-actions">
                         <a class="btn btn-yellow" href="#articles"
                             >Edit Posts</a
                         >
-                        <a class="btn btn-green" href="./display.html"
+                        <a class="btn btn-green" href="./display.html" data-toast-message="Display Console 已打开"
                             >Open Display</a
                         >
                     </div>
@@ -112,9 +112,7 @@
                             New Post
                         </button>
                     </div>
-                    <p class="notes-copy">
-                        这里列出所有已保存的文章，方便快速切换、修改和检查状态。
-                    </p>
+                    <p class="notes-copy">已保存文章的切换、修改、状态检查。</p>
                     <div class="article-list" id="article-list"></div>
                 </aside>
 
@@ -139,6 +137,7 @@
                                     class="btn btn-red"
                                     id="delete-article-btn"
                                     type="button"
+                                    data-toast-defer="true"
                                 >
                                     Delete
                                 </button>
@@ -219,7 +218,7 @@
                                 <p class="notes-hint" id="save-hint">
                                     Connecting content api...
                                 </p>
-                                <button class="btn btn-yellow" type="submit">
+                                <button class="btn btn-yellow" type="submit" data-toast-defer="true">
                                     Save Post
                                 </button>
                             </div>
@@ -239,7 +238,7 @@
                         </div>
 
                         <p class="notes-copy">
-                            这里控制 blog 页面命令缓存区的标题和逐行内容。
+                            控制 blog 页面命令缓存区的标题和逐行内容。
                         </p>
 
                         <form id="command-settings-form" class="notes-form">
@@ -266,6 +265,7 @@
                                     class="btn btn-green"
                                     id="save-settings-btn"
                                     type="submit"
+                                    data-toast-defer="true"
                                 >
                                     Save Commands
                                 </button>
@@ -282,14 +282,12 @@
                             <div
                                 class="entry-screen entry-screen-console"
                             ></div>
-                            <p>
-                                进入独立布局页，分别调整 blog 的 Latest Entries
-                                和 home 的 Mission Board。
-                            </p>
+                            <p>调整 blog 的 Latest Entries 和 home 的 Mission Board。</p>
                             <div class="card-action">
                                 <a
                                     class="btn btn-notes-hub"
                                     href="./display.html"
+                                    data-toast-message="Display Console 已打开"
                                     >Open Display</a
                                 >
                             </div>
@@ -303,11 +301,12 @@
                             <div
                                 class="entry-screen entry-screen-archive"
                             ></div>
-                            <p>快速检查完整的 blog 归档和前台展示结果。</p>
+                            <p>完整 blog 归档和前台展示结果检查。</p>
                             <div class="card-action">
                                 <a
                                     class="btn btn-blue"
                                     href="../blogs/index.html"
+                                    data-toast-message="Blog Archive 已打开"
                                     >Open Archive</a
                                 >
                             </div>

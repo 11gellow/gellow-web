@@ -131,6 +131,12 @@ const state = {
   endReason: "",
 };
 
+function showFeedback(message, title = "System Notice", variant = "info") {
+  if (window.GellowFeedback?.showToast) {
+    window.GellowFeedback.showToast(message, title, variant);
+  }
+}
+
 function normalizeSettings(settings) {
   return {
     featured_home: Array.isArray(settings.featured_home) ? settings.featured_home : [],
@@ -322,7 +328,7 @@ function renderMissionBoard(posts) {
         <div class="note">
           <span class="note-title">${escapeHtml(post.title)}</span>
           <div class="note-footer">
-            <a class="btn btn-green note-read-more" href="${buildBlogPostUrl(post.slug)}" target="_blank" rel="noopener noreferrer">Read More</a>
+            <a class="btn btn-green note-read-more" href="${buildBlogPostUrl(post.slug)}" target="_blank" rel="noopener noreferrer" data-toast-message="文章 ${escapeHtml(post.title)} 已打开">Read More</a>
           </div>
         </div>
       `;
@@ -632,6 +638,7 @@ async function saveCurrentScore(name) {
   await refreshScores();
   setView("log");
   setStatus("[SAVE] score stored in database", "Saved");
+  showFeedback("Score Saved", "System Notice", "success");
 }
 
 function handleArcadeAction(action) {
@@ -889,6 +896,7 @@ ui.scoreEntryForm.addEventListener("submit", async (event) => {
     await saveCurrentScore(username);
   } catch (error) {
     ui.scoreEntryMessage.textContent = `Save failed: ${error.message}`;
+    showFeedback("Score Save Failed", "System Notice", "error");
     console.warn("Unable to save score to backend.", error);
   }
 });

@@ -635,6 +635,34 @@ header {
     opacity 0.24s ease;
 }
 
+.toast-card.toast-success {
+  background: linear-gradient(180deg, #1b4f3c 0%, #123529 100%);
+  box-shadow:
+    0 0 0 3px var(--black),
+    0 0 0 6px #8cf08f;
+}
+
+.toast-card.toast-error {
+  background: linear-gradient(180deg, #5f2031 0%, #3d1420 100%);
+  box-shadow:
+    0 0 0 3px var(--black),
+    0 0 0 6px #ff6a88;
+}
+
+.toast-card.toast-nav {
+  background: linear-gradient(180deg, #1f3568 0%, #18254a 100%);
+  box-shadow:
+    0 0 0 3px var(--black),
+    0 0 0 6px #67b8ff;
+}
+
+.toast-card.toast-open {
+  background: linear-gradient(180deg, #5a4214 0%, #3b2b0e 100%);
+  box-shadow:
+    0 0 0 3px var(--black),
+    0 0 0 6px #ffd36a;
+}
+
 .toast-card.is-visible {
   transform: translateX(0);
   opacity: 1;
@@ -650,6 +678,22 @@ header {
   font-size: 18px;
   text-transform: uppercase;
   color: var(--yellow);
+}
+
+.toast-card.toast-success .toast-title {
+  color: #b9ff76;
+}
+
+.toast-card.toast-error .toast-title {
+  color: #ff9ab0;
+}
+
+.toast-card.toast-nav .toast-title {
+  color: #8ed8ff;
+}
+
+.toast-card.toast-open .toast-title {
+  color: #ffe48f;
 }
 
 .toast-message {
@@ -672,6 +716,22 @@ header {
   background: linear-gradient(90deg, var(--green), var(--yellow), var(--blue));
   transform-origin: left center;
   animation: toast-countdown 2s linear forwards;
+}
+
+.toast-card.toast-success .toast-progress-bar {
+  background: linear-gradient(90deg, #b9ff76, #6dffb1, #39d98a);
+}
+
+.toast-card.toast-error .toast-progress-bar {
+  background: linear-gradient(90deg, #ff9ab0, #ff6a88, #ff4f64);
+}
+
+.toast-card.toast-nav .toast-progress-bar {
+  background: linear-gradient(90deg, #8ed8ff, #67b8ff, #4f8cff);
+}
+
+.toast-card.toast-open .toast-progress-bar {
+  background: linear-gradient(90deg, #ffe48f, #ffd36a, #ffb347);
 }
 
 @keyframes toast-countdown {

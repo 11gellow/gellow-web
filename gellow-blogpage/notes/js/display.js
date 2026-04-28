@@ -29,6 +29,12 @@ const state = {
   pickerTarget: null,
 };
 
+function showFeedback(message, title = "System Notice", variant = "info") {
+  if (window.GellowFeedback?.showToast) {
+    window.GellowFeedback.showToast(message, title, variant);
+  }
+}
+
 function escapeHtml(value) {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -332,8 +338,10 @@ async function initDisplayConsole() {
     try {
       await saveBoards();
       setSaveHint("展示布局已保存，blog 和 home 页面会读取新的顺序。");
+      showFeedback("Display Layout Saved", "System Notice", "success");
     } catch (error) {
       setSaveHint(`保存失败：${error.message}`);
+      showFeedback("Display Layout Save Failed", "System Notice", "error");
       console.warn("Unable to save display boards.", error);
     }
   });

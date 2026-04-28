@@ -28,6 +28,12 @@ const state = {
   },
 };
 
+function showFeedback(message, title = "System Notice", variant = "info") {
+  if (window.GellowFeedback?.showToast) {
+    window.GellowFeedback.showToast(message, title, variant);
+  }
+}
+
 function escapeHtml(value) {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -223,8 +229,10 @@ async function handleArticleSave(event) {
     await persistCurrentSettings();
     setSaveHint("文章已保存，刷新前台页面后会读取新的内容。");
     setSettingsHint("展示控制台中的 slug 引用也已经同步更新。");
+    showFeedback("Post Saved", "System Notice", "success");
   } catch (error) {
     setSaveHint(`保存失败：${error.message}`);
+    showFeedback("Post Save Failed", "System Notice", "error");
     console.warn("Unable to save article.", error);
   }
 }
@@ -243,6 +251,7 @@ async function handleDeletePost() {
     renderList();
     setSaveHint("文章已删除，相关展示引用也已一并移除。");
     setSettingsHint("展示配置已经同步更新。");
+    showFeedback("Post Deleted", "System Notice", "success");
 
     if (state.posts.length) {
       selectPost(state.posts[0].id);
@@ -251,6 +260,7 @@ async function handleDeletePost() {
     }
   } catch (error) {
     setSaveHint(`删除失败：${error.message}`);
+    showFeedback("Post Delete Failed", "System Notice", "error");
     console.warn("Unable to delete article.", error);
   }
 }
@@ -261,8 +271,10 @@ async function handleCommandSave(event) {
   try {
     await persistCurrentSettings();
     setSettingsHint("命令缓存设置已保存。");
+    showFeedback("Command Settings Saved", "System Notice", "success");
   } catch (error) {
     setSettingsHint(`保存失败：${error.message}`);
+    showFeedback("Command Settings Save Failed", "System Notice", "error");
     console.warn("Unable to save command settings.", error);
   }
 }

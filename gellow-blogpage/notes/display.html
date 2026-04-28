@@ -43,7 +43,7 @@
                         <a class="btn btn-red" href="#blog-stage">Blog Stage</a>
                         <a class="btn btn-red" href="#home-stage">Home Stage</a>
                     </nav>
-                    <a class="btn btn-notes-hub" href="./index.html"
+                    <a class="btn btn-notes-hub" href="./index.html" data-toast-message="Notes Console 已打开"
                         >Back To Notes</a
                     >
                 </div>
@@ -55,7 +55,7 @@
                 <div class="hero-main pixel">
                     <div class="badge">Display Mode</div>
                     <h2>Drag The Cards<br />Save The Stage</h2>
-                    <p>展示窗口、拖拽排序、删除模块并保存。</p>
+                    <p>展示窗口新增、拖拽排序、模块删除、布局保存。</p>
                     <div class="hero-actions">
                         <a class="btn btn-yellow" href="#blog-stage"
                             >Edit Blog Stage</a
@@ -113,6 +113,7 @@
                             class="btn btn-green"
                             id="add-latest-card-btn"
                             type="button"
+                            data-toast-message="Blog Stage picker 已打开"
                         >
                             New Window
                         </button>
@@ -135,6 +136,7 @@
                             class="btn btn-green"
                             id="add-home-card-btn"
                             type="button"
+                            data-toast-message="Home Stage picker 已打开"
                         >
                             New Window
                         </button>
@@ -152,6 +154,7 @@
                         class="btn btn-yellow"
                         id="save-display-btn"
                         type="button"
+                        data-toast-defer="true"
                     >
                         Save Layout
                     </button>
@@ -173,6 +176,7 @@
                         class="btn btn-red"
                         id="picker-close-btn"
                         type="button"
+                        data-toast-message="Post picker 已关闭"
                     >
                         Cancel
                     </button>
