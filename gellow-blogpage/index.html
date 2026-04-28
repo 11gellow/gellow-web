@@ -55,24 +55,31 @@
                     </div>
                 </div>
 
-                <aside class="hero-panel pixel media-panel">
-                    <h2 class="section-title green">Video Feed</h2>
-                    <div class="video-frame">
-                        <video
-                            class="site-video"
-                            controls
-                            muted
-                            loop
-                            playsinline
-                            poster="./assets/favicon-blog.svg"
-                        >
-                            <source src="" type="video/mp4" />
-                            浏览器暂不支持视频播放。
-                        </video>
+                <aside class="hero-panel pixel">
+                    <h2 class="section-title green">System Log</h2>
+                    <div class="status-line">[BOOT] blog shell ready</div>
+                    <div class="status-line">[LOAD] archive system online</div>
+                    <div class="status-line">[TASK] write / learn / record</div>
+                    <div class="status-line">[NOTE] content updating later</div>
+                    <div class="panel-video-shell" hidden>
+                        <h3 class="panel-video-title">Video Feed</h3>
+                        <div class="video-frame">
+                            <video
+                                class="site-video"
+                                controls
+                                muted
+                                loop
+                                playsinline
+                                poster="./assets/favicon-blog.svg"
+                            >
+                                <source src="" type="video/mp4" />
+                                浏览器暂不支持视频播放。
+                            </video>
+                        </div>
+                        <p class="media-copy">
+                            这里预留给 blog 页面的视频位，后续可直接替换视频源。
+                        </p>
                     </div>
-                    <p class="media-copy">
-                        后续把 `video` 标签中的 `src` 改成自己的视频文件即可。
-                    </p>
                 </aside>
             </section>
 
@@ -148,7 +155,10 @@
 
         <footer>Gellow Blog · Pixel style blog index</footer>
 
+        <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="false"></div>
+
         <script src="./js/content-api.js"></script>
+        <script src="./js/feedback.js"></script>
         <script src="./js/main.js"></script>
     </body>
 </html>

@@ -1,136 +1,196 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gellow Display Console</title>
-  <meta
-    name="description"
-    content="Pixel-style drag-and-drop console for arranging blog and home display windows."
-  />
-  <link rel="icon" type="image/svg+xml" href="../assets/favicon-notes.svg" />
-  <link rel="stylesheet" href="../css/style.css" />
-  <link rel="stylesheet" href="./css/style.css" />
-  <script defer src="../js/boot.js"></script>
-</head>
-<body>
-  <div class="page-loader" id="page-loader">
-    <div class="loader-shell pixel">
-      <div class="loader-marquee">Insert Coin To Load</div>
-      <div class="loader-core">
-        <div class="loader-glyph loader-glyph-display">D</div>
-        <div class="loader-copy">
-          <strong>Display Console</strong>
-          <p>loading~~~</p>
-          <div class="loader-bar"><span></span></div>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Gellow Display Console</title>
+        <meta
+            name="description"
+            content="Pixel-style drag-and-drop console for arranging blog and home display windows."
+        />
+        <link
+            rel="icon"
+            type="image/svg+xml"
+            href="../assets/favicon-notes.svg"
+        />
+        <link rel="stylesheet" href="../css/style.css" />
+        <link rel="stylesheet" href="./css/style.css" />
+        <script defer src="../js/boot.js"></script>
+    </head>
+    <body>
+        <div class="page-loader" id="page-loader">
+            <div class="loader-shell pixel">
+                <div class="loader-marquee">Insert Coin To Load</div>
+                <div class="loader-core">
+                    <div class="loader-glyph loader-glyph-display">D</div>
+                    <div class="loader-copy">
+                        <strong>Display Console</strong>
+                        <p>loading~~~</p>
+                        <div class="loader-bar"><span></span></div>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  </div>
 
-  <header>
-    <div class="wrap nav">
-      <div>
-        <h1 class="title">Display Console</h1>
-        <div class="subtitle">Arrange Featured Windows</div>
-      </div>
-      <div class="nav-actions">
-        <nav class="menu">
-          <a class="btn btn-red" href="#blog-stage">Blog Stage</a>
-          <a class="btn btn-red" href="#home-stage">Home Stage</a>
-        </nav>
-        <a class="btn btn-notes-hub" href="./index.html">Back To Notes</a>
-      </div>
-    </div>
-  </header>
+        <header>
+            <div class="wrap nav">
+                <div>
+                    <h1 class="title">Display Console</h1>
+                    <div class="subtitle">Arrange Featured Windows</div>
+                </div>
+                <div class="nav-actions">
+                    <nav class="menu">
+                        <a class="btn btn-red" href="#blog-stage">Blog Stage</a>
+                        <a class="btn btn-red" href="#home-stage">Home Stage</a>
+                    </nav>
+                    <a class="btn btn-notes-hub" href="./index.html"
+                        >Back To Notes</a
+                    >
+                </div>
+            </div>
+        </header>
 
-  <main class="wrap display-console-shell">
-    <section class="hero" id="top">
-      <div class="hero-main pixel">
-        <div class="badge">Display Mode</div>
-        <h2>Drag The Cards<br />Save The Stage</h2>
-        <p>
-          这里用于新增展示窗口、拖拽排序、删除模块，并保存最终布局。
-        </p>
-        <div class="hero-actions">
-          <a class="btn btn-yellow" href="#blog-stage">Edit Blog Stage</a>
-          <a class="btn btn-green" href="#home-stage">Edit Home Stage</a>
+        <main class="wrap display-console-shell">
+            <section class="hero" id="top">
+                <div class="hero-main pixel">
+                    <div class="badge">Display Mode</div>
+                    <h2>Drag The Cards<br />Save The Stage</h2>
+                    <p>展示窗口、拖拽排序、删除模块并保存。</p>
+                    <div class="hero-actions">
+                        <a class="btn btn-yellow" href="#blog-stage"
+                            >Edit Blog Stage</a
+                        >
+                        <a class="btn btn-green" href="#home-stage"
+                            >Edit Home Stage</a
+                        >
+                    </div>
+                </div>
+
+                <aside class="hero-panel pixel">
+                    <h2 class="section-title green">Drag Log</h2>
+                    <div class="status-line">[BOOT] display console online</div>
+                    <div class="status-line">
+                        [TIP] drag only works inside each board
+                    </div>
+                    <div class="status-line">
+                        [RULE] blog 最多 3 个 / home 最多 4 个
+                    </div>
+                    <div class="status-line">
+                        [SAVE] click save after layout changes
+                    </div>
+                    <div class="panel-video-shell" hidden>
+                        <h3 class="panel-video-title">Video Feed</h3>
+                        <div class="video-frame">
+                            <video
+                                class="site-video"
+                                controls
+                                muted
+                                loop
+                                playsinline
+                                poster="../assets/favicon-notes.svg"
+                            >
+                                <source src="" type="video/mp4" />
+                                浏览器暂不支持视频播放。
+                            </video>
+                        </div>
+                        <p class="media-copy">
+                            这里预留给展示控制台的视频位，后续可直接替换视频源。
+                        </p>
+                    </div>
+                </aside>
+            </section>
+
+            <section class="display-console-grid">
+                <section class="display-board-panel pixel" id="blog-stage">
+                    <div class="display-board-head">
+                        <div>
+                            <h3 class="section-title yellow">
+                                Blog Latest Entries
+                            </h3>
+                            <p>blog 首页的三张文章卡片展示位。</p>
+                        </div>
+                        <button
+                            class="btn btn-green"
+                            id="add-latest-card-btn"
+                            type="button"
+                        >
+                            New Window
+                        </button>
+                    </div>
+                    <div
+                        class="slot-grid-latest"
+                        id="latest-display-grid"
+                    ></div>
+                </section>
+
+                <section class="display-board-panel pixel" id="home-stage">
+                    <div class="display-board-head">
+                        <div>
+                            <h3 class="section-title pink">
+                                Home Mission Board
+                            </h3>
+                            <p>home 页面 Mission Board 的四个展示槽位。</p>
+                        </div>
+                        <button
+                            class="btn btn-green"
+                            id="add-home-card-btn"
+                            type="button"
+                        >
+                            New Window
+                        </button>
+                    </div>
+                    <div class="slot-grid-home" id="home-display-grid"></div>
+                </section>
+            </section>
+
+            <section class="display-board-panel pixel">
+                <div class="display-console-footer">
+                    <p class="notes-hint" id="display-save-hint">
+                        正在读取当前展示布局...
+                    </p>
+                    <button
+                        class="btn btn-yellow"
+                        id="save-display-btn"
+                        type="button"
+                    >
+                        Save Layout
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <div class="picker-modal" id="picker-modal" hidden>
+            <div class="picker-dialog pixel">
+                <div class="display-board-head">
+                    <div>
+                        <h3 class="section-title yellow">Pick A Post</h3>
+                        <p id="picker-copy">选择一篇文章放入当前展示区。</p>
+                    </div>
+                </div>
+                <div class="picker-grid" id="picker-grid"></div>
+                <div class="picker-actions">
+                    <button
+                        class="btn btn-red"
+                        id="picker-close-btn"
+                        type="button"
+                    >
+                        Cancel
+                    </button>
+                </div>
+            </div>
         </div>
-      </div>
 
-      <aside class="hero-panel pixel media-panel">
-        <h2 class="section-title green">Video Feed</h2>
-        <div class="video-frame">
-          <video
-            class="site-video"
-            controls
-            muted
-            loop
-            playsinline
-            poster="../assets/favicon-notes.svg"
-          >
-            <source src="" type="video/mp4" />
-            浏览器暂不支持视频播放。
-          </video>
-        </div>
-        <p class="media-copy">
-          这里预留给展示控制台的视频位，后续可直接替换视频源。
-        </p>
-      </aside>
-    </section>
+        <footer>Gellow Notes · Display arrangement console</footer>
 
-    <section class="display-console-grid">
-      <section class="display-board-panel pixel" id="blog-stage">
-        <div class="display-board-head">
-          <div>
-            <h3 class="section-title yellow">Blog Latest Entries</h3>
-            <p>这里对应 blog 首页的三张文章卡片展示位。</p>
-          </div>
-          <button class="btn btn-green" id="add-latest-card-btn" type="button">New Window</button>
-        </div>
-        <div class="slot-grid-latest" id="latest-display-grid"></div>
-      </section>
+        <div
+            class="toast-stack"
+            id="toast-stack"
+            aria-live="polite"
+            aria-atomic="false"
+        ></div>
 
-      <section class="display-board-panel pixel" id="home-stage">
-        <div class="display-board-head">
-          <div>
-            <h3 class="section-title pink">Home Mission Board</h3>
-            <p>这里对应 home 页面 Mission Board 的四个展示槽位。</p>
-          </div>
-          <button class="btn btn-green" id="add-home-card-btn" type="button">New Window</button>
-        </div>
-        <div class="slot-grid-home" id="home-display-grid"></div>
-      </section>
-    </section>
-
-    <section class="display-board-panel pixel">
-      <div class="display-console-footer">
-        <p class="notes-hint" id="display-save-hint">正在读取当前展示布局...</p>
-        <button class="btn btn-yellow" id="save-display-btn" type="button">Save Layout</button>
-      </div>
-    </section>
-  </main>
-
-  <div class="picker-modal" id="picker-modal" hidden>
-    <div class="picker-dialog pixel">
-      <div class="display-board-head">
-        <div>
-          <h3 class="section-title yellow">Pick A Post</h3>
-          <p id="picker-copy">选择一篇文章放入当前展示区。</p>
-        </div>
-      </div>
-      <div class="picker-grid" id="picker-grid"></div>
-      <div class="picker-actions">
-        <button class="btn btn-red" id="picker-close-btn" type="button">Cancel</button>
-      </div>
-    </div>
-  </div>
-
-  <footer>
-    Gellow Notes · Display arrangement console
-  </footer>
-
-  <script src="../js/content-api.js"></script>
-  <script src="./js/display.js"></script>
-</body>
+        <script src="../js/content-api.js"></script>
+        <script src="../js/feedback.js"></script>
+        <script src="./js/display.js"></script>
+    </body>
 </html>

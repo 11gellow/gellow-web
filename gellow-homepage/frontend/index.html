@@ -236,26 +236,22 @@
                     </section>
                 </div>
 
-                <aside class="status-panel pixel media-panel">
-                    <h2 class="section-title green">Video Feed</h2>
-                    <div class="video-frame">
-                        <video
-                            class="site-video"
-                            controls
-                            muted
-                            loop
-                            playsinline
-                            poster="./assets/quancifang.png"
-                        >
-                            <source src="" type="video/mp4" />
-                            浏览器暂不支持视频播放。
-                        </video>
+                <aside class="status-panel pixel">
+                    <div>
+                        <div class="status-label">System Status</div>
+                        <div class="log-line">[BOOT] domain connected</div>
+                        <div class="log-line">[LOAD] pixel interface ready</div>
+                        <div class="log-line">
+                            [TASK] training / data / scripts
+                        </div>
+                        <div class="log-line">
+                            [NOTE] rust learning in progress
+                        </div>
                     </div>
-                    <p class="media-copy">
-                        这里预留给首页视频位，后续把 `video` 标签中的 `src`
-                        改成自己的视频文件即可。
-                    </p>
-                    <div class="status-metrics-hidden" aria-hidden="true">
+                    <div>
+                        <div class="status-label bonus-label">
+                            Pac-Man Intel
+                        </div>
                         <div class="log-line" id="arcade-status-line">
                             [IDLE] press start to begin
                         </div>
@@ -265,6 +261,26 @@
                         <div class="log-line" id="arcade-best-line">
                             [BEST] no record yet
                         </div>
+                    </div>
+                    <div class="panel-video-shell" hidden>
+                        <h3 class="panel-video-title">Video Feed</h3>
+                        <div class="video-frame">
+                            <video
+                                class="site-video"
+                                controls
+                                muted
+                                loop
+                                playsinline
+                                poster="./assets/quancifang.png"
+                            >
+                                <source src="" type="video/mp4" />
+                                浏览器暂不支持视频播放。
+                            </video>
+                        </div>
+                        <p class="media-copy">
+                            这里预留给首页视频位，后续把 `video` 标签中的 `src`
+                            改成自己的视频文件即可。
+                        </p>
                     </div>
                 </aside>
             </section>
@@ -370,6 +386,9 @@
 
         <footer>Gellow Arcade · Pixel style landing page</footer>
 
+        <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="false"></div>
+
+        <script src="./js/feedback.js"></script>
         <script src="./js/main.js"></script>
     </body>
 </html>

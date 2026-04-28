@@ -67,24 +67,33 @@
                     </div>
                 </div>
 
-                <aside class="hero-panel pixel media-panel">
-                    <h2 class="section-title green">Video Feed</h2>
-                    <div class="video-frame">
-                        <video
-                            class="site-video"
-                            controls
-                            muted
-                            loop
-                            playsinline
-                            poster="../assets/favicon-notes.svg"
-                        >
-                            <source src="" type="video/mp4" />
-                            浏览器暂不支持视频播放。
-                        </video>
+                <aside class="hero-panel pixel">
+                    <h2 class="section-title green">System Log</h2>
+                    <div class="status-line">[BOOT] notes console linked</div>
+                    <div class="status-line">[LOAD] content api waiting</div>
+                    <div class="status-line">[TASK] edit / route / publish</div>
+                    <div class="status-line">
+                        [NOTE] display layout moved to console
                     </div>
-                    <p class="media-copy">
-                        这里预留给 notes 页面的视频位，后续可直接替换视频源。
-                    </p>
+                    <div class="panel-video-shell" hidden>
+                        <h3 class="panel-video-title">Video Feed</h3>
+                        <div class="video-frame">
+                            <video
+                                class="site-video"
+                                controls
+                                muted
+                                loop
+                                playsinline
+                                poster="../assets/favicon-notes.svg"
+                            >
+                                <source src="" type="video/mp4" />
+                                浏览器暂不支持视频播放。
+                            </video>
+                        </div>
+                        <p class="media-copy">
+                            这里预留给 notes 页面的视频位，后续可直接替换视频源。
+                        </p>
+                    </div>
                 </aside>
             </section>
 
@@ -274,8 +283,8 @@
                                 class="entry-screen entry-screen-console"
                             ></div>
                             <p>
-                                进入独立布局页，分别调整 blog 的 Latest Entries 和
-                                home 的 Mission Board。
+                                进入独立布局页，分别调整 blog 的 Latest Entries
+                                和 home 的 Mission Board。
                             </p>
                             <div class="card-action">
                                 <a
@@ -310,7 +319,10 @@
 
         <footer>Gellow Notes · Pixel style content console</footer>
 
+        <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="false"></div>
+
         <script src="../js/content-api.js"></script>
+        <script src="../js/feedback.js"></script>
         <script src="./js/main.js"></script>
     </body>
 </html>
