@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gellow 展示控制台</title>
+  <meta
+    name="description"
+    content="用于控制 blog 首页和 home 页面展示位的像素风拖拽控制台。"
+  />
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon-notes.svg" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="./css/style.css" />
+  <script defer src="../js/boot.js"></script>
+</head>
+<body>
+  <div class="page-loader" id="page-loader">
+    <div class="loader-shell pixel">
+      <div class="loader-marquee">Insert Coin To Load</div>
+      <div class="loader-core">
+        <div class="loader-glyph loader-glyph-display">D</div>
+        <div class="loader-copy">
+          <strong>加载展示台</strong>
+          <p>正在接入 blog 与 home 的展示舞台，准备拖拽布局。</p>
+          <div class="loader-bar"><span></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <header>
+    <div class="wrap nav">
+      <div>
+        <h1 class="title">Display Console</h1>
+        <div class="subtitle">Arrange Featured Windows</div>
+      </div>
+      <div class="nav-actions">
+        <nav class="menu">
+          <a class="btn btn-red" href="#blog-stage">Blog 舞台</a>
+          <a class="btn btn-red" href="#home-stage">Home 舞台</a>
+        </nav>
+        <a class="btn btn-notes-hub" href="./index.html">Back To Notes</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap display-console-shell">
+    <section class="hero" id="top">
+      <div class="hero-main pixel">
+        <div class="badge">Display Mode</div>
+        <h2>Drag The Cards<br />Save The Stage</h2>
+        <p>
+          点击右上角“新建展示窗口”选择文章，然后把模块拖到你想要的位置。
+          红色垃圾桶会删除当前展示，最后点击保存布局。
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-yellow" href="#blog-stage">编辑 Blog 舞台</a>
+          <a class="btn btn-green" href="#home-stage">编辑 Home 舞台</a>
+        </div>
+      </div>
+
+      <aside class="hero-panel pixel">
+        <h2 class="section-title green">Drag Log</h2>
+        <div class="status-line">[BOOT] display console online</div>
+        <div class="status-line">[TIP] drag only works inside each board</div>
+        <div class="status-line">[RULE] blog 最多 3 个 / home 最多 4 个</div>
+        <div class="status-line">[SAVE] click save after layout changes</div>
+      </aside>
+    </section>
+
+    <section class="display-console-grid">
+      <section class="display-board-panel pixel" id="blog-stage">
+        <div class="display-board-head">
+          <div>
+            <h3 class="section-title yellow">Blog Latest Entries</h3>
+            <p>这里对应 blog 首页的三张文章卡片，位置顺序会原样同步到前台。</p>
+          </div>
+          <button class="btn btn-green" id="add-latest-card-btn" type="button">新建展示窗口</button>
+        </div>
+        <div class="slot-grid-latest" id="latest-display-grid"></div>
+      </section>
+
+      <section class="display-board-panel pixel" id="home-stage">
+        <div class="display-board-head">
+          <div>
+            <h3 class="section-title pink">Home Mission Board</h3>
+            <p>这里对应 home 页的四个便签位，保存后会在主页 Mission Board 中展示。</p>
+          </div>
+          <button class="btn btn-green" id="add-home-card-btn" type="button">新建展示窗口</button>
+        </div>
+        <div class="slot-grid-home" id="home-display-grid"></div>
+      </section>
+    </section>
+
+    <section class="display-board-panel pixel">
+      <div class="display-console-footer">
+        <p class="notes-hint" id="display-save-hint">正在读取当前展示布局...</p>
+        <button class="btn btn-yellow" id="save-display-btn" type="button">保存布局</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="picker-modal" id="picker-modal" hidden>
+    <div class="picker-dialog pixel">
+      <div class="display-board-head">
+        <div>
+          <h3 class="section-title yellow">选择文章</h3>
+          <p id="picker-copy">选择一篇文章加入展示区。</p>
+        </div>
+      </div>
+      <div class="picker-grid" id="picker-grid"></div>
+      <div class="picker-actions">
+        <button class="btn btn-red" id="picker-close-btn" type="button">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Gellow Notes · Display arrangement console
+  </footer>
+
+  <script src="../js/content-api.js"></script>
+  <script src="./js/display.js"></script>
+</body>
+</html>

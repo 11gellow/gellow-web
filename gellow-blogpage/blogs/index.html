@@ -4,19 +4,36 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>All Blog Entries</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon-blog.svg" />
   <link rel="stylesheet" href="../css/style.css" />
+  <script defer src="../js/boot.js"></script>
 </head>
 <body>
+  <div class="page-loader" id="page-loader">
+    <div class="loader-shell pixel">
+      <div class="loader-marquee">Insert Coin To Load</div>
+      <div class="loader-core">
+        <div class="loader-glyph loader-glyph-archive">A</div>
+        <div class="loader-copy">
+          <strong>Loading Archive</strong>
+          <p>正在展开全部 blog 条目，准备进入归档视图。</p>
+          <div class="loader-bar"><span></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
   <header>
     <div class="wrap nav">
       <div>
         <h1 class="title">All Blog Entries</h1>
         <div class="subtitle">Full Archive View</div>
       </div>
-      <nav class="menu">
-        <a class="btn btn-red" href="../index.html#latest">Back To Blog</a>
-        <a class="btn btn-red" href="../notes/">Open Notes</a>
-      </nav>
+      <div class="nav-actions">
+        <nav class="menu">
+          <a class="btn btn-red" href="../index.html#latest">Back To Blog</a>
+        </nav>
+        <a class="btn btn-notes-hub" href="../notes/">Open Notes</a>
+      </div>
     </div>
   </header>
 
