@@ -4,19 +4,36 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>All Blog Entries</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon-blog.svg" />
   <link rel="stylesheet" href="../css/style.css" />
+  <script defer src="../js/boot.js"></script>
 </head>
 <body>
+  <div class="page-loader" id="page-loader">
+    <div class="loader-shell pixel">
+      <div class="loader-marquee">Insert Coin To Load</div>
+      <div class="loader-core">
+        <div class="loader-glyph loader-glyph-archive">A</div>
+        <div class="loader-copy">
+          <strong>Loading Archive</strong>
+          <p>正在展开全部 blog 条目，准备进入归档视图。</p>
+          <div class="loader-bar"><span></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
   <header>
     <div class="wrap nav">
       <div>
         <h1 class="title">All Blog Entries</h1>
         <div class="subtitle">Full Archive View</div>
       </div>
-      <nav class="menu">
-        <a class="btn btn-red" href="../index.html#latest">Back To Blog</a>
-        <a class="btn btn-red" href="../notes/">Open Notes</a>
-      </nav>
+      <div class="nav-actions">
+        <nav class="menu">
+          <a class="btn btn-red" href="../index.html#latest" data-toast-message="Blog Home 已打开">Back To Blog</a>
+        </nav>
+        <a class="btn btn-notes-hub" href="../notes/" data-toast-message="Notes Console 已打开">Open Notes</a>
+      </div>
     </div>
   </header>
 
@@ -28,7 +45,7 @@
           <p class="archive-copy">
             这里收纳所有已发布的 blog。首页的 Latest Entries 只展示 3 篇，这里会完整列出。
           </p>
-          <a class="btn btn-blue" href="../index.html#latest">Return To Latest</a>
+          <a class="btn btn-blue" href="../index.html#latest" data-toast-message="Latest Entries 已打开">Return To Latest</a>
         </div>
         <div id="all-posts"></div>
       </div>
@@ -39,7 +56,10 @@
     Gellow Blog · Full archive view
   </footer>
 
+  <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="false"></div>
+
   <script src="../js/content-api.js"></script>
+  <script src="../js/feedback.js"></script>
   <script src="./js/index.js"></script>
 </body>
 </html>

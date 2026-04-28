@@ -4,11 +4,25 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Gellow Home</title>
-        <link rel="icon" type="image/png" href="./assets/favicon.png" />
+        <link rel="icon" type="image/svg+xml" href="./assets/favicon.png" />
         <link rel="apple-touch-icon" href="./assets/favicon.png" />
         <link rel="stylesheet" href="./css/style.css" />
+        <script defer src="./js/boot.js"></script>
     </head>
     <body>
+        <div class="page-loader" id="page-loader">
+            <div class="loader-shell pixel">
+                <div class="loader-marquee">El psy congroo</div>
+                <div class="loader-core">
+                    <div class="loader-glyph">H</div>
+                    <div class="loader-copy">
+                        <strong>Gellow Home</strong>
+                        <p>loading~~~</p>
+                        <div class="loader-bar"><span></span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <header>
             <div class="wrap nav">
                 <div class="brand-block">
@@ -61,6 +75,7 @@
                                 class="btn btn-yellow"
                                 type="button"
                                 data-arcade-action="start"
+                                data-toast-message="Pac-Man Run 已启动"
                             >
                                 Start Game
                             </button>
@@ -68,6 +83,7 @@
                                 class="btn btn-green"
                                 type="button"
                                 data-arcade-action="log"
+                                data-toast-message="PAC-MAN Rankings 已打开"
                             >
                                 Read Log
                             </button>
@@ -113,6 +129,7 @@
                                 class="btn btn-yellow"
                                 type="button"
                                 data-arcade-action="restart"
+                                data-toast-message="Pac-Man Run 已重启"
                             >
                                 Restart Run
                             </button>
@@ -120,6 +137,7 @@
                                 class="btn btn-green"
                                 type="button"
                                 data-arcade-action="log"
+                                data-toast-message="PAC-MAN Rankings 已打开"
                             >
                                 View Log
                             </button>
@@ -127,6 +145,7 @@
                                 class="btn btn-red"
                                 type="button"
                                 data-arcade-action="home"
+                                data-toast-message="Arcade Home 已打开"
                             >
                                 Exit
                             </button>
@@ -161,13 +180,14 @@
                                 required
                             />
                             <div class="score-entry-actions">
-                                <button class="btn btn-yellow" type="submit">
+                                <button class="btn btn-yellow" type="submit" data-toast-defer="true">
                                     Save Score
                                 </button>
                                 <button
                                     class="btn btn-green"
                                     type="button"
                                     data-arcade-action="dismiss-score"
+                                    data-toast-message="Score Save 已跳过"
                                 >
                                     Skip
                                 </button>
@@ -201,6 +221,7 @@
                                 class="btn btn-yellow"
                                 type="button"
                                 data-arcade-action="restart"
+                                data-toast-message="Pac-Man Run 已启动"
                             >
                                 New Run
                             </button>
@@ -208,6 +229,7 @@
                                 class="btn btn-green"
                                 type="button"
                                 data-arcade-action="resume"
+                                data-toast-message="Pac-Man Run 已恢复"
                             >
                                 Resume Run
                             </button>
@@ -215,6 +237,7 @@
                                 class="btn btn-red"
                                 type="button"
                                 data-arcade-action="home"
+                                data-toast-message="Arcade Home 已打开"
                             >
                                 Back Home
                             </button>
@@ -247,6 +270,26 @@
                         <div class="log-line" id="arcade-best-line">
                             [BEST] no record yet
                         </div>
+                    </div>
+                    <div class="panel-video-shell" hidden>
+                        <h3 class="panel-video-title">Video Feed</h3>
+                        <div class="video-frame">
+                            <video
+                                class="site-video"
+                                controls
+                                muted
+                                loop
+                                playsinline
+                                poster="./assets/quancifang.png"
+                            >
+                                <source src="" type="video/mp4" />
+                                浏览器暂不支持视频播放。
+                            </video>
+                        </div>
+                        <p class="media-copy">
+                            这里预留给首页视频位，后续把 `video` 标签中的 `src`
+                            改成自己的视频文件即可。
+                        </p>
                     </div>
                 </aside>
             </section>
@@ -350,8 +393,11 @@
             </section>
         </main>
 
-        <footer>Gellow Arcade · Pixel style landing page demo</footer>
+        <footer>Gellow Arcade · Pixel style landing page</footer>
 
+        <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="false"></div>
+
+        <script src="./js/feedback.js"></script>
         <script src="./js/main.js"></script>
     </body>
 </html>

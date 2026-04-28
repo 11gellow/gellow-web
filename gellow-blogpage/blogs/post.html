@@ -4,19 +4,37 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Blog Post</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon-blog.svg" />
   <link rel="stylesheet" href="../css/style.css" />
+  <script defer src="../js/boot.js"></script>
 </head>
 <body>
+  <div class="page-loader" id="page-loader">
+    <div class="loader-shell pixel">
+      <div class="loader-marquee">Insert Coin To Load</div>
+      <div class="loader-core">
+        <div class="loader-glyph loader-glyph-post">P</div>
+        <div class="loader-copy">
+          <strong>Loading Post</strong>
+          <p>正在装载正文、摘要和像素阅读页。</p>
+          <div class="loader-bar"><span></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
   <header>
     <div class="wrap nav">
       <div>
         <h1 class="title">Post Detail</h1>
         <div class="subtitle">Read The Full Entry</div>
       </div>
-      <nav class="menu">
-        <a class="btn btn-red" href="../index.html#latest">Back To Blog</a>
-        <a class="btn btn-red" href="./index.html">All Blog</a>
-      </nav>
+      <div class="nav-actions">
+        <nav class="menu">
+          <a class="btn btn-red" href="../index.html#latest" data-toast-message="Blog Home 已打开">Back To Blog</a>
+          <a class="btn btn-red" href="./index.html" data-toast-message="Blog Archive 已打开">All Blog</a>
+        </nav>
+        <a class="btn btn-notes-hub" href="../notes/" data-toast-message="Notes Console 已打开">Open Notes</a>
+      </div>
     </div>
   </header>
 
@@ -33,7 +51,10 @@
     Gellow Blog · Detail page
   </footer>
 
+  <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="false"></div>
+
   <script src="../js/content-api.js"></script>
+  <script src="../js/feedback.js"></script>
   <script src="./js/post.js"></script>
 </body>
 </html>

@@ -1,6 +1,3 @@
-const MAX_FEATURED_LATEST = 3;
-const MAX_FEATURED_HOME = 4;
-
 const ui = {
   list: document.getElementById("article-list"),
   form: document.getElementById("article-form"),
@@ -9,22 +6,13 @@ const ui = {
   deleteButton: document.getElementById("delete-article-btn"),
   saveHint: document.getElementById("save-hint"),
   settingsSaveHint: document.getElementById("settings-save-hint"),
-  saveSettingsButton: document.getElementById("save-settings-btn"),
+  commandForm: document.getElementById("command-settings-form"),
   title: document.getElementById("article-title"),
   slug: document.getElementById("article-slug"),
   status: document.getElementById("article-status"),
   date: document.getElementById("article-date"),
   summary: document.getElementById("article-summary"),
   content: document.getElementById("article-content"),
-  previewStatus: document.getElementById("preview-status"),
-  previewSlug: document.getElementById("preview-slug"),
-  previewDate: document.getElementById("preview-date"),
-  previewTitle: document.getElementById("preview-title"),
-  previewSummary: document.getElementById("preview-summary"),
-  previewContent: document.getElementById("preview-content"),
-  previewReadMore: document.getElementById("preview-read-more"),
-  latestSelectorList: document.getElementById("latest-selector-list"),
-  homeSelectorList: document.getElementById("home-selector-list"),
   missionNotesTitleInput: document.getElementById("mission-notes-title-input"),
   missionNotesItemsInput: document.getElementById("mission-notes-items-input"),
 };
@@ -35,11 +23,16 @@ const state = {
   settings: {
     featured_latest: [],
     featured_home: [],
-    mission_notes_title: "常用命令速查",
+    mission_notes_title: "Command Cache",
     mission_notes_items: [],
   },
-  draftPost: null,
 };
+
+function showFeedback(message, title = "System Notice", variant = "info") {
+  if (window.GellowFeedback?.showToast) {
+    window.GellowFeedback.showToast(message, title, variant);
+  }
+}
 
 function escapeHtml(value) {
   return String(value)
@@ -60,22 +53,22 @@ function getTodayString() {
 
 function statusToLabel(status) {
   if (status === "published") {
-    return "已发布";
+    return "PUBLISHED";
   }
   if (status === "archived") {
-    return "归档";
+    return "ARCHIVED";
   }
-  return "草稿";
+  return "DRAFT";
 }
 
 function createEmptyPost() {
   return {
     id: null,
+    title: "Untitled Draft",
     slug: "new-post-slug",
-    title: "未命名草稿",
+    status: "draft",
     summary: "",
     content: "",
-    status: "draft",
     publishedAt: getTodayString(),
     updatedAt: "",
   };
@@ -83,18 +76,6 @@ function createEmptyPost() {
 
 function getSelectedPost() {
   return state.posts.find((post) => post.id === state.selectedId) || null;
-}
-
-function getFormSnapshot() {
-  return {
-    id: state.selectedId,
-    title: ui.title.value.trim() || "未命名草稿",
-    slug: ui.slug.value.trim() || "new-post-slug",
-    status: ui.status.value,
-    publishedAt: ui.date.value || getTodayString(),
-    summary: ui.summary.value.trim(),
-    content: ui.content.value.trim(),
-  };
 }
 
 function setSaveHint(text) {
@@ -109,7 +90,7 @@ function renderList() {
   ui.list.innerHTML = "";
 
   if (!state.posts.length) {
-    ui.list.innerHTML = `<div class="empty-state">当前还没有文章，先从右侧新建一篇吧。</div>`;
+    ui.list.innerHTML = `<div class="empty-state">当前还没有文章，可以先新建一篇作为归档入口。</div>`;
     return;
   }
 
@@ -139,25 +120,12 @@ function fillForm(post) {
   ui.content.value = post.content || "";
 }
 
-function renderPreview(post) {
-  ui.previewStatus.textContent = statusToLabel(post.status);
-  ui.previewStatus.className = `preview-badge ${post.status}`;
-  ui.previewSlug.textContent = post.slug || "demo-slug";
-  ui.previewDate.textContent = post.publishedAt || getTodayString();
-  ui.previewTitle.textContent = post.title || "示例标题";
-  ui.previewSummary.textContent =
-    post.summary || "这里会按照 blog 首页 Latest Entries 的格式展示摘要内容。";
-  ui.previewContent.textContent = post.content || "正文预览会显示在这里。";
-  ui.previewReadMore.href = `../blogs/post.html?slug=${encodeURIComponent(post.slug || "demo-slug")}`;
-}
-
 function updateDeleteButton() {
   ui.deleteButton.disabled = !state.selectedId;
 }
 
 function selectPost(postId) {
   state.selectedId = postId;
-  state.draftPost = null;
   const post = getSelectedPost();
 
   if (!post) {
@@ -165,70 +133,27 @@ function selectPost(postId) {
   }
 
   fillForm(post);
-  renderPreview(post);
   renderList();
   updateDeleteButton();
-  setSaveHint("已载入选中文章，可以直接修改并保存。");
+  setSaveHint("已载入选中文章，可以继续修改。");
 }
 
 function resetToDraft() {
   state.selectedId = null;
-  state.draftPost = createEmptyPost();
-  fillForm(state.draftPost);
-  renderPreview(state.draftPost);
+  fillForm(createEmptyPost());
   renderList();
   updateDeleteButton();
-  setSaveHint("新建草稿模式：填写内容后点击保存文章。");
-}
-
-function collectCheckedSlugs(container) {
-  return [...container.querySelectorAll('input[type="checkbox"]:checked')].map((input) => input.value);
-}
-
-function buildSelectorItem(post, groupName, checked) {
-  return `
-    <label class="selector-item">
-      <input type="checkbox" name="${groupName}" value="${escapeHtml(post.slug)}"${checked ? " checked" : ""} />
-      <span class="selector-copy">
-        <span class="selector-title">${escapeHtml(post.title)}</span>
-        <span class="selector-meta">${escapeHtml(post.slug)} · ${escapeHtml(post.publishedAt || "--")} · ${escapeHtml(statusToLabel(post.status))}</span>
-      </span>
-    </label>
-  `;
-}
-
-function renderSelectors() {
-  if (!state.posts.length) {
-    ui.latestSelectorList.innerHTML = `<div class="empty-state">先创建文章，才能配置 Latest Entries。</div>`;
-    ui.homeSelectorList.innerHTML = `<div class="empty-state">先创建文章，才能配置 Home 展示位。</div>`;
-    return;
-  }
-
-  ui.latestSelectorList.innerHTML = state.posts
-    .map((post) =>
-      buildSelectorItem(
-        post,
-        "featured-latest",
-        state.settings.featured_latest.includes(post.slug)
-      )
-    )
-    .join("");
-
-  ui.homeSelectorList.innerHTML = state.posts
-    .map((post) =>
-      buildSelectorItem(
-        post,
-        "featured-home",
-        state.settings.featured_home.includes(post.slug)
-      )
-    )
-    .join("");
+  setSaveHint("新建模式已就绪，保存后会创建新的文章。");
 }
 
 function fillSettingsForm() {
   ui.missionNotesTitleInput.value = state.settings.mission_notes_title;
   ui.missionNotesItemsInput.value = state.settings.mission_notes_items.join("\n");
-  renderSelectors();
+}
+
+function removeSlugFromSettings(slug) {
+  state.settings.featured_latest = state.settings.featured_latest.filter((item) => item !== slug);
+  state.settings.featured_home = state.settings.featured_home.filter((item) => item !== slug);
 }
 
 function syncSelectionsAfterSlugChange(oldSlug, newSlug) {
@@ -244,9 +169,16 @@ function syncSelectionsAfterSlugChange(oldSlug, newSlug) {
   );
 }
 
-function removeSlugFromSettings(slug) {
-  state.settings.featured_latest = state.settings.featured_latest.filter((item) => item !== slug);
-  state.settings.featured_home = state.settings.featured_home.filter((item) => item !== slug);
+function getPostPayload() {
+  return {
+    id: state.selectedId,
+    title: ui.title.value.trim() || "未命名草稿",
+    slug: ui.slug.value.trim() || "new-post-slug",
+    status: ui.status.value,
+    publishedAt: ui.date.value || getTodayString(),
+    summary: ui.summary.value.trim(),
+    content: ui.content.value.trim(),
+  };
 }
 
 function syncPostState(savedPost) {
@@ -257,80 +189,18 @@ function syncPostState(savedPost) {
     state.posts.unshift(savedPost);
   }
 
-  state.posts.sort((left, right) => {
-    const leftTime = Date.parse(left.updatedAt || left.publishedAt || 0);
-    const rightTime = Date.parse(right.updatedAt || right.publishedAt || 0);
-    return rightTime - leftTime;
-  });
+  state.posts = window.GellowContentApi.sortPosts(state.posts);
 }
 
-function handleSelectorLimit(container, maxCount, message) {
-  const checked = collectCheckedSlugs(container);
-  if (checked.length <= maxCount) {
-    setSettingsHint(message);
-    return;
-  }
-
-  const lastChecked = container.querySelector('input[type="checkbox"]:checked:last-of-type');
-  if (lastChecked) {
-    lastChecked.checked = false;
-  }
-}
-
-function bindSelectorGuards() {
-  ui.latestSelectorList.addEventListener("change", (event) => {
-    if (!(event.target instanceof HTMLInputElement)) {
-      return;
-    }
-
-    const checked = collectCheckedSlugs(ui.latestSelectorList);
-    if (checked.length > MAX_FEATURED_LATEST) {
-      event.target.checked = false;
-      setSettingsHint("Latest Entries 最多只能选择 3 篇。");
-      return;
-    }
-
-    setSettingsHint("Latest Entries 的展示项已更新，记得点击“保存设置”。");
-  });
-
-  ui.homeSelectorList.addEventListener("change", (event) => {
-    if (!(event.target instanceof HTMLInputElement)) {
-      return;
-    }
-
-    const checked = collectCheckedSlugs(ui.homeSelectorList);
-    if (checked.length > MAX_FEATURED_HOME) {
-      event.target.checked = false;
-      setSettingsHint("Home 的 Mission Board 最多只能选择 4 篇。");
-      return;
-    }
-
-    setSettingsHint("Home 展示位已更新，记得点击“保存设置”。");
-  });
-}
-
-async function persistSettings() {
-  const featuredLatest = collectCheckedSlugs(ui.latestSelectorList);
-  const featuredHome = collectCheckedSlugs(ui.homeSelectorList);
-  const missionNotesTitle = ui.missionNotesTitleInput.value.trim() || "常用命令速查";
-  const missionNotesItems = ui.missionNotesItemsInput.value
-    .split(/\r?\n/)
-    .map((item) => item.trim())
-    .filter(Boolean);
-
-  if (featuredLatest.length > MAX_FEATURED_LATEST) {
-    throw new Error("Latest Entries 最多只能保存 3 篇。");
-  }
-
-  if (featuredHome.length > MAX_FEATURED_HOME) {
-    throw new Error("Home 的 Mission Board 最多只能保存 4 篇。");
-  }
-
+async function persistCurrentSettings() {
   const payload = {
-    featured_latest: featuredLatest,
-    featured_home: featuredHome,
-    mission_notes_title: missionNotesTitle,
-    mission_notes_items: missionNotesItems,
+    featured_latest: state.settings.featured_latest,
+    featured_home: state.settings.featured_home,
+    mission_notes_title: ui.missionNotesTitleInput.value.trim() || "Command Cache",
+    mission_notes_items: ui.missionNotesItemsInput.value
+      .split(/\r?\n/)
+      .map((item) => item.trim())
+      .filter(Boolean),
   };
 
   const response = await window.GellowContentApi.saveSettings(payload);
@@ -338,62 +208,32 @@ async function persistSettings() {
   fillSettingsForm();
 }
 
-async function loadAdminContent(selectPostId) {
-  const payload = await window.GellowContentApi.fetchAdminContent();
-  state.posts = window.GellowContentApi.sortPosts(Array.isArray(payload.posts) ? payload.posts : []);
-  state.settings = window.GellowContentApi.normalizeSettings(payload.settings || {});
-  renderList();
-  fillSettingsForm();
-
-  if (selectPostId) {
-    selectPost(selectPostId);
-    return;
-  }
-
-  if (state.selectedId) {
-    const selected = getSelectedPost();
-    if (selected) {
-      selectPost(selected.id);
-      return;
-    }
-  }
-
-  if (state.posts.length) {
-    selectPost(state.posts[0].id);
-    return;
-  }
-
-  resetToDraft();
-}
-
 async function handleArticleSave(event) {
   event.preventDefault();
 
-  const currentPost = getSelectedPost();
-  const snapshot = getFormSnapshot();
+  const previousPost = getSelectedPost();
 
   try {
-    const response = await window.GellowContentApi.savePost(snapshot);
+    const response = await window.GellowContentApi.savePost(getPostPayload());
     const savedPost = response.post;
 
-    if (currentPost) {
-      syncSelectionsAfterSlugChange(currentPost.slug, savedPost.slug);
-      await window.GellowContentApi.saveSettings(state.settings);
+    if (previousPost) {
+      syncSelectionsAfterSlugChange(previousPost.slug, savedPost.slug);
     }
 
     syncPostState(savedPost);
     state.selectedId = savedPost.id;
-    state.draftPost = null;
-    renderList();
-    fillSettingsForm();
     fillForm(savedPost);
-    renderPreview(savedPost);
+    renderList();
     updateDeleteButton();
-    setSaveHint("文章已保存，前台读取到新数据后就会同步更新。");
-    setSettingsHint("如果你改了 slug，展示位配置也已经同步更新。");
+    await persistCurrentSettings();
+    setSaveHint("文章已保存，刷新前台页面后会读取新的内容。");
+    setSettingsHint("展示控制台中的 slug 引用也已经同步更新。");
+    showFeedback("Post Saved", "System Notice", "success");
   } catch (error) {
     setSaveHint(`保存失败：${error.message}`);
-    console.warn("Unable to save post.", error);
+    showFeedback("Post Save Failed", "System Notice", "error");
+    console.warn("Unable to save article.", error);
   }
 }
 
@@ -406,12 +246,12 @@ async function handleDeletePost() {
   try {
     await window.GellowContentApi.deletePost(post.id);
     removeSlugFromSettings(post.slug);
-    await window.GellowContentApi.saveSettings(state.settings);
     state.posts = state.posts.filter((item) => item.id !== post.id);
+    await persistCurrentSettings();
     renderList();
-    fillSettingsForm();
-    setSaveHint("文章已删除，对应展示位里的引用也一并清掉了。");
-    setSettingsHint("文章删除完成，相关展示配置已同步。");
+    setSaveHint("文章已删除，相关展示引用也已一并移除。");
+    setSettingsHint("展示配置已经同步更新。");
+    showFeedback("Post Deleted", "System Notice", "success");
 
     if (state.posts.length) {
       selectPost(state.posts[0].id);
@@ -420,26 +260,51 @@ async function handleDeletePost() {
     }
   } catch (error) {
     setSaveHint(`删除失败：${error.message}`);
-    console.warn("Unable to delete post.", error);
+    showFeedback("Post Delete Failed", "System Notice", "error");
+    console.warn("Unable to delete article.", error);
   }
 }
 
-function handleLivePreview() {
-  renderPreview(getFormSnapshot());
+async function handleCommandSave(event) {
+  event.preventDefault();
+
+  try {
+    await persistCurrentSettings();
+    setSettingsHint("命令缓存设置已保存。");
+    showFeedback("Command Settings Saved", "System Notice", "success");
+  } catch (error) {
+    setSettingsHint(`保存失败：${error.message}`);
+    showFeedback("Command Settings Save Failed", "System Notice", "error");
+    console.warn("Unable to save command settings.", error);
+  }
+}
+
+async function loadConsoleData() {
+  const payload = await window.GellowContentApi.fetchAdminContent();
+  state.posts = window.GellowContentApi.sortPosts(Array.isArray(payload.posts) ? payload.posts : []);
+  state.settings = window.GellowContentApi.normalizeSettings(payload.settings || {});
+  renderList();
+  fillSettingsForm();
+
+  if (state.posts.length) {
+    selectPost(state.posts[0].id);
+  } else {
+    resetToDraft();
+  }
 }
 
 async function initNotesConsole() {
-  setSaveHint("正在加载文章和配置...");
-  setSettingsHint("正在读取展示配置...");
+  setSaveHint("正在读取文章列表...");
+  setSettingsHint("正在读取命令缓存设置...");
 
   ui.form.addEventListener("submit", handleArticleSave);
+  ui.commandForm.addEventListener("submit", handleCommandSave);
   ui.newButton.addEventListener("click", resetToDraft);
   ui.resetButton.addEventListener("click", () => {
-    const selected = getSelectedPost();
-    if (selected) {
-      fillForm(selected);
-      renderPreview(selected);
-      setSaveHint("表单已重置为当前选中文章。");
+    const post = getSelectedPost();
+    if (post) {
+      fillForm(post);
+      setSaveHint("表单已重置到当前选中文章。");
       return;
     }
 
@@ -448,31 +313,16 @@ async function initNotesConsole() {
   ui.deleteButton.addEventListener("click", () => {
     void handleDeletePost();
   });
-  ui.saveSettingsButton.addEventListener("click", async () => {
-    try {
-      await persistSettings();
-      setSettingsHint("展示配置已保存，blog 首页和 home 页面会读取新的展示结果。");
-    } catch (error) {
-      setSettingsHint(`设置保存失败：${error.message}`);
-      console.warn("Unable to save settings.", error);
-    }
-  });
-
-  [ui.title, ui.slug, ui.status, ui.date, ui.summary, ui.content].forEach((field) => {
-    field.addEventListener("input", handleLivePreview);
-  });
-
-  bindSelectorGuards();
 
   try {
-    await loadAdminContent();
+    await loadConsoleData();
     setSaveHint("内容接口已连接，可以开始编辑文章。");
-    setSettingsHint("配置已载入，修改后点击“保存设置”即可。");
+    setSettingsHint("命令缓存设置已载入。");
   } catch (error) {
     resetToDraft();
     ui.list.innerHTML = `<div class="empty-state">控制台加载失败：${escapeHtml(error.message)}</div>`;
     setSaveHint(`加载失败：${error.message}`);
-    setSettingsHint("当前无法读取展示配置，请先确认后端已启动。");
+    setSettingsHint("命令缓存设置暂时无法读取。");
     console.warn("Unable to initialize notes console.", error);
   }
 }

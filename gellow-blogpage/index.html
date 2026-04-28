@@ -1,108 +1,164 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gellow Blog</title>
-  <link rel="stylesheet" href="./css/style.css" />
-</head>
-<body>
-  <header>
-    <div class="wrap nav">
-      <div>
-        <h1 class="title">Gellow Blog</h1>
-        <div class="subtitle">Insert Coin To Read</div>
-      </div>
-      <div class="nav-actions">
-        <nav class="menu">
-          <a class="btn btn-red" href="#latest">Latest</a>
-          <a class="btn btn-red" href="#categories">Categories</a>
-          <a class="btn btn-red" href="#notes">Notes</a>
-          <a class="btn btn-red" href="#links">Links</a>
-        </nav>
-        <a class="btn btn-notes-hub" href="./notes/">Notes Hub</a>
-      </div>
-    </div>
-  </header>
-
-  <main class="wrap">
-    <section class="hero" id="top">
-      <div class="hero-main pixel">
-        <div class="badge">Player Blog Online</div>
-        <h2>Pixel Logs<br />And Side Quests</h2>
-        <p>
-          一个像素街机风格的 blog 首页。这里可以放文章、折腾记录、学习日志、
-          还有一些暂时归不了类但你自己会反复回看的东西。
-        </p>
-        <div class="hero-actions">
-          <a class="btn btn-yellow" href="#latest">Read Posts</a>
-          <a class="btn btn-green" href="#links">Open Portals</a>
-        </div>
-      </div>
-
-      <aside class="hero-panel pixel">
-        <h2 class="section-title green">System Log</h2>
-        <div class="status-line">[BOOT] blog shell ready</div>
-        <div class="status-line">[LOAD] archive system online</div>
-        <div class="status-line">[TASK] write / learn / record</div>
-        <div class="status-line">[NOTE] content updating later</div>
-      </aside>
-    </section>
-
-    <section class="section" id="latest">
-      <h2 class="section-title yellow">Latest Entries</h2>
-      <div class="layout">
-        <div class="posts">
-          <div id="latest-posts"></div>
-          <div class="latest-actions">
-            <a class="btn btn-blue" href="./blogs/index.html">查看全部 Blog</a>
-          </div>
-        </div>
-
-        <aside class="sidebar">
-          <section class="side-panel pixel">
-            <h3>About Player</h3>
-            <p class="about">
-              这里可以放一小段自我介绍。比如你在写什么、学什么、折腾什么，
-              或者单纯写一句：这是我的记录空间。
-            </p>
-          </section>
-
-          <section class="side-panel pixel" id="categories">
-            <h3>Categories</h3>
-            <div class="categories">
-              <span class="chip">AI</span>
-              <span class="chip">Web</span>
-              <span class="chip">Rust</span>
-              <span class="chip">Tools</span>
-              <span class="chip">Logs</span>
-              <span class="chip">Notes</span>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Gellow Blog</title>
+        <link rel="icon" type="image/svg+xml" href="./assets/favicon.png" />
+        <link rel="stylesheet" href="./css/style.css" />
+        <script defer src="./js/boot.js"></script>
+    </head>
+    <body>
+        <div class="page-loader" id="page-loader">
+            <div class="loader-shell pixel">
+                <div class="loader-marquee">Insert Coin To Load</div>
+                <div class="loader-core">
+                    <div class="loader-glyph loader-glyph-blog">B</div>
+                    <div class="loader-copy">
+                        <strong>Booting Blog</strong>
+                        <p>正在装载 Latest Entries、归档卡片和像素阅读界面。</p>
+                        <div class="loader-bar"><span></span></div>
+                    </div>
+                </div>
             </div>
-          </section>
-
-          <section class="side-panel pixel">
-            <h3>Quick Links</h3>
-            <div class="side-list" id="links">
-              <a class="side-link" href="https://www.gellow.top" target="_blank" rel="noopener noreferrer">www.gellow.top</a>
-              <a class="side-link" href="https://rs.gellow.top" target="_blank" rel="noopener noreferrer">rs.gellow.top</a>
-              <a class="side-link" href="https://notes.gellow.top" target="_blank" rel="noopener noreferrer">notes.gellow.top</a>
+        </div>
+        <header>
+            <div class="wrap nav">
+                <div>
+                    <h1 class="title">Gellow Blog</h1>
+                    <div class="subtitle">Insert Coin To Read</div>
+                </div>
+                <div class="nav-actions">
+                    <nav class="menu">
+                        <a class="btn btn-red" href="#latest">Latest</a>
+                        <a class="btn btn-red" href="#categories">Categories</a>
+                        <a class="btn btn-red" href="#notes">Notes</a>
+                        <a class="btn btn-red" href="#links">Links</a>
+                    </nav>
+                    <a class="btn btn-notes-hub" href="./notes/" data-toast-message="Notes Console 已打开">Notes Hub</a>
+                </div>
             </div>
-          </section>
-        </aside>
-      </div>
-    </section>
+        </header>
 
-    <section class="section" id="notes">
-      <h2 class="section-title pink" id="mission-notes-title">Mission Notes</h2>
-      <div class="notes" id="mission-notes-list"></div>
-    </section>
-  </main>
+        <main class="wrap">
+            <section class="hero" id="top">
+                <div class="hero-main pixel">
+                    <div class="badge">Player Blog Online</div>
+                    <h2>Pixel Logs<br />And Side Quests</h2>
+                    <p>
+                        一个像素街机风格的 blog 首页。<br />
+                        喵喵喵，真好玩，喵喵喵。
+                    </p>
+                    <div class="hero-actions">
+                        <a class="btn btn-yellow" href="#latest">Read Posts</a>
+                        <a class="btn btn-green" href="#links">Open Portals</a>
+                    </div>
+                </div>
 
-  <footer>
-    Gellow Blog · Pixel style blog index
-  </footer>
+                <aside class="hero-panel pixel">
+                    <h2 class="section-title green">System Log</h2>
+                    <div class="status-line">[BOOT] blog shell ready</div>
+                    <div class="status-line">[LOAD] archive system online</div>
+                    <div class="status-line">[TASK] write / learn / record</div>
+                    <div class="status-line">[NOTE] content updating later</div>
+                    <div class="panel-video-shell" hidden>
+                        <h3 class="panel-video-title">Video Feed</h3>
+                        <div class="video-frame">
+                            <video
+                                class="site-video"
+                                controls
+                                muted
+                                loop
+                                playsinline
+                                poster="./assets/favicon-blog.svg"
+                            >
+                                <source src="" type="video/mp4" />
+                                浏览器暂不支持视频播放。
+                            </video>
+                        </div>
+                        <p class="media-copy">
+                            这里预留给 blog 页面的视频位，后续可直接替换视频源。
+                        </p>
+                    </div>
+                </aside>
+            </section>
 
-  <script src="./js/content-api.js"></script>
-  <script src="./js/main.js"></script>
-</body>
+            <section class="section" id="latest">
+                <h2 class="section-title yellow">Latest Entries</h2>
+                <div class="layout">
+                    <div class="posts">
+                        <div id="latest-posts"></div>
+                        <div class="latest-actions">
+                            <a class="btn btn-blue" href="./blogs/index.html" data-toast-message="Blog Archive 已打开"
+                                >查看全部 Blog</a
+                            >
+                        </div>
+                    </div>
+
+                    <aside class="sidebar">
+                        <section class="side-panel pixel">
+                            <h3>About Player</h3>
+                            <p class="about">
+                                我是能工智人喵，我最擅长被AI调教了捏(　o=^•ェ•)o　┏━┓
+                            </p>
+                        </section>
+
+                        <section class="side-panel pixel" id="categories">
+                            <h3>Categories</h3>
+                            <div class="categories">
+                                <span class="chip">AI</span>
+                                <span class="chip">Python</span>
+                                <span class="chip">Rust</span>
+                                <span class="chip">Tools</span>
+                                <span class="chip">Logs</span>
+                                <span class="chip">Notes</span>
+                            </div>
+                        </section>
+
+                        <section class="side-panel pixel">
+                            <h3>Quick Links</h3>
+                            <div class="side-list" id="links">
+                                <a
+                                    class="side-link"
+                                    href="https://www.gellow.top"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    >www.gellow.top</a
+                                >
+                                <a
+                                    class="side-link"
+                                    href="https://rs.gellow.top"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    >rs.gellow.top</a
+                                >
+                                <a
+                                    class="side-link"
+                                    href="https://notes.gellow.top"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    >notes.gellow.top</a
+                                >
+                            </div>
+                        </section>
+                    </aside>
+                </div>
+            </section>
+
+            <section class="section" id="notes">
+                <h2 class="section-title pink" id="mission-notes-title">
+                    Mission Notes
+                </h2>
+                <div class="notes" id="mission-notes-list"></div>
+            </section>
+        </main>
+
+        <footer>Gellow Blog · Pixel style blog index</footer>
+
+        <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="false"></div>
+
+        <script src="./js/content-api.js"></script>
+        <script src="./js/feedback.js"></script>
+        <script src="./js/main.js"></script>
+    </body>
 </html>
