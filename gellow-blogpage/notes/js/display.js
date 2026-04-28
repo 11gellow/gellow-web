@@ -83,7 +83,7 @@ function buildLatestCard(post) {
         <span class="date">${escapeHtml(post.publishedAt || "--")}</span>
       </div>
       <h4>${escapeHtml(post.title)}</h4>
-      <p>${escapeHtml(post.summary || "No summary yet.")}</p>
+      <p>${escapeHtml(post.summary || "还没有摘要。")}</p>
     </article>
   `;
 }
@@ -95,7 +95,7 @@ function buildHomeCard(post) {
         ${createTrashIcon()}
       </button>
       <h4>${escapeHtml(post.title)}</h4>
-      <p>${escapeHtml(post.summary || "Open the post page for the full entry.")}</p>
+      <p>${escapeHtml(post.summary || "完整内容会在文章详情页中展示。")}</p>
     </article>
   `;
 }
@@ -119,7 +119,7 @@ function renderBoard(boardName) {
     if (post) {
       slot.innerHTML = boardName === "latest" ? buildLatestCard(post) : buildHomeCard(post);
     } else {
-      slot.innerHTML = `<div class="slot-empty">Empty Slot<br />Drop a post here or add a new window from the top-right button.</div>`;
+      slot.innerHTML = `<div class="slot-empty">空位<br />可把文章拖到这里，或从右上角新增展示窗口。</div>`;
     }
 
     grid.appendChild(slot);
@@ -153,8 +153,8 @@ function openPicker(boardName) {
   state.pickerTarget = boardName;
   ui.pickerCopy.textContent =
     boardName === "latest"
-      ? "Choose one post for the blog latest entries stage."
-      : "Choose one post for the home mission board stage.";
+      ? "选择一篇文章放入 blog 首页的 Latest Entries 展示区。"
+      : "选择一篇文章放入 home 页的 Mission Board 展示区。";
 
   const used = new Set(state.boards[boardName].filter(Boolean));
 
@@ -167,7 +167,7 @@ function openPicker(boardName) {
             <h3>${escapeHtml(post.title)}</h3>
             <span class="status-badge ${post.status}">${escapeHtml(statusToLabel(post.status))}</span>
           </div>
-          <p>${escapeHtml(post.summary || "No summary yet.")}</p>
+          <p>${escapeHtml(post.summary || "还没有摘要。")}</p>
           <div class="meta-line">${escapeHtml(post.slug)} · ${escapeHtml(post.publishedAt || "--")}</div>
         </button>
       `;
@@ -187,14 +187,14 @@ function addCardToBoard(boardName, slug) {
   const emptyIndex = next.findIndex((item) => item === null);
 
   if (emptyIndex < 0) {
-    setSaveHint(boardName === "latest" ? "Blog stage is full. Remove one window before adding another." : "Home stage is full. Remove one window before adding another.");
+    setSaveHint(boardName === "latest" ? "Blog 展示区已满，需要先移除一个窗口。" : "Home 展示区已满，需要先移除一个窗口。");
     return;
   }
 
   next[emptyIndex] = slug;
   state.boards[boardName] = next;
   renderBoards();
-  setSaveHint("Display window added. Drag to reorder and save the layout.");
+  setSaveHint("展示窗口已加入，调整顺序后记得保存布局。");
 }
 
 function bindBoardInteractions() {
@@ -254,12 +254,12 @@ function bindBoardInteractions() {
         const targetIndex = Number(slot.dataset.index);
 
         if (payload.board !== targetBoard) {
-          setSaveHint("Drag sorting currently works only inside the same board.");
+          setSaveHint("目前只支持在同一个展示区内部拖动排序。");
           return;
         }
 
         moveCardWithinBoard(targetBoard, payload.index, targetIndex);
-        setSaveHint("Display order updated. Save the layout to sync it.");
+        setSaveHint("展示顺序已调整，保存后会同步到前台。");
       } catch (error) {
         console.warn("Unable to parse drag payload.", error);
       }
@@ -277,7 +277,7 @@ function bindBoardInteractions() {
       }
 
       removeCard(slot.dataset.board, trashButton.dataset.trashSlug);
-      setSaveHint("Display window removed. Save the layout to sync the change.");
+      setSaveHint("展示窗口已移除，保存后会同步这次变更。");
     });
   });
 }
@@ -307,7 +307,7 @@ async function loadDisplayData() {
 }
 
 async function initDisplayConsole() {
-  setSaveHint("Loading current display layout...");
+  setSaveHint("正在读取当前展示布局...");
 
   bindBoardInteractions();
 
@@ -331,19 +331,19 @@ async function initDisplayConsole() {
   ui.saveButton.addEventListener("click", async () => {
     try {
       await saveBoards();
-      setSaveHint("Display layout saved. Blog and home pages will read the new order.");
+      setSaveHint("展示布局已保存，blog 和 home 页面会读取新的顺序。");
     } catch (error) {
-      setSaveHint(`Save failed: ${error.message}`);
+      setSaveHint(`保存失败：${error.message}`);
       console.warn("Unable to save display boards.", error);
     }
   });
 
   try {
     await loadDisplayData();
-    setSaveHint("Display layout loaded. Drag and save when ready.");
+    setSaveHint("展示布局已载入，可以继续拖动和保存。");
   } catch (error) {
     renderBoards();
-    setSaveHint(`Load failed: ${error.message}`);
+    setSaveHint(`加载失败：${error.message}`);
     console.warn("Unable to initialize display console.", error);
   }
 }

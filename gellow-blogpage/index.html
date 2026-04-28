@@ -46,9 +46,8 @@
                     <div class="badge">Player Blog Online</div>
                     <h2>Pixel Logs<br />And Side Quests</h2>
                     <p>
-                        一个像素街机风格的 blog
-                        首页。这里可以放文章、折腾记录、学习日志、
-                        还有一些暂时归不了类但你自己会反复回看的东西。
+                        一个像素街机风格的 blog 首页。<br />
+                        喵喵喵，真好玩，喵喵喵。
                     </p>
                     <div class="hero-actions">
                         <a class="btn btn-yellow" href="#latest">Read Posts</a>
@@ -56,12 +55,24 @@
                     </div>
                 </div>
 
-                <aside class="hero-panel pixel">
-                    <h2 class="section-title green">System Log</h2>
-                    <div class="status-line">[BOOT] blog shell ready</div>
-                    <div class="status-line">[LOAD] archive system online</div>
-                    <div class="status-line">[TASK] write / learn / record</div>
-                    <div class="status-line">[NOTE] content updating later</div>
+                <aside class="hero-panel pixel media-panel">
+                    <h2 class="section-title green">Video Feed</h2>
+                    <div class="video-frame">
+                        <video
+                            class="site-video"
+                            controls
+                            muted
+                            loop
+                            playsinline
+                            poster="./assets/favicon-blog.svg"
+                        >
+                            <source src="" type="video/mp4" />
+                            浏览器暂不支持视频播放。
+                        </video>
+                    </div>
+                    <p class="media-copy">
+                        后续把 `video` 标签中的 `src` 改成自己的视频文件即可。
+                    </p>
                 </aside>
             </section>
 
@@ -81,8 +92,7 @@
                         <section class="side-panel pixel">
                             <h3>About Player</h3>
                             <p class="about">
-                                这里可以放一小段自我介绍。比如你在写什么、学什么、折腾什么，
-                                或者单纯写一句：这是我的记录空间。
+                                我是能工智人喵，我最擅长被AI调教了捏(　o=^•ェ•)o　┏━┓
                             </p>
                         </section>
 
@@ -90,7 +100,7 @@
                             <h3>Categories</h3>
                             <div class="categories">
                                 <span class="chip">AI</span>
-                                <span class="chip">Web</span>
+                                <span class="chip">Python</span>
                                 <span class="chip">Rust</span>
                                 <span class="chip">Tools</span>
                                 <span class="chip">Logs</span>

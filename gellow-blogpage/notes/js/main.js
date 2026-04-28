@@ -84,7 +84,7 @@ function renderList() {
   ui.list.innerHTML = "";
 
   if (!state.posts.length) {
-    ui.list.innerHTML = `<div class="empty-state">No posts yet. Create a new post to start the archive.</div>`;
+    ui.list.innerHTML = `<div class="empty-state">当前还没有文章，可以先新建一篇作为归档入口。</div>`;
     return;
   }
 
@@ -97,7 +97,7 @@ function renderList() {
         <h3>${escapeHtml(post.title)}</h3>
         <span class="status-badge ${post.status}">${escapeHtml(statusToLabel(post.status))}</span>
       </div>
-      <p>${escapeHtml(post.summary || "No summary yet.")}</p>
+      <p>${escapeHtml(post.summary || "还没有摘要。")}</p>
       <div class="meta-line">${escapeHtml(post.slug)} · ${escapeHtml(post.publishedAt || "--")}</div>
     `;
     button.addEventListener("click", () => selectPost(post.id));
@@ -129,7 +129,7 @@ function selectPost(postId) {
   fillForm(post);
   renderList();
   updateDeleteButton();
-  setSaveHint("Selected post loaded for editing.");
+  setSaveHint("已载入选中文章，可以继续修改。");
 }
 
 function resetToDraft() {
@@ -137,7 +137,7 @@ function resetToDraft() {
   fillForm(createEmptyPost());
   renderList();
   updateDeleteButton();
-  setSaveHint("Draft mode ready. Save to create a new post.");
+  setSaveHint("新建模式已就绪，保存后会创建新的文章。");
 }
 
 function fillSettingsForm() {
@@ -221,10 +221,10 @@ async function handleArticleSave(event) {
     renderList();
     updateDeleteButton();
     await persistCurrentSettings();
-    setSaveHint("Post saved. Front-end pages will read the updated content after refresh.");
-    setSettingsHint("Slug references in the display console have been synced.");
+    setSaveHint("文章已保存，刷新前台页面后会读取新的内容。");
+    setSettingsHint("展示控制台中的 slug 引用也已经同步更新。");
   } catch (error) {
-    setSaveHint(`Save failed: ${error.message}`);
+    setSaveHint(`保存失败：${error.message}`);
     console.warn("Unable to save article.", error);
   }
 }
@@ -241,8 +241,8 @@ async function handleDeletePost() {
     state.posts = state.posts.filter((item) => item.id !== post.id);
     await persistCurrentSettings();
     renderList();
-    setSaveHint("Post deleted. Related display references were removed too.");
-    setSettingsHint("Display settings were updated after the delete action.");
+    setSaveHint("文章已删除，相关展示引用也已一并移除。");
+    setSettingsHint("展示配置已经同步更新。");
 
     if (state.posts.length) {
       selectPost(state.posts[0].id);
@@ -250,7 +250,7 @@ async function handleDeletePost() {
       resetToDraft();
     }
   } catch (error) {
-    setSaveHint(`Delete failed: ${error.message}`);
+    setSaveHint(`删除失败：${error.message}`);
     console.warn("Unable to delete article.", error);
   }
 }
@@ -260,9 +260,9 @@ async function handleCommandSave(event) {
 
   try {
     await persistCurrentSettings();
-    setSettingsHint("Command cache settings saved.");
+    setSettingsHint("命令缓存设置已保存。");
   } catch (error) {
-    setSettingsHint(`Save failed: ${error.message}`);
+    setSettingsHint(`保存失败：${error.message}`);
     console.warn("Unable to save command settings.", error);
   }
 }
@@ -282,8 +282,8 @@ async function loadConsoleData() {
 }
 
 async function initNotesConsole() {
-  setSaveHint("Loading posts...");
-  setSettingsHint("Loading command settings...");
+  setSaveHint("正在读取文章列表...");
+  setSettingsHint("正在读取命令缓存设置...");
 
   ui.form.addEventListener("submit", handleArticleSave);
   ui.commandForm.addEventListener("submit", handleCommandSave);
@@ -292,7 +292,7 @@ async function initNotesConsole() {
     const post = getSelectedPost();
     if (post) {
       fillForm(post);
-      setSaveHint("Form reset to the selected post.");
+      setSaveHint("表单已重置到当前选中文章。");
       return;
     }
 
@@ -304,13 +304,13 @@ async function initNotesConsole() {
 
   try {
     await loadConsoleData();
-    setSaveHint("Content api connected. Post editing is ready.");
-    setSettingsHint("Command settings loaded.");
+    setSaveHint("内容接口已连接，可以开始编辑文章。");
+    setSettingsHint("命令缓存设置已载入。");
   } catch (error) {
     resetToDraft();
-    ui.list.innerHTML = `<div class="empty-state">Console load failed: ${escapeHtml(error.message)}</div>`;
-    setSaveHint(`Load failed: ${error.message}`);
-    setSettingsHint("Command settings are unavailable right now.");
+    ui.list.innerHTML = `<div class="empty-state">控制台加载失败：${escapeHtml(error.message)}</div>`;
+    setSaveHint(`加载失败：${error.message}`);
+    setSettingsHint("命令缓存设置暂时无法读取。");
     console.warn("Unable to initialize notes console.", error);
   }
 }

@@ -20,8 +20,8 @@
       <div class="loader-core">
         <div class="loader-glyph loader-glyph-display">D</div>
         <div class="loader-copy">
-          <strong>Booting Display</strong>
-          <p>Loading blog and home stages for drag-and-drop layout control.</p>
+          <strong>Display Console</strong>
+          <p>loading~~~</p>
           <div class="loader-bar"><span></span></div>
         </div>
       </div>
@@ -50,7 +50,7 @@
         <div class="badge">Display Mode</div>
         <h2>Drag The Cards<br />Save The Stage</h2>
         <p>
-          Add post windows, drag them into the target slots, remove them with the red trash button, and save the layout.
+          这里用于新增展示窗口、拖拽排序、删除模块，并保存最终布局。
         </p>
         <div class="hero-actions">
           <a class="btn btn-yellow" href="#blog-stage">Edit Blog Stage</a>
@@ -58,12 +58,24 @@
         </div>
       </div>
 
-      <aside class="hero-panel pixel">
-        <h2 class="section-title green">Drag Log</h2>
-        <div class="status-line">[BOOT] display console online</div>
-        <div class="status-line">[TIP] drag only works inside each board</div>
-        <div class="status-line">[RULE] blog 最多 3 个 / home 最多 4 个</div>
-        <div class="status-line">[SAVE] click save after layout changes</div>
+      <aside class="hero-panel pixel media-panel">
+        <h2 class="section-title green">Video Feed</h2>
+        <div class="video-frame">
+          <video
+            class="site-video"
+            controls
+            muted
+            loop
+            playsinline
+            poster="../assets/favicon-notes.svg"
+          >
+            <source src="" type="video/mp4" />
+            浏览器暂不支持视频播放。
+          </video>
+        </div>
+        <p class="media-copy">
+          这里预留给展示控制台的视频位，后续可直接替换视频源。
+        </p>
       </aside>
     </section>
 
@@ -72,7 +84,7 @@
         <div class="display-board-head">
           <div>
             <h3 class="section-title yellow">Blog Latest Entries</h3>
-            <p>Controls the three post cards shown in the blog homepage latest entries block.</p>
+            <p>这里对应 blog 首页的三张文章卡片展示位。</p>
           </div>
           <button class="btn btn-green" id="add-latest-card-btn" type="button">New Window</button>
         </div>
@@ -83,7 +95,7 @@
         <div class="display-board-head">
           <div>
             <h3 class="section-title pink">Home Mission Board</h3>
-            <p>Controls the four note slots rendered inside the home page Mission Board.</p>
+            <p>这里对应 home 页面 Mission Board 的四个展示槽位。</p>
           </div>
           <button class="btn btn-green" id="add-home-card-btn" type="button">New Window</button>
         </div>
@@ -93,7 +105,7 @@
 
     <section class="display-board-panel pixel">
       <div class="display-console-footer">
-        <p class="notes-hint" id="display-save-hint">Loading current display layout...</p>
+        <p class="notes-hint" id="display-save-hint">正在读取当前展示布局...</p>
         <button class="btn btn-yellow" id="save-display-btn" type="button">Save Layout</button>
       </div>
     </section>
@@ -104,7 +116,7 @@
       <div class="display-board-head">
         <div>
           <h3 class="section-title yellow">Pick A Post</h3>
-          <p id="picker-copy">Choose one post to place into the display board.</p>
+          <p id="picker-copy">选择一篇文章放入当前展示区。</p>
         </div>
       </div>
       <div class="picker-grid" id="picker-grid"></div>

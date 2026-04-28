@@ -8,7 +8,11 @@
             name="description"
             content="Pixel-style notes console for managing blog posts and the command cache."
         />
-        <link rel="icon" type="image/svg+xml" href="../assets/favicon-notes.svg" />
+        <link
+            rel="icon"
+            type="image/svg+xml"
+            href="../assets/favicon-notes.svg"
+        />
         <link rel="stylesheet" href="../css/style.css" />
         <link rel="stylesheet" href="./css/style.css" />
         <script defer src="../js/boot.js"></script>
@@ -20,8 +24,8 @@
                 <div class="loader-core">
                     <div class="loader-glyph loader-glyph-notes">N</div>
                     <div class="loader-copy">
-                        <strong>Booting Notes</strong>
-                        <p>Loading post controls, command cache, and display entries.</p>
+                        <strong>Notes Console</strong>
+                        <p>loading~~~</p>
                         <div class="loader-bar"><span></span></div>
                     </div>
                 </div>
@@ -52,21 +56,35 @@
                 <div class="hero-main pixel">
                     <div class="badge">Console Online</div>
                     <h2>Pixel Notes<br />Control Room</h2>
-                    <p>Post editing, command cache setup, and display entry routing live here.</p>
+                    <p>这里负责文章编辑、命令缓存设置和展示入口跳转。</p>
                     <div class="hero-actions">
-                        <a class="btn btn-yellow" href="#articles">Edit Posts</a>
-                        <a class="btn btn-green" href="./display.html">Open Display</a>
+                        <a class="btn btn-yellow" href="#articles"
+                            >Edit Posts</a
+                        >
+                        <a class="btn btn-green" href="./display.html"
+                            >Open Display</a
+                        >
                     </div>
                 </div>
 
-                <aside class="hero-panel pixel">
-                    <h2 class="section-title green">System Log</h2>
-                    <div class="status-line">[BOOT] notes console linked</div>
-                    <div class="status-line">[LOAD] content api waiting</div>
-                    <div class="status-line">[TASK] edit / route / publish</div>
-                    <div class="status-line">
-                        [NOTE] display layout moved to console
+                <aside class="hero-panel pixel media-panel">
+                    <h2 class="section-title green">Video Feed</h2>
+                    <div class="video-frame">
+                        <video
+                            class="site-video"
+                            controls
+                            muted
+                            loop
+                            playsinline
+                            poster="../assets/favicon-notes.svg"
+                        >
+                            <source src="" type="video/mp4" />
+                            浏览器暂不支持视频播放。
+                        </video>
                     </div>
+                    <p class="media-copy">
+                        这里预留给 notes 页面的视频位，后续可直接替换视频源。
+                    </p>
                 </aside>
             </section>
 
@@ -85,7 +103,9 @@
                             New Post
                         </button>
                     </div>
-                    <p class="notes-copy">All saved posts are listed here for quick editing and status checks.</p>
+                    <p class="notes-copy">
+                        这里列出所有已保存的文章，方便快速切换、修改和检查状态。
+                    </p>
                     <div class="article-list" id="article-list"></div>
                 </aside>
 
@@ -93,7 +113,9 @@
                     <section class="notes-form-shell pixel" id="editor">
                         <div class="notes-panel-head">
                             <div>
-                                <div class="notes-panel-kicker">Post Editor</div>
+                                <div class="notes-panel-kicker">
+                                    Post Editor
+                                </div>
                                 <h2 class="section-title pink">Post Editor</h2>
                             </div>
                             <div class="notes-toolbar">
@@ -145,7 +167,9 @@
                                         <option value="published">
                                             Published
                                         </option>
-                                        <option value="archived">Archived</option>
+                                        <option value="archived">
+                                            Archived
+                                        </option>
                                     </select>
                                 </label>
                             </div>
@@ -196,13 +220,17 @@
                     <section class="notes-form-shell pixel" id="commands">
                         <div class="notes-panel-head">
                             <div>
-                                <div class="notes-panel-kicker">Command Cache</div>
-                                <h2 class="section-title green">Command Settings</h2>
+                                <div class="notes-panel-kicker">
+                                    Command Cache
+                                </div>
+                                <h2 class="section-title green">
+                                    Command Settings
+                                </h2>
                             </div>
                         </div>
 
                         <p class="notes-copy">
-                            This block controls the title and line items shown in the blog command cache section.
+                            这里控制 blog 页面命令缓存区的标题和逐行内容。
                         </p>
 
                         <form id="command-settings-form" class="notes-form">
@@ -223,7 +251,7 @@
                             </label>
                             <div class="notes-form-footer">
                                 <p class="notes-hint" id="settings-save-hint">
-                                    Save to update the command cache content used on the blog page.
+                                    保存后会同步更新 blog 页面命令缓存区的内容。
                                 </p>
                                 <button
                                     class="btn btn-green"
@@ -245,7 +273,10 @@
                             <div
                                 class="entry-screen entry-screen-console"
                             ></div>
-                            <p>Open the separate layout page for blog Latest Entries and the home Mission Board.</p>
+                            <p>
+                                进入独立布局页，分别调整 blog 的 Latest Entries 和
+                                home 的 Mission Board。
+                            </p>
                             <div class="card-action">
                                 <a
                                     class="btn btn-notes-hub"
@@ -263,7 +294,7 @@
                             <div
                                 class="entry-screen entry-screen-archive"
                             ></div>
-                            <p>Check the full blog archive and the current front-end rendering result.</p>
+                            <p>快速检查完整的 blog 归档和前台展示结果。</p>
                             <div class="card-action">
                                 <a
                                     class="btn btn-blue"
