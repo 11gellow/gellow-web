@@ -287,12 +287,12 @@
     const targetName = target.getAttribute("target");
 
     if (targetName === "_blank") {
-      window.open(finalUrl, "_blank", "noopener");
+      target.setAttribute("href", finalUrl);
+      return false;
     } else {
       window.location.href = finalUrl;
+      return true;
     }
-
-    return true;
   }
 
   document.addEventListener("click", (event) => {
@@ -309,7 +309,8 @@
     }
 
     if (target.matches("a")) {
-      if (handleNavigationToast(target)) {
+      const handled = handleNavigationToast(target);
+      if (handled) {
         event.preventDefault();
         return;
       }
