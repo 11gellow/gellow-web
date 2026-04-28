@@ -23,7 +23,7 @@ const state = {
   settings: {
     featured_latest: [],
     featured_home: [],
-    mission_notes_title: "常用命令速查",
+    mission_notes_title: "Command Cache",
     mission_notes_items: [],
   },
 };
@@ -47,18 +47,18 @@ function getTodayString() {
 
 function statusToLabel(status) {
   if (status === "published") {
-    return "已发布";
+    return "PUBLISHED";
   }
   if (status === "archived") {
-    return "归档";
+    return "ARCHIVED";
   }
-  return "草稿";
+  return "DRAFT";
 }
 
 function createEmptyPost() {
   return {
     id: null,
-    title: "未命名草稿",
+    title: "Untitled Draft",
     slug: "new-post-slug",
     status: "draft",
     summary: "",
@@ -84,7 +84,7 @@ function renderList() {
   ui.list.innerHTML = "";
 
   if (!state.posts.length) {
-    ui.list.innerHTML = `<div class="empty-state">当前还没有文章，先创建一篇新的 blog 吧。</div>`;
+    ui.list.innerHTML = `<div class="empty-state">No posts yet. Create a new post to start the archive.</div>`;
     return;
   }
 
@@ -97,7 +97,7 @@ function renderList() {
         <h3>${escapeHtml(post.title)}</h3>
         <span class="status-badge ${post.status}">${escapeHtml(statusToLabel(post.status))}</span>
       </div>
-      <p>${escapeHtml(post.summary || "还没有摘要。")}</p>
+      <p>${escapeHtml(post.summary || "No summary yet.")}</p>
       <div class="meta-line">${escapeHtml(post.slug)} · ${escapeHtml(post.publishedAt || "--")}</div>
     `;
     button.addEventListener("click", () => selectPost(post.id));
@@ -129,7 +129,7 @@ function selectPost(postId) {
   fillForm(post);
   renderList();
   updateDeleteButton();
-  setSaveHint("已载入选中文章，可以继续修改。");
+  setSaveHint("Selected post loaded for editing.");
 }
 
 function resetToDraft() {
@@ -137,7 +137,7 @@ function resetToDraft() {
   fillForm(createEmptyPost());
   renderList();
   updateDeleteButton();
-  setSaveHint("新建模式：填写内容后保存即可创建文章。");
+  setSaveHint("Draft mode ready. Save to create a new post.");
 }
 
 function fillSettingsForm() {
@@ -190,7 +190,7 @@ async function persistCurrentSettings() {
   const payload = {
     featured_latest: state.settings.featured_latest,
     featured_home: state.settings.featured_home,
-    mission_notes_title: ui.missionNotesTitleInput.value.trim() || "常用命令速查",
+    mission_notes_title: ui.missionNotesTitleInput.value.trim() || "Command Cache",
     mission_notes_items: ui.missionNotesItemsInput.value
       .split(/\r?\n/)
       .map((item) => item.trim())
@@ -221,10 +221,10 @@ async function handleArticleSave(event) {
     renderList();
     updateDeleteButton();
     await persistCurrentSettings();
-    setSaveHint("文章已保存。前台刷新后会读取这篇新内容。");
-    setSettingsHint("如果你改了 slug，展示控制台引用也已经同步到新 slug。");
+    setSaveHint("Post saved. Front-end pages will read the updated content after refresh.");
+    setSettingsHint("Slug references in the display console have been synced.");
   } catch (error) {
-    setSaveHint(`保存失败：${error.message}`);
+    setSaveHint(`Save failed: ${error.message}`);
     console.warn("Unable to save article.", error);
   }
 }
@@ -241,8 +241,8 @@ async function handleDeletePost() {
     state.posts = state.posts.filter((item) => item.id !== post.id);
     await persistCurrentSettings();
     renderList();
-    setSaveHint("文章已删除，对应展示引用也一起清掉了。");
-    setSettingsHint("展示配置已同步移除这篇文章。");
+    setSaveHint("Post deleted. Related display references were removed too.");
+    setSettingsHint("Display settings were updated after the delete action.");
 
     if (state.posts.length) {
       selectPost(state.posts[0].id);
@@ -250,7 +250,7 @@ async function handleDeletePost() {
       resetToDraft();
     }
   } catch (error) {
-    setSaveHint(`删除失败：${error.message}`);
+    setSaveHint(`Delete failed: ${error.message}`);
     console.warn("Unable to delete article.", error);
   }
 }
@@ -260,9 +260,9 @@ async function handleCommandSave(event) {
 
   try {
     await persistCurrentSettings();
-    setSettingsHint("命令区设置已保存，blog 页面会读取新的标题和内容。");
+    setSettingsHint("Command cache settings saved.");
   } catch (error) {
-    setSettingsHint(`保存失败：${error.message}`);
+    setSettingsHint(`Save failed: ${error.message}`);
     console.warn("Unable to save command settings.", error);
   }
 }
@@ -282,8 +282,8 @@ async function loadConsoleData() {
 }
 
 async function initNotesConsole() {
-  setSaveHint("正在读取文章列表...");
-  setSettingsHint("正在读取命令区设置...");
+  setSaveHint("Loading posts...");
+  setSettingsHint("Loading command settings...");
 
   ui.form.addEventListener("submit", handleArticleSave);
   ui.commandForm.addEventListener("submit", handleCommandSave);
@@ -292,7 +292,7 @@ async function initNotesConsole() {
     const post = getSelectedPost();
     if (post) {
       fillForm(post);
-      setSaveHint("表单已重置到当前选中文章。");
+      setSaveHint("Form reset to the selected post.");
       return;
     }
 
@@ -304,13 +304,13 @@ async function initNotesConsole() {
 
   try {
     await loadConsoleData();
-    setSaveHint("内容接口已连接，可以开始编辑文章。");
-    setSettingsHint("命令区设置已载入。");
+    setSaveHint("Content api connected. Post editing is ready.");
+    setSettingsHint("Command settings loaded.");
   } catch (error) {
     resetToDraft();
-    ui.list.innerHTML = `<div class="empty-state">控制台加载失败：${escapeHtml(error.message)}</div>`;
-    setSaveHint(`加载失败：${error.message}`);
-    setSettingsHint("命令区设置暂时无法读取，请检查后端。");
+    ui.list.innerHTML = `<div class="empty-state">Console load failed: ${escapeHtml(error.message)}</div>`;
+    setSaveHint(`Load failed: ${error.message}`);
+    setSettingsHint("Command settings are unavailable right now.");
     console.warn("Unable to initialize notes console.", error);
   }
 }

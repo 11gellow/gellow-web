@@ -19,7 +19,7 @@ const state = {
   settings: {
     featured_latest: [],
     featured_home: [],
-    mission_notes_title: "常用命令速查",
+    mission_notes_title: "Command Cache",
     mission_notes_items: [],
   },
   boards: {
@@ -40,12 +40,12 @@ function escapeHtml(value) {
 
 function statusToLabel(status) {
   if (status === "published") {
-    return "已发布";
+    return "PUBLISHED";
   }
   if (status === "archived") {
-    return "归档";
+    return "ARCHIVED";
   }
-  return "草稿";
+  return "DRAFT";
 }
 
 function setSaveHint(text) {
@@ -75,7 +75,7 @@ function createTrashIcon() {
 function buildLatestCard(post) {
   return `
     <article class="post-card display-card" draggable="true" data-slug="${escapeHtml(post.slug)}">
-      <button class="trash-button" type="button" data-trash-slug="${escapeHtml(post.slug)}" aria-label="删除展示">
+      <button class="trash-button" type="button" data-trash-slug="${escapeHtml(post.slug)}" aria-label="Remove display">
         ${createTrashIcon()}
       </button>
       <div class="post-meta">
@@ -83,7 +83,7 @@ function buildLatestCard(post) {
         <span class="date">${escapeHtml(post.publishedAt || "--")}</span>
       </div>
       <h4>${escapeHtml(post.title)}</h4>
-      <p>${escapeHtml(post.summary || "还没有摘要。")}</p>
+      <p>${escapeHtml(post.summary || "No summary yet.")}</p>
     </article>
   `;
 }
@@ -91,11 +91,11 @@ function buildLatestCard(post) {
 function buildHomeCard(post) {
   return `
     <article class="display-card-home display-card" draggable="true" data-slug="${escapeHtml(post.slug)}">
-      <button class="trash-button" type="button" data-trash-slug="${escapeHtml(post.slug)}" aria-label="删除展示">
+      <button class="trash-button" type="button" data-trash-slug="${escapeHtml(post.slug)}" aria-label="Remove display">
         ${createTrashIcon()}
       </button>
       <h4>${escapeHtml(post.title)}</h4>
-      <p>${escapeHtml(post.summary || "点击 Read More 查看详情。")}</p>
+      <p>${escapeHtml(post.summary || "Open the post page for the full entry.")}</p>
     </article>
   `;
 }
@@ -119,7 +119,7 @@ function renderBoard(boardName) {
     if (post) {
       slot.innerHTML = boardName === "latest" ? buildLatestCard(post) : buildHomeCard(post);
     } else {
-      slot.innerHTML = `<div class="slot-empty">空位<br />把文章拖到这里，或点击右上角新建展示窗口。</div>`;
+      slot.innerHTML = `<div class="slot-empty">Empty Slot<br />Drop a post here or add a new window from the top-right button.</div>`;
     }
 
     grid.appendChild(slot);
@@ -153,8 +153,8 @@ function openPicker(boardName) {
   state.pickerTarget = boardName;
   ui.pickerCopy.textContent =
     boardName === "latest"
-      ? "选择一篇文章加入 Blog 首页 Latest Entries。"
-      : "选择一篇文章加入 Home 的 Mission Board。";
+      ? "Choose one post for the blog latest entries stage."
+      : "Choose one post for the home mission board stage.";
 
   const used = new Set(state.boards[boardName].filter(Boolean));
 
@@ -167,7 +167,7 @@ function openPicker(boardName) {
             <h3>${escapeHtml(post.title)}</h3>
             <span class="status-badge ${post.status}">${escapeHtml(statusToLabel(post.status))}</span>
           </div>
-          <p>${escapeHtml(post.summary || "还没有摘要。")}</p>
+          <p>${escapeHtml(post.summary || "No summary yet.")}</p>
           <div class="meta-line">${escapeHtml(post.slug)} · ${escapeHtml(post.publishedAt || "--")}</div>
         </button>
       `;
@@ -187,14 +187,14 @@ function addCardToBoard(boardName, slug) {
   const emptyIndex = next.findIndex((item) => item === null);
 
   if (emptyIndex < 0) {
-    setSaveHint(boardName === "latest" ? "Blog 展示区已经满了，先删除一个再加。" : "Home 展示区已经满了，先删除一个再加。");
+    setSaveHint(boardName === "latest" ? "Blog stage is full. Remove one window before adding another." : "Home stage is full. Remove one window before adding another.");
     return;
   }
 
   next[emptyIndex] = slug;
   state.boards[boardName] = next;
   renderBoards();
-  setSaveHint("展示窗口已加入，拖到合适位置后点击保存布局。");
+  setSaveHint("Display window added. Drag to reorder and save the layout.");
 }
 
 function bindBoardInteractions() {
@@ -254,12 +254,12 @@ function bindBoardInteractions() {
         const targetIndex = Number(slot.dataset.index);
 
         if (payload.board !== targetBoard) {
-          setSaveHint("目前只支持在各自展示区内部拖动排序。");
+          setSaveHint("Drag sorting currently works only inside the same board.");
           return;
         }
 
         moveCardWithinBoard(targetBoard, payload.index, targetIndex);
-        setSaveHint("展示顺序已调整，记得点击保存布局。");
+        setSaveHint("Display order updated. Save the layout to sync it.");
       } catch (error) {
         console.warn("Unable to parse drag payload.", error);
       }
@@ -277,7 +277,7 @@ function bindBoardInteractions() {
       }
 
       removeCard(slot.dataset.board, trashButton.dataset.trashSlug);
-      setSaveHint("展示窗口已删除，点击保存布局即可同步到前台。");
+      setSaveHint("Display window removed. Save the layout to sync the change.");
     });
   });
 }
@@ -307,7 +307,7 @@ async function loadDisplayData() {
 }
 
 async function initDisplayConsole() {
-  setSaveHint("正在读取当前展示布局...");
+  setSaveHint("Loading current display layout...");
 
   bindBoardInteractions();
 
@@ -331,19 +331,19 @@ async function initDisplayConsole() {
   ui.saveButton.addEventListener("click", async () => {
     try {
       await saveBoards();
-      setSaveHint("展示布局已保存，blog 首页和 home 页面会读取新的位置顺序。");
+      setSaveHint("Display layout saved. Blog and home pages will read the new order.");
     } catch (error) {
-      setSaveHint(`保存失败：${error.message}`);
+      setSaveHint(`Save failed: ${error.message}`);
       console.warn("Unable to save display boards.", error);
     }
   });
 
   try {
     await loadDisplayData();
-    setSaveHint("展示布局已载入，可以开始拖动和保存。");
+    setSaveHint("Display layout loaded. Drag and save when ready.");
   } catch (error) {
     renderBoards();
-    setSaveHint(`加载失败：${error.message}`);
+    setSaveHint(`Load failed: ${error.message}`);
     console.warn("Unable to initialize display console.", error);
   }
 }
