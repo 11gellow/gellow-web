@@ -3,6 +3,7 @@
   const TOAST_PARAM = "__gellow_toast";
   const TOAST_TITLE_PARAM = "__gellow_toast_title";
   const TOAST_VARIANT_PARAM = "__gellow_toast_variant";
+  const TOAST_STORAGE_KEY = "__gellow_pending_toast";
   const HASH_MESSAGES = {
     "#latest": "Latest Entries 已定位",
     "#categories": "Categories 已定位",
@@ -19,21 +20,85 @@
     return;
   }
 
-  function showPendingToastFromUrl() {
-    const currentUrl = new URL(window.location.href);
+  function readPendingToastFromStorage() {
+    try {
+      const raw = window.localStorage.getItem(TOAST_STORAGE_KEY);
+      if (!raw) {
+        return null;
+      }
+
+      window.localStorage.removeItem(TOAST_STORAGE_KEY);
+      const payload = JSON.parse(raw);
+      if (!payload || typeof payload.message !== "string") {
+        return null;
+      }
+
+      return payload;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function writePendingToastToStorage(payload) {
+    try {
+      window.localStorage.setItem(TOAST_STORAGE_KEY, JSON.stringify(payload));
+    } catch (error) {
+      // Ignore storage failures and fall back to direct navigation.
+    }
+  }
+
+  function readPendingToastFromHash(currentUrl) {
+    const rawHash = currentUrl.hash.startsWith("#") ? currentUrl.hash.slice(1) : "";
+    if (!rawHash || !rawHash.includes(TOAST_PARAM)) {
+      return null;
+    }
+
+    const hashParams = new URLSearchParams(rawHash);
+    const message = hashParams.get(TOAST_PARAM);
+    if (!message) {
+      return null;
+    }
+
+    const title = hashParams.get(TOAST_TITLE_PARAM) || "System Notice";
+    const variant = hashParams.get(TOAST_VARIANT_PARAM) || "info";
+
+    hashParams.delete(TOAST_PARAM);
+    hashParams.delete(TOAST_TITLE_PARAM);
+    hashParams.delete(TOAST_VARIANT_PARAM);
+    currentUrl.hash = hashParams.toString() ? `#${hashParams.toString()}` : "";
+
+    return { message, title, variant };
+  }
+
+  function readPendingToastFromSearch(currentUrl) {
     const message = currentUrl.searchParams.get(TOAST_PARAM);
+    if (!message) {
+      return null;
+    }
+
     const title = currentUrl.searchParams.get(TOAST_TITLE_PARAM) || "System Notice";
     const variant = currentUrl.searchParams.get(TOAST_VARIANT_PARAM) || "info";
-
-    if (!message) {
-      return;
-    }
 
     currentUrl.searchParams.delete(TOAST_PARAM);
     currentUrl.searchParams.delete(TOAST_TITLE_PARAM);
     currentUrl.searchParams.delete(TOAST_VARIANT_PARAM);
+
+    return { message, title, variant };
+  }
+
+  function showPendingToastFromUrl() {
+    const currentUrl = new URL(window.location.href);
+    const locationToast =
+      readPendingToastFromSearch(currentUrl) ||
+      readPendingToastFromHash(currentUrl) ||
+      readPendingToastFromStorage();
+
+    if (!locationToast) {
+      return;
+    }
+
     window.history.replaceState({}, "", currentUrl.toString());
-    createToast(message, title, variant);
+    createToast(locationToast.message, locationToast.title, locationToast.variant);
   }
 
   function getLabel(target) {
@@ -291,9 +356,13 @@
   function buildToastUrl(target, message, variant) {
     const href = target.getAttribute("href");
     const nextUrl = new URL(href, window.location.href);
-    nextUrl.searchParams.set(TOAST_PARAM, message);
-    nextUrl.searchParams.set(TOAST_TITLE_PARAM, "System Notice");
-    nextUrl.searchParams.set(TOAST_VARIANT_PARAM, variant);
+    const hashParams = new URLSearchParams(
+      nextUrl.hash.startsWith("#") ? nextUrl.hash.slice(1) : ""
+    );
+    hashParams.set(TOAST_PARAM, message);
+    hashParams.set(TOAST_TITLE_PARAM, "System Notice");
+    hashParams.set(TOAST_VARIANT_PARAM, variant);
+    nextUrl.hash = `#${hashParams.toString()}`;
     return nextUrl.toString();
   }
 
@@ -316,16 +385,33 @@
       return false;
     }
 
-    const finalUrl = buildToastUrl(target, getMessage(target), getVariant(target));
+    const payload = {
+      message: getMessage(target),
+      title: "System Notice",
+      variant: getVariant(target),
+    };
     const targetName = target.getAttribute("target");
+
+    if (nextUrl.origin === window.location.origin) {
+      writePendingToastToStorage(payload);
+
+      if (targetName === "_blank") {
+        return "suppressed";
+      }
+
+      window.location.href = nextUrl.toString();
+      return "handled";
+    }
+
+    const finalUrl = buildToastUrl(target, payload.message, payload.variant);
 
     if (targetName === "_blank") {
       target.setAttribute("href", finalUrl);
-      return false;
-    } else {
-      window.location.href = finalUrl;
-      return true;
+      return "suppressed";
     }
+
+    window.location.href = finalUrl;
+    return "handled";
   }
 
   document.addEventListener("click", (event) => {
@@ -343,8 +429,11 @@
 
     if (target.matches("a")) {
       const handled = handleNavigationToast(target);
-      if (handled) {
+      if (handled === "handled") {
         event.preventDefault();
+        return;
+      }
+      if (handled === "suppressed") {
         return;
       }
     }
