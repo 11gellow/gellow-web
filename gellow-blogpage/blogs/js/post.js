@@ -26,6 +26,10 @@ function formatDate(value) {
   });
 }
 
+function normalizeSlug(value) {
+  return String(value || "").trim().normalize("NFC");
+}
+
 function renderDetail(post) {
   const paragraphs = String(post.content)
     .split(/\n{2,}/)
@@ -48,7 +52,7 @@ function renderDetail(post) {
 
 async function initPostDetail() {
   const params = new URLSearchParams(window.location.search);
-  const slug = params.get("slug");
+  const slug = normalizeSlug(params.get("slug"));
 
   if (!slug) {
     postDetailRoot.innerHTML = `<div class="archive-empty">缺少 slug，无法打开文章。</div>`;
@@ -56,8 +60,15 @@ async function initPostDetail() {
   }
 
   try {
-    const payload = await window.GellowContentApi.fetchPost(slug);
-    renderDetail(payload.post);
+    const payload = await window.GellowContentApi.fetchPublicContent();
+    const posts = Array.isArray(payload.posts) ? payload.posts : [];
+    const post = posts.find((entry) => normalizeSlug(entry.slug) === slug);
+
+    if (!post) {
+      throw new Error("post not found");
+    }
+
+    renderDetail(post);
   } catch (error) {
     postDetailRoot.innerHTML = `
       <div class="archive-empty">
