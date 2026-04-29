@@ -1263,7 +1263,7 @@ footer {
     border: 3px solid var(--black);
     box-shadow: 6px 6px 0 var(--black);
     background: #000;
-    aspect-ratio: 420 / 364;
+    aspect-ratio: 4 / 3;
 }
 
 .game-window iframe {
