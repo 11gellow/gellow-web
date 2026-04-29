@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>All Blog Entries</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon-blog.svg" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <script defer src="../js/boot.js"></script>
+</head>
+<body>
+  <div class="page-loader" id="page-loader">
+    <div class="loader-shell pixel">
+      <div class="loader-marquee">Insert Coin To Load</div>
+      <div class="loader-core">
+        <div class="loader-glyph loader-glyph-archive">A</div>
+        <div class="loader-copy">
+          <strong>Loading Archive</strong>
+          <p>正在装载全部已发布文章。</p>
+          <div class="loader-bar"><span></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <header class="fusion-header">
+    <div class="wrap fusion-nav">
+      <div class="fusion-brand">
+        <div class="fusion-kicker">full archive / published posts</div>
+        <h1 class="title">All Blog Entries</h1>
+        <p class="fusion-intro">这里会按时间顺序列出全部已发布文章。</p>
+      </div>
+      <nav class="fusion-menu">
+        <a class="fusion-link" href="../index.html" data-toast-message="Blog Home 已打开">Home</a>
+        <a class="fusion-link" href="../notes/" data-toast-message="Notes Console 已打开">Notes</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap fusion-shell">
+    <section class="archive-shell pixel">
+      <div class="archive-head">
+        <p class="archive-copy">主页面已经按时间顺序展示所有文章，这里保留一个纯归档视图，方便连续浏览。</p>
+        <a class="btn btn-blue" href="../index.html" data-toast-message="Blog Home 已打开">Back To Blog</a>
+      </div>
+      <div id="all-posts"></div>
+    </section>
+  </main>
+
+  <footer class="fusion-footer">Gellow Blog · Archive view</footer>
+
+  <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="false"></div>
+
+  <script src="../js/content-api.js"></script>
+  <script src="../js/feedback.js"></script>
+  <script src="./js/index.js"></script>
+</body>
+</html>

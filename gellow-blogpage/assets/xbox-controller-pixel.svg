@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" role="img" aria-labelledby="title">
+  <title>Pixel Controller</title>
+  <path d="M66 24H254L284 44L300 74V128L286 156L260 180L236 196L214 186L194 160H126L106 186L84 196L60 180L34 156L20 128V74L36 44L66 24Z" fill="#36363a"/>
+  <path d="M78 38H242L266 54L280 82V122L268 146L246 166L228 176L210 166L192 142H128L110 166L92 176L74 166L52 146L40 122V82L54 54L78 38Z" fill="#242428"/>
+  <circle cx="92" cy="88" r="22" fill="#1a1a1d"/>
+  <circle cx="92" cy="88" r="16" fill="#2d2d31"/>
+  <circle cx="230" cy="120" r="22" fill="#1a1a1d"/>
+  <circle cx="230" cy="120" r="16" fill="#2d2d31"/>
+  <path d="M122 106H142V86H158V106H178V122H158V142H142V122H122Z" fill="#0e0e10"/>
+  <path d="M126 110H146V90H154V110H174V118H154V138H146V118H126Z" fill="#909197"/>
+  <circle cx="214" cy="80" r="12" fill="#2d73ff"/>
+  <circle cx="242" cy="68" r="12" fill="#ffd630"/>
+  <circle cx="242" cy="96" r="12" fill="#ff5338"/>
+  <circle cx="226" cy="108" r="12" fill="#5ccf44"/>
+  <circle cx="148" cy="74" r="5" fill="#4d4d53"/>
+  <circle cx="172" cy="74" r="5" fill="#4d4d53"/>
+  <circle cx="160" cy="86" r="6" fill="#4d4d53"/>
+</svg>

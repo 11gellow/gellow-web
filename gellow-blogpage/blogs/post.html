@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blog Post</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon-blog.svg" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <script defer src="../js/boot.js"></script>
+</head>
+<body>
+  <div class="page-loader" id="page-loader">
+    <div class="loader-shell pixel">
+      <div class="loader-marquee">Insert Coin To Load</div>
+      <div class="loader-core">
+        <div class="loader-glyph loader-glyph-post">P</div>
+        <div class="loader-copy">
+          <strong>Loading Post</strong>
+          <p>正在装载正文和摘要。</p>
+          <div class="loader-bar"><span></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <header class="fusion-header">
+    <div class="wrap fusion-nav">
+      <div class="fusion-brand">
+        <div class="fusion-kicker">detail view / full reading page</div>
+        <h1 class="title">Post Detail</h1>
+        <p class="fusion-intro">文章详情页会保留更宽松的阅读留白和更集中的正文区域。</p>
+      </div>
+      <nav class="fusion-menu">
+        <a class="fusion-link" href="../index.html" data-toast-message="Blog Home 已打开">Home</a>
+        <a class="fusion-link" href="./index.html" data-toast-message="Blog Archive 已打开">Archive</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap fusion-shell">
+    <article class="post-detail pixel" id="post-detail">
+      <div class="loading-card">正在加载文章...</div>
+    </article>
+  </main>
+
+  <footer class="fusion-footer">Gellow Blog · Detail page</footer>
+
+  <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="false"></div>
+
+  <script src="../js/content-api.js"></script>
+  <script src="../js/feedback.js"></script>
+  <script src="./js/post.js"></script>
+</body>
+</html>

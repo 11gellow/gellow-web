@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Gellow Arcade</title>
+        <link rel="icon" type="image/svg+xml" href="./assets/favicon.png" />
+        <link rel="apple-touch-icon" href="./assets/favicon.png" />
+        <link rel="stylesheet" href="./css/style.css" />
+        <script defer src="./js/boot.js"></script>
+    </head>
+    <body>
+        <div class="page-loader" id="page-loader">
+            <div class="loader-shell pixel">
+                <div class="loader-marquee">El psy congroo</div>
+                <div class="loader-core">
+                    <div class="loader-glyph">H</div>
+                    <div class="loader-copy">
+                        <strong>Gellow Arcade</strong>
+                        <p>loading~~~</p>
+                        <div class="loader-bar"><span></span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <header>
+            <div class="wrap nav">
+                <div class="brand-block">
+                    <div class="identity-card pixel">
+                        <img
+                            class="avatar"
+                            src="./assets/KindGellow.png"
+                            alt="Profile avatar"
+                        />
+                        <div class="identity-meta">
+                            <div class="presence-line">
+                                <span
+                                    class="online-dot"
+                                    aria-hidden="true"
+                                ></span>
+                                online
+                            </div>
+                            <div class="username">KindGellow</div>
+                        </div>
+                    </div>
+                    <div class="brand-copy">
+                        <h1 class="title">Gellow Arcade</h1>
+                        <div class="subtitle">Insert Coin To Play</div>
+                    </div>
+                </div>
+                <nav class="menu">
+                    <a class="btn btn-red" href="#start">Arcade</a>
+                    <a class="btn btn-green" href="https://blog.gellow.top">Back To Blog</a>
+                </nav>
+            </div>
+        </header>
+
+        <main class="wrap">
+            <section class="hero" id="start">
+                <div class="hero-main pixel">
+                    <section
+                        class="hero-view hero-view-intro"
+                        id="arcade-intro-view"
+                    >
+                        <div class="badge">Player 1 Online</div>
+                        <h2>Pixel Lab<br />For AI Quests</h2>
+                        <p>
+                            一个收缩后的街机页。<br />
+                            这里保留吃豆人的完整玩法和分数记录。
+                        </p>
+                        <div class="hero-actions">
+                            <button
+                                class="btn btn-yellow"
+                                type="button"
+                                data-arcade-action="start"
+                                data-toast-message="Pac-Man Run 已启动"
+                            >
+                                Start Game
+                            </button>
+                            <button
+                                class="btn btn-green"
+                                type="button"
+                                data-arcade-action="log"
+                                data-toast-message="PAC-MAN Rankings 已打开"
+                            >
+                                Read Log
+                            </button>
+                        </div>
+                    </section>
+
+                    <section
+                        class="hero-view hero-view-game"
+                        id="arcade-game-view"
+                        hidden
+                    >
+                        <div class="arcade-hud">
+                            <div class="arcade-stat-box">
+                                <span class="arcade-stat-label">Score</span>
+                                <strong id="arcade-score">0</strong>
+                            </div>
+                            <div class="arcade-stat-box">
+                                <span class="arcade-stat-label">Lives</span>
+                                <strong id="arcade-lives">3</strong>
+                            </div>
+                            <div class="arcade-stat-box">
+                                <span class="arcade-stat-label">Pellets</span>
+                                <strong id="arcade-pellets">0</strong>
+                            </div>
+                        </div>
+
+                        <div class="arcade-screen-wrap">
+                            <canvas
+                                id="arcade-canvas"
+                                width="420"
+                                height="364"
+                                aria-label="Pac-Man game board"
+                            ></canvas>
+                        </div>
+
+                        <p class="arcade-help">
+                            Use arrow keys or WASD to move. Clear the pellets,
+                            avoid ghosts, and save your score when the run ends.
+                        </p>
+
+                        <div class="hero-actions hero-actions-game">
+                            <button
+                                class="btn btn-yellow"
+                                type="button"
+                                data-arcade-action="restart"
+                                data-toast-message="Pac-Man Run 已重启"
+                            >
+                                Restart Run
+                            </button>
+                            <button
+                                class="btn btn-green"
+                                type="button"
+                                data-arcade-action="log"
+                                data-toast-message="PAC-MAN Rankings 已打开"
+                            >
+                                View Log
+                            </button>
+                            <button
+                                class="btn btn-red"
+                                type="button"
+                                data-arcade-action="home"
+                                data-toast-message="Arcade Home 已打开"
+                            >
+                                Exit
+                            </button>
+                            <div
+                                class="arcade-chip arcade-chip-dark arcade-chip-status"
+                                id="arcade-state-label"
+                            >
+                                Ready
+                            </div>
+                        </div>
+
+                        <form
+                            class="score-entry pixel"
+                            id="score-entry-form"
+                            hidden
+                        >
+                            <h3>Game Over</h3>
+                            <p id="score-entry-message">
+                                Enter your username to save this score.
+                            </p>
+                            <label
+                                class="score-entry-label"
+                                for="score-username"
+                                >Username</label
+                            >
+                            <input
+                                id="score-username"
+                                name="username"
+                                type="text"
+                                maxlength="16"
+                                placeholder="Player1"
+                                required
+                            />
+                            <div class="score-entry-actions">
+                                <button class="btn btn-yellow" type="submit" data-toast-defer="true">
+                                    Save Score
+                                </button>
+                                <button
+                                    class="btn btn-green"
+                                    type="button"
+                                    data-arcade-action="dismiss-score"
+                                    data-toast-message="Score Save 已跳过"
+                                >
+                                    Skip
+                                </button>
+                            </div>
+                        </form>
+                    </section>
+
+                    <section
+                        class="hero-view hero-view-log"
+                        id="arcade-log-view"
+                        hidden
+                    >
+                        <div class="badge">Score Archive</div>
+                        <h2>PAC-MAN Rankings</h2>
+
+                        <div class="score-log-shell pixel">
+                            <div class="score-log-head">
+                                <span>Rank</span>
+                                <span>Player</span>
+                                <span>Score</span>
+                                <span>Time</span>
+                            </div>
+                            <ol class="score-log-list" id="score-log-list"></ol>
+                            <p class="score-log-empty" id="score-log-empty">
+                                No score saved yet. Start a run first.
+                            </p>
+                        </div>
+
+                        <div class="hero-actions">
+                            <button
+                                class="btn btn-yellow"
+                                type="button"
+                                data-arcade-action="restart"
+                                data-toast-message="Pac-Man Run 已启动"
+                            >
+                                New Run
+                            </button>
+                            <button
+                                class="btn btn-green"
+                                type="button"
+                                data-arcade-action="resume"
+                                data-toast-message="Pac-Man Run 已恢复"
+                            >
+                                Resume Run
+                            </button>
+                            <button
+                                class="btn btn-red"
+                                type="button"
+                                data-arcade-action="home"
+                                data-toast-message="Arcade Home 已打开"
+                            >
+                                Back Home
+                            </button>
+                        </div>
+                    </section>
+                </div>
+
+                <aside class="status-panel pixel">
+                    <div>
+                        <div class="status-label">System Status</div>
+                        <div class="log-line">[BOOT] domain connected</div>
+                        <div class="log-line">[LOAD] pixel interface ready</div>
+                        <div class="log-line">
+                            [TASK] training / data / scripts
+                        </div>
+                        <div class="log-line">
+                            [NOTE] rust learning in progress
+                        </div>
+                    </div>
+                    <div>
+                        <div class="status-label bonus-label">
+                            Pac-Man Intel
+                        </div>
+                        <div class="log-line" id="arcade-status-line">
+                            [IDLE] press start to begin
+                        </div>
+                        <div class="log-line" id="arcade-score-line">
+                            [SCORE] 0
+                        </div>
+                        <div class="log-line" id="arcade-best-line">
+                            [BEST] no record yet
+                        </div>
+                    </div>
+                    <div class="panel-video-shell" hidden>
+                        <h3 class="panel-video-title">Video Feed</h3>
+                        <div class="video-frame">
+                            <video
+                                class="site-video"
+                                controls
+                                muted
+                                loop
+                                playsinline
+                                poster="./assets/quancifang.png"
+                            >
+                                <source src="" type="video/mp4" />
+                                浏览器暂不支持视频播放。
+                            </video>
+                        </div>
+                        <p class="media-copy">
+                            这里预留给首页视频位，后续把 `video` 标签中的 `src`
+                            改成自己的视频文件即可。
+                        </p>
+                    </div>
+                </aside>
+            </section>
+
+        </main>
+
+        <footer>Gellow Arcade · Floating arcade page</footer>
+
+        <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="false"></div>
+
+        <script src="./js/feedback.js"></script>
+        <script src="./js/main.js"></script>
+    </body>
+</html>
