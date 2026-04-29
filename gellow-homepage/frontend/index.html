@@ -3,11 +3,65 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Redirecting...</title>
-        <meta http-equiv="refresh" content="0; url=https://blog.gellow.top" />
-        <script>
-            window.location.replace("https://blog.gellow.top");
-        </script>
+        <title>Gellow Home</title>
+        <link rel="icon" type="image/png" href="./assets/favicon.png" />
+        <link rel="stylesheet" href="./css/style.css" />
+        <script defer src="./js/boot.js"></script>
     </head>
-    <body></body>
+    <body>
+        <div class="page-loader" id="page-loader">
+            <div class="loader-shell pixel">
+                <div class="loader-marquee">Insert Coin To Load</div>
+                <div class="loader-core">
+                    <div class="loader-glyph loader-glyph-home">H</div>
+                    <div class="loader-copy">
+                        <strong>Booting Home</strong>
+                        <p>physics field / singularity / portal routing</p>
+                        <div class="loader-bar"><span></span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <canvas id="scene-canvas" aria-label="Interactive portal field"></canvas>
+
+        <div class="scene-overlay">
+            <aside class="command-shell pixel">
+                <div class="command-kicker">gellow home / node field</div>
+                <h1>Portal Singularity</h1>
+                <div class="command-lines">
+                    <div class="command-line">status: singularity online</div>
+                    <div class="command-line">linked nodes: github / steam / bilibili / blog / rs</div>
+                    <div class="command-line">ambient debris: active</div>
+                    <div class="command-line">pointer mode: drag / throw / route</div>
+                </div>
+            </aside>
+
+            <aside class="status-shell pixel">
+                <div class="status-head">
+                    <span class="status-dot"></span>
+                    <span id="scene-status-label">FIELD STABLE</span>
+                </div>
+                <div class="status-metrics">
+                    <div class="status-metric">
+                        <span>linked</span>
+                        <strong id="linked-count">5</strong>
+                    </div>
+                    <div class="status-metric">
+                        <span>ambient</span>
+                        <strong id="ambient-count">0</strong>
+                    </div>
+                    <div class="status-metric">
+                        <span>sink</span>
+                        <strong id="sink-count">0</strong>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="false"></div>
+
+        <script src="./js/feedback.js"></script>
+        <script src="./js/main.js"></script>
+    </body>
 </html>

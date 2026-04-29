@@ -1,917 +1,789 @@
-const TILE_SIZE = 28;
-const HISTORY_LIMIT = 12;
-const LOCAL_BACKEND_BASE = "http://127.0.0.1:5000";
-const PROD_BACKEND_BASE = "https://www.gellow.top";
-const PROD_BLOG_BASE = "https://blog.gellow.top";
-const BASE_MAP = [
-  "###############",
-  "#.............#",
-  "#.###.###.###.#",
-  "#o...#...#...o#",
-  "###.#.#.#.#.###",
-  "#.....#.#.....#",
-  "#.###.....###.#",
-  "#.....#.#.....#",
-  "###.#.#.#.#.###",
-  "#o...#...#...o#",
-  "#.###.###.###.#",
-  "#.............#",
-  "###############",
-];
+(function initHomeScene() {
+  const canvas = document.getElementById("scene-canvas");
+  const linkedCount = document.getElementById("linked-count");
+  const ambientCount = document.getElementById("ambient-count");
+  const sinkCount = document.getElementById("sink-count");
+  const statusLabel = document.getElementById("scene-status-label");
 
-function getBackendBaseUrl() {
-  if (typeof window.GELLOW_CONTENT_API_BASE === "string" && window.GELLOW_CONTENT_API_BASE.trim()) {
-    return window.GELLOW_CONTENT_API_BASE.trim().replace(/\/$/, "");
+  if (!canvas) {
+    return;
   }
 
-  if (
-    window.location.protocol === "file:" ||
-    window.location.hostname === "127.0.0.1" ||
-    window.location.hostname === "localhost"
-  ) {
-    return LOCAL_BACKEND_BASE;
-  }
-
-  if (
-    window.location.hostname.endsWith("vercel.app") ||
-    (window.location.hostname.endsWith("gellow.top") && window.location.hostname !== "www.gellow.top")
-  ) {
-    return PROD_BACKEND_BASE;
-  }
-
-  return window.location.origin;
-}
-
-function getBlogBaseUrl() {
-  if (typeof window.GELLOW_BLOG_BASE === "string" && window.GELLOW_BLOG_BASE.trim()) {
-    return window.GELLOW_BLOG_BASE.trim().replace(/\/$/, "");
-  }
-
-  return PROD_BLOG_BASE;
-}
-
-const SCORE_API_URL = `${getBackendBaseUrl()}/api/scores`;
-const CONTENT_API_URL = `${getBackendBaseUrl()}/api/content/public`;
-
-const DIRECTIONS = {
-  up: { x: 0, y: -1, angle: -Math.PI / 2 },
-  down: { x: 0, y: 1, angle: Math.PI / 2 },
-  left: { x: -1, y: 0, angle: Math.PI },
-  right: { x: 1, y: 0, angle: 0 },
-};
-
-const KEY_TO_DIRECTION = {
-  ArrowUp: "up",
-  ArrowDown: "down",
-  ArrowLeft: "left",
-  ArrowRight: "right",
-  w: "up",
-  a: "left",
-  s: "down",
-  d: "right",
-  W: "up",
-  A: "left",
-  S: "down",
-  D: "right",
-};
-
-const OPPOSITE_DIRECTION = {
-  up: "down",
-  down: "up",
-  left: "right",
-  right: "left",
-};
-
-const GHOST_STARTS = [
-  { x: 7, y: 6, color: "#ff4f64", strategy: "chase" },
-  { x: 5, y: 6, color: "#29adff", strategy: "ambush" },
-];
-
-const ui = {
-  introView: document.getElementById("arcade-intro-view"),
-  gameView: document.getElementById("arcade-game-view"),
-  logView: document.getElementById("arcade-log-view"),
-  canvas: document.getElementById("arcade-canvas"),
-  scoreText: document.getElementById("arcade-score"),
-  livesText: document.getElementById("arcade-lives"),
-  pelletsText: document.getElementById("arcade-pellets"),
-  stateLabel: document.getElementById("arcade-state-label"),
-  statusLine: document.getElementById("arcade-status-line"),
-  currentScoreLine: document.getElementById("arcade-score-line"),
-  bestScoreLine: document.getElementById("arcade-best-line"),
-  scoreLogList: document.getElementById("score-log-list"),
-  scoreLogEmpty: document.getElementById("score-log-empty"),
-  scoreEntryForm: document.getElementById("score-entry-form"),
-  scoreEntryMessage: document.getElementById("score-entry-message"),
-  scoreUsername: document.getElementById("score-username"),
-  resumeButton: document.querySelector('[data-arcade-action="resume"]'),
-  missionBoard: document.getElementById("mission-board"),
-};
-
-const ctx = ui.canvas.getContext("2d");
-
-const state = {
-  map: [],
-  pacman: null,
-  ghosts: [],
-  scoreHistory: [],
-  scoreLoadFailed: false,
-  pelletsRemaining: 0,
-  score: 0,
-  lives: 3,
-  runStarted: false,
-  running: false,
-  over: false,
-  scoreSaved: false,
-  frameId: null,
-  lastFrameTime: 0,
-  pacmanCooldown: 0,
-  ghostCooldown: 0,
-  statusText: "[IDLE] press start to begin",
-  endReason: "",
-};
-
-function showFeedback(message, title = "System Notice", variant = "info") {
-  if (window.GellowFeedback?.showToast) {
-    window.GellowFeedback.showToast(message, title, variant);
-  }
-}
-
-function normalizeSettings(settings) {
-  return {
-    featured_home: Array.isArray(settings.featured_home) ? settings.featured_home : [],
-  };
-}
-
-function pickConfiguredPosts(posts, slugs, limit) {
-  const postMap = new Map(posts.map((post) => [post.slug, post]));
-  const picked = [];
-
-  slugs.forEach((slug) => {
-    const post = postMap.get(slug);
-    if (post && !picked.some((item) => item.slug === post.slug) && picked.length < limit) {
-      picked.push(post);
-    }
-  });
-
-  return picked;
-}
-
-async function fetchPublicContent() {
-  const response = await fetch(CONTENT_API_URL, {
-    headers: {
-      Accept: "application/json",
+  const ctx = canvas.getContext("2d");
+  const PORTALS = [
+    {
+      label: "GITHUB",
+      url: "https://github.com/11gellow",
+      color: "#68c8ff",
+      accent: "#dff3ff",
+      geometry: "square",
     },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Unable to load content: ${response.status}`);
-  }
-
-  return response.json();
-}
-
-function cloneMap() {
-  return BASE_MAP.map((row) => row.split(""));
-}
-
-function countPellets(map) {
-  return map.reduce((count, row) => {
-    return count + row.filter((cell) => cell === "." || cell === "o").length;
-  }, 0);
-}
-
-function createPacman() {
-  return {
-    x: 1,
-    y: 1,
-    direction: "right",
-    nextDirection: "right",
-    mouthOpen: true,
-  };
-}
-
-function createGhosts() {
-  return GHOST_STARTS.map((ghost) => ({
-    x: ghost.x,
-    y: ghost.y,
-    direction: ghost.strategy === "chase" ? "left" : "right",
-    color: ghost.color,
-    strategy: ghost.strategy,
-  }));
-}
-
-function normalizeScoreEntry(entry) {
-  return {
-    id: Number(entry.id || 0),
-    name: typeof entry.name === "string" ? entry.name : "Player1",
-    score: Number(entry.score || 0),
-    createdAt: typeof entry.createdAt === "string" ? entry.createdAt : "",
-  };
-}
-
-async function fetchScoresFromApi(limit = HISTORY_LIMIT) {
-  const response = await fetch(`${SCORE_API_URL}?limit=${limit}`, {
-    headers: {
-      Accept: "application/json",
+    {
+      label: "STEAM",
+      url: "https://steamcommunity.com/profiles/76561198444114302/",
+      color: "#2f7cff",
+      accent: "#d9e7ff",
+      geometry: "hex",
     },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Unable to load scores: ${response.status}`);
-  }
-
-  const payload = await response.json();
-  const scores = Array.isArray(payload.scores) ? payload.scores : [];
-  return scores.map(normalizeScoreEntry);
-}
-
-async function saveScoreToApi(name, score) {
-  const response = await fetch(SCORE_API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
+    {
+      label: "BILIBILI",
+      url: "https://space.bilibili.com/518863790",
+      color: "#ff78c8",
+      accent: "#ffe6f5",
+      geometry: "diamond",
     },
-    body: JSON.stringify({ name, score }),
-  });
-
-  if (!response.ok) {
-    let message = `Unable to save score: ${response.status}`;
-
-    try {
-      const payload = await response.json();
-      if (payload.error) {
-        message = payload.error;
-      }
-    } catch (error) {
-      // Ignore JSON parse issues and use the default message above.
-    }
-
-    throw new Error(message);
-  }
-
-  const payload = await response.json();
-  return normalizeScoreEntry(payload.score || {});
-}
-
-function formatDate(value) {
-  if (!value) {
-    return "--";
-  }
-
-  const normalized = value.includes("T") ? value : value.replace(" ", "T");
-  const date = new Date(normalized);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return date.toLocaleString("zh-CN", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
-}
-
-async function refreshScores() {
-  try {
-    state.scoreHistory = await fetchScoresFromApi();
-    state.scoreLoadFailed = false;
-  } catch (error) {
-    state.scoreHistory = [];
-    state.scoreLoadFailed = true;
-    console.warn("Unable to fetch scores from backend.", error);
-  }
-
-  renderScoreLog();
-  updateBestScoreLine();
-}
-
-function buildBlogPostUrl(slug) {
-  return `${getBlogBaseUrl()}/blogs/post.html?slug=${encodeURIComponent(slug)}`;
-}
-
-function escapeHtml(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
-function renderMissionBoard(posts) {
-  if (!ui.missionBoard) {
-    return;
-  }
-
-  const cards = [...posts];
-  while (cards.length < 4) {
-    cards.push(null);
-  }
-
-  ui.missionBoard.innerHTML = cards
-    .map((post) => {
-      if (!post) {
-        return `
-          <div class="note note-empty">
-            <span class="note-title">去 notes 控制台里选择一篇要展示的 blog</span>
-          </div>
-        `;
-      }
-
-      return `
-        <div class="note">
-          <span class="note-title">${escapeHtml(post.title)}</span>
-          <div class="note-footer">
-            <a class="btn btn-green note-read-more" href="${buildBlogPostUrl(post.slug)}" target="_blank" rel="noopener noreferrer" data-toast-message="文章 ${escapeHtml(post.title)} 已打开">Read More</a>
-          </div>
-        </div>
-      `;
-    })
-    .join("");
-}
-
-async function refreshMissionBoard() {
-  if (!ui.missionBoard) {
-    return;
-  }
-
-  ui.missionBoard.innerHTML = `
-    <div class="note note-empty">
-      <span class="note-title">正在读取 blog 展示配置...</span>
-    </div>
-  `;
-
-  try {
-    const payload = await fetchPublicContent();
-    const posts = Array.isArray(payload.posts) ? payload.posts : [];
-    const settings = normalizeSettings(payload.settings || {});
-    const featuredPosts = pickConfiguredPosts(posts, settings.featured_home, 4);
-    renderMissionBoard(featuredPosts);
-  } catch (error) {
-    ui.missionBoard.innerHTML = `
-      <div class="note note-empty">
-        <span class="note-title">Mission Board 加载失败：${escapeHtml(error.message)}</span>
-      </div>
-    `;
-    console.warn("Unable to load mission board content.", error);
-  }
-}
-
-function updateBestScoreLine() {
-  if (state.scoreLoadFailed) {
-    ui.bestScoreLine.textContent = "[BEST] backend offline";
-    return;
-  }
-
-  const best = state.scoreHistory[0];
-  ui.bestScoreLine.textContent = best ? `[BEST] ${best.name} ${best.score}` : "[BEST] no record yet";
-}
-
-function renderScoreLog() {
-  ui.scoreLogList.innerHTML = "";
-
-  if (state.scoreLoadFailed) {
-    ui.scoreLogEmpty.hidden = false;
-    ui.scoreLogEmpty.textContent = "Backend unavailable. Start Flask first, then refresh this page.";
-    return;
-  }
-
-  if (!state.scoreHistory.length) {
-    ui.scoreLogEmpty.hidden = false;
-    ui.scoreLogEmpty.textContent = "No score saved yet. Start a run first.";
-    return;
-  }
-
-  ui.scoreLogEmpty.hidden = true;
-
-  state.scoreHistory.forEach((entry, index) => {
-    const item = document.createElement("li");
-    item.className = "score-log-item";
-
-    const rank = document.createElement("span");
-    rank.className = "score-log-rank";
-    rank.textContent = `#${String(index + 1).padStart(2, "0")}`;
-
-    const player = document.createElement("span");
-    player.textContent = entry.name;
-
-    const score = document.createElement("span");
-    score.className = "score-log-score";
-    score.textContent = `${entry.score}`;
-
-    const time = document.createElement("span");
-    time.className = "score-log-time";
-    time.textContent = formatDate(entry.createdAt);
-
-    item.append(rank, player, score, time);
-    ui.scoreLogList.appendChild(item);
-  });
-}
-
-function setView(viewName) {
-  const views = {
-    intro: ui.introView,
-    game: ui.gameView,
-    log: ui.logView,
+    {
+      label: "BLOG",
+      url: "https://blog.gellow.top",
+      color: "#ffe780",
+      accent: "#fff8d5",
+      geometry: "triangle",
+    },
+    {
+      label: "RS.GELLOW.TOP",
+      url: "https://rs.gellow.top",
+      color: "#7cffcb",
+      accent: "#e9fff7",
+      geometry: "circle",
+    },
+  ];
+  const AMBIENT_TOTAL = 11;
+  const scene = {
+    width: 0,
+    height: 0,
+    dpr: Math.max(1, Math.min(window.devicePixelRatio || 1, 2)),
+    time: 0,
+    lastTs: 0,
+    sinks: 0,
+    shapes: [],
+    particles: [],
+    cloudDots: [],
+    pointer: {
+      x: 0,
+      y: 0,
+      down: false,
+      dragId: null,
+      offsetX: 0,
+      offsetY: 0,
+      vx: 0,
+      vy: 0,
+      lastMoveTs: 0,
+      lastRippleTs: 0,
+    },
+    hole: {
+      x: 168,
+      y: 170,
+      radius: 66,
+      core: 38,
+      influence: 220,
+      spin: 0,
+    },
   };
 
-  Object.entries(views).forEach(([name, element]) => {
-    element.hidden = name !== viewName;
-  });
-
-  ui.resumeButton.hidden = !state.runStarted || state.over;
-}
-
-function setStatus(text, label) {
-  state.statusText = text;
-  ui.statusLine.textContent = text;
-  if (label) {
-    ui.stateLabel.textContent = label;
-  }
-}
-
-function updateHud() {
-  ui.scoreText.textContent = String(state.score);
-  ui.livesText.textContent = String(state.lives);
-  ui.pelletsText.textContent = String(state.pelletsRemaining);
-  ui.currentScoreLine.textContent = `[SCORE] ${state.score}`;
-  updateBestScoreLine();
-}
-
-function resetRoundPositions() {
-  state.pacman = createPacman();
-  state.ghosts = createGhosts();
-}
-
-function resetGameState() {
-  state.map = cloneMap();
-  state.pelletsRemaining = countPellets(state.map);
-  state.score = 0;
-  state.lives = 3;
-  state.over = false;
-  state.scoreSaved = false;
-  state.endReason = "";
-  state.runStarted = true;
-  state.lastFrameTime = 0;
-  state.pacmanCooldown = 0;
-  state.ghostCooldown = 0;
-  resetRoundPositions();
-  hideScoreEntry();
-  updateHud();
-}
-
-function startRun() {
-  resetGameState();
-  setView("game");
-  setStatus("[RUN] pacman session started", "Running");
-  drawGame();
-  resumeRun();
-}
-
-function resumeRun() {
-  if (!state.runStarted || state.over || state.running) {
-    return;
-  }
-
-  state.running = true;
-  state.lastFrameTime = 0;
-  setView("game");
-  setStatus("[RUN] pacman session active", "Running");
-  state.frameId = window.requestAnimationFrame(gameLoop);
-}
-
-function pauseRun(reasonText = "[PAUSE] run on hold") {
-  if (state.frameId) {
-    window.cancelAnimationFrame(state.frameId);
-    state.frameId = null;
-  }
-
-  state.running = false;
-
-  if (state.runStarted && !state.over) {
-    setStatus(reasonText, "Paused");
-  }
-}
-
-function hideScoreEntry() {
-  ui.scoreEntryForm.hidden = true;
-  ui.scoreEntryForm.reset();
-}
-
-function showScoreEntry(message) {
-  ui.scoreEntryMessage.textContent = message;
-  ui.scoreEntryForm.hidden = false;
-  window.setTimeout(() => ui.scoreUsername.focus(), 20);
-}
-
-function insideMap(x, y) {
-  return y >= 0 && y < state.map.length && x >= 0 && x < state.map[0].length;
-}
-
-function canMoveTo(x, y) {
-  return insideMap(x, y) && state.map[y][x] !== "#";
-}
-
-function nextPosition(entity, directionName) {
-  const direction = DIRECTIONS[directionName];
-  return {
-    x: entity.x + direction.x,
-    y: entity.y + direction.y,
-  };
-}
-
-function movePacmanOneStep() {
-  const pacman = state.pacman;
-
-  if (pacman.nextDirection) {
-    const preferred = nextPosition(pacman, pacman.nextDirection);
-    if (canMoveTo(preferred.x, preferred.y)) {
-      pacman.direction = pacman.nextDirection;
+  function showFeedback(message, title, variant) {
+    if (window.GellowFeedback?.showToast) {
+      window.GellowFeedback.showToast(message, title, variant);
     }
   }
 
-  const target = nextPosition(pacman, pacman.direction);
-  if (!canMoveTo(target.x, target.y)) {
-    return;
-  }
-
-  pacman.x = target.x;
-  pacman.y = target.y;
-  pacman.mouthOpen = !pacman.mouthOpen;
-
-  const cell = state.map[pacman.y][pacman.x];
-  if (cell === "." || cell === "o") {
-    state.map[pacman.y][pacman.x] = " ";
-    state.score += cell === "o" ? 50 : 10;
-    state.pelletsRemaining -= 1;
-    updateHud();
-  }
-
-  if (state.pelletsRemaining <= 0) {
-    finishRun("Stage clear! Enter your username to save the win.");
-  }
-}
-
-function getAvailableDirections(entity) {
-  return Object.keys(DIRECTIONS).filter((directionName) => {
-    const target = nextPosition(entity, directionName);
-    return canMoveTo(target.x, target.y);
-  });
-}
-
-function chooseGhostDirection(ghost) {
-  const options = getAvailableDirections(ghost);
-  if (!options.length) {
-    return ghost.direction;
-  }
-
-  const filtered = options.filter((directionName) => {
-    return directionName !== OPPOSITE_DIRECTION[ghost.direction];
-  });
-  const candidates = filtered.length ? filtered : options;
-
-  if (ghost.strategy === "chase") {
-    return candidates.reduce((bestDirection, directionName) => {
-      const candidate = nextPosition(ghost, directionName);
-      const best = nextPosition(ghost, bestDirection);
-      const candidateDistance =
-        Math.abs(candidate.x - state.pacman.x) + Math.abs(candidate.y - state.pacman.y);
-      const bestDistance = Math.abs(best.x - state.pacman.x) + Math.abs(best.y - state.pacman.y);
-      return candidateDistance < bestDistance ? directionName : bestDirection;
-    }, candidates[0]);
-  }
-
-  const mixedOptions = [...candidates].sort(() => Math.random() - 0.5);
-  return mixedOptions[0];
-}
-
-function moveGhostsOneStep() {
-  state.ghosts.forEach((ghost) => {
-    ghost.direction = chooseGhostDirection(ghost);
-    const target = nextPosition(ghost, ghost.direction);
-    if (canMoveTo(target.x, target.y)) {
-      ghost.x = target.x;
-      ghost.y = target.y;
+  function setStatus(text) {
+    if (statusLabel) {
+      statusLabel.textContent = text;
     }
-  });
-}
-
-function detectCollision() {
-  return state.ghosts.some((ghost) => ghost.x === state.pacman.x && ghost.y === state.pacman.y);
-}
-
-function loseLife() {
-  state.lives -= 1;
-  updateHud();
-
-  if (state.lives <= 0) {
-    finishRun("Caught by a ghost. Enter your username to save this score.");
-    return;
   }
 
-  resetRoundPositions();
-  setStatus(`[HIT] ghost contact, ${state.lives} lives left`, "Running");
-}
+  function createCloudDots() {
+    const dots = [];
+    const count = Math.max(90, Math.floor(scene.width / 18));
 
-function finishRun(message) {
-  state.over = true;
-  pauseRun(`[END] ${message}`);
-  state.endReason = message;
-  setStatus(`[END] ${message}`, "Game Over");
-  drawGame();
+    for (let index = 0; index < count; index += 1) {
+      dots.push({
+        x: scene.width * (0.32 + Math.random() * 0.66),
+        y: scene.height * (0.08 + Math.random() * 0.84),
+        radius: 1 + Math.random() * 2.6,
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.25 + Math.random() * 0.8,
+      });
+    }
 
-  if (!state.scoreSaved) {
-    showScoreEntry(message);
+    return dots;
   }
-}
 
-async function saveCurrentScore(name) {
-  await saveScoreToApi(name, state.score);
-  state.scoreSaved = true;
-  hideScoreEntry();
-  await refreshScores();
-  setView("log");
-  setStatus("[SAVE] score stored in database", "Saved");
-  showFeedback("Score Saved", "System Notice", "success");
-}
+  function createShape(spec, kind, index) {
+    const radius = spec.radius || (kind === "portal" ? 44 + Math.random() * 6 : 18 + Math.random() * 28);
+    const spawnX = scene.width * (0.56 + Math.random() * 0.38);
+    const spawnY = -Math.random() * scene.height * 0.55 - index * 36;
 
-function handleArcadeAction(action) {
-  if (action === "start") {
-    if (!state.runStarted || state.over) {
-      startRun();
+    return {
+      id: `${kind}-${index}-${Math.random().toString(16).slice(2, 7)}`,
+      kind,
+      label: spec.label || "",
+      url: spec.url || "",
+      color: spec.color,
+      accent: spec.accent,
+      geometry: spec.geometry,
+      radius,
+      x: spawnX,
+      y: spawnY,
+      vx: (Math.random() - 0.5) * 110,
+      vy: 60 + Math.random() * 120,
+      angle: Math.random() * Math.PI * 2,
+      spin: (Math.random() - 0.5) * 1.9,
+      mass: radius * radius,
+      state: "free",
+      absorb: 0,
+      triggered: false,
+      navigated: false,
+    };
+  }
+
+  function createAmbientSpec() {
+    const palette = [
+      { color: "#1d2751", accent: "#68c8ff", geometry: "square" },
+      { color: "#131d3a", accent: "#7cffcb", geometry: "triangle" },
+      { color: "#291942", accent: "#ff78c8", geometry: "diamond" },
+      { color: "#192443", accent: "#ffe780", geometry: "hex" },
+      { color: "#1a2140", accent: "#8ab4ff", geometry: "circle" },
+    ];
+
+    return palette[Math.floor(Math.random() * palette.length)];
+  }
+
+  function rebuildShapes() {
+    scene.shapes = PORTALS.map((portal, index) => createShape(portal, "portal", index));
+
+    for (let index = 0; index < AMBIENT_TOTAL; index += 1) {
+      scene.shapes.push(createShape(createAmbientSpec(), "ambient", index));
+    }
+  }
+
+  function resizeScene() {
+    scene.width = window.innerWidth;
+    scene.height = window.innerHeight;
+    scene.dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
+    canvas.width = Math.floor(scene.width * scene.dpr);
+    canvas.height = Math.floor(scene.height * scene.dpr);
+    canvas.style.width = `${scene.width}px`;
+    canvas.style.height = `${scene.height}px`;
+    ctx.setTransform(scene.dpr, 0, 0, scene.dpr, 0, 0);
+
+    scene.hole.x = Math.min(138, scene.width * 0.14);
+    scene.hole.y = Math.min(122, scene.height * 0.17);
+    scene.hole.radius = scene.width < 700 ? 54 : 66;
+    scene.hole.core = scene.width < 700 ? 30 : 38;
+    scene.hole.influence = scene.width < 700 ? 180 : 220;
+    scene.cloudDots = createCloudDots();
+
+    if (!scene.shapes.length) {
+      rebuildShapes();
       return;
     }
 
-    resumeRun();
-    return;
+    scene.shapes.forEach((shape) => {
+      shape.x = Math.min(Math.max(shape.radius + 10, shape.x), scene.width - shape.radius - 10);
+      shape.y = Math.min(Math.max(shape.radius + 10, shape.y), scene.height - shape.radius - 10);
+    });
   }
 
-  if (action === "restart") {
-    startRun();
-    return;
-  }
-
-  if (action === "log") {
-    if (state.running) {
-      pauseRun("[PAUSE] checking score log");
+  function updateMetrics() {
+    if (linkedCount) {
+      linkedCount.textContent = String(PORTALS.length);
     }
-
-    setView("log");
-    void refreshScores();
-    return;
+    if (ambientCount) {
+      const ambient = scene.shapes.filter((shape) => shape.kind === "ambient" && shape.state !== "gone").length;
+      ambientCount.textContent = String(ambient);
+    }
+    if (sinkCount) {
+      sinkCount.textContent = String(scene.sinks);
+    }
   }
 
-  if (action === "resume") {
-    if (!state.runStarted || state.over) {
-      startRun();
+  function emitPointerRipple(x, y, kind) {
+    scene.particles.push({
+      kind,
+      x,
+      y,
+      age: 0,
+      life: kind === "move" ? 0.5 : 0.95,
+      rotation: Math.random() * Math.PI * 2,
+      scale: kind === "move" ? 14 + Math.random() * 14 : 28 + Math.random() * 34,
+      color: kind === "move" ? "#68c8ff" : "#7cffcb",
+    });
+  }
+
+  function emitShards(shape) {
+    const pieces = shape.kind === "portal" ? 14 : 9;
+    for (let index = 0; index < pieces; index += 1) {
+      scene.particles.push({
+        kind: "shard",
+        x: shape.x,
+        y: shape.y,
+        age: 0,
+        life: 0.7 + Math.random() * 0.35,
+        vx: (Math.random() - 0.5) * 180,
+        vy: (Math.random() - 0.5) * 180,
+        pull: 160 + Math.random() * 140,
+        rotation: Math.random() * Math.PI * 2,
+        spin: (Math.random() - 0.5) * 8,
+        scale: 4 + Math.random() * 7,
+        color: shape.accent,
+      });
+    }
+  }
+
+  function hitTest(x, y) {
+    for (let index = scene.shapes.length - 1; index >= 0; index -= 1) {
+      const shape = scene.shapes[index];
+      if (shape.state === "absorbing" || shape.state === "gone") {
+        continue;
+      }
+
+      const dx = x - shape.x;
+      const dy = y - shape.y;
+      if (dx * dx + dy * dy <= shape.radius * shape.radius) {
+        return shape;
+      }
+    }
+    return null;
+  }
+
+  function moveShapeToFront(shape) {
+    const index = scene.shapes.findIndex((entry) => entry.id === shape.id);
+    if (index >= 0) {
+      scene.shapes.splice(index, 1);
+      scene.shapes.push(shape);
+    }
+  }
+
+  function beginAbsorb(shape) {
+    if (!shape || shape.state === "absorbing" || shape.state === "gone") {
       return;
     }
 
-    resumeRun();
-    return;
+    shape.state = "absorbing";
+    shape.absorb = 0;
+    shape.spin = (shape.spin >= 0 ? 1 : -1) * (3.4 + Math.random() * 1.6);
+    scene.pointer.dragId = scene.pointer.dragId === shape.id ? null : scene.pointer.dragId;
+
+    if (shape.url && !shape.triggered) {
+      shape.triggered = true;
+      const variant = /(^|\.)gellow\.top$/i.test(new URL(shape.url).hostname) ? "nav" : "open";
+      showFeedback(`${shape.label} portal armed`, "Singularity Route", variant);
+      setStatus(`ROUTING ${shape.label}`);
+    }
   }
 
-  if (action === "home") {
-    if (state.running) {
-      pauseRun("[PAUSE] back to intro");
+  function respawnAmbientShape(shape) {
+    const replacement = createShape(createAmbientSpec(), "ambient", Math.floor(Math.random() * 10000));
+    Object.assign(shape, replacement);
+  }
+
+  function navigateShape(shape) {
+    if (shape.navigated || !shape.url) {
+      return;
     }
 
-    hideScoreEntry();
-    setView("intro");
-    if (!state.runStarted) {
-      setStatus("[IDLE] press start to begin", "Ready");
+    shape.navigated = true;
+    window.setTimeout(() => {
+      window.location.href = shape.url;
+    }, 240);
+  }
+
+  function updatePointerPosition(event) {
+    const rect = canvas.getBoundingClientRect();
+    const nextX = event.clientX - rect.left;
+    const nextY = event.clientY - rect.top;
+    const dt = Math.max(16, event.timeStamp - (scene.pointer.lastMoveTs || event.timeStamp));
+
+    scene.pointer.vx = ((nextX - scene.pointer.x) / dt) * 1000;
+    scene.pointer.vy = ((nextY - scene.pointer.y) / dt) * 1000;
+    scene.pointer.x = nextX;
+    scene.pointer.y = nextY;
+    scene.pointer.lastMoveTs = event.timeStamp;
+  }
+
+  canvas.addEventListener("pointerdown", (event) => {
+    updatePointerPosition(event);
+    emitPointerRipple(scene.pointer.x, scene.pointer.y, "click");
+    scene.pointer.down = true;
+
+    const shape = hitTest(scene.pointer.x, scene.pointer.y);
+    if (!shape) {
+      setStatus("FIELD STABLE");
+      return;
     }
-    return;
+
+    scene.pointer.dragId = shape.id;
+    scene.pointer.offsetX = scene.pointer.x - shape.x;
+    scene.pointer.offsetY = scene.pointer.y - shape.y;
+    shape.state = "dragging";
+    shape.vx = 0;
+    shape.vy = 0;
+    moveShapeToFront(shape);
+    setStatus(shape.label ? `DRAG ${shape.label}` : "DRAG DEBRIS");
+    canvas.setPointerCapture(event.pointerId);
+  });
+
+  canvas.addEventListener("pointermove", (event) => {
+    updatePointerPosition(event);
+
+    if (event.timeStamp - scene.pointer.lastRippleTs > 38) {
+      emitPointerRipple(scene.pointer.x, scene.pointer.y, "move");
+      scene.pointer.lastRippleTs = event.timeStamp;
+    }
+
+    if (!scene.pointer.dragId) {
+      return;
+    }
+
+    const shape = scene.shapes.find((entry) => entry.id === scene.pointer.dragId);
+    if (!shape) {
+      return;
+    }
+
+    shape.x = scene.pointer.x - scene.pointer.offsetX;
+    shape.y = scene.pointer.y - scene.pointer.offsetY;
+    shape.angle += 0.04;
+
+    const dx = scene.hole.x - shape.x;
+    const dy = scene.hole.y - shape.y;
+    const dist = Math.hypot(dx, dy);
+    if (dist < scene.hole.radius + shape.radius * 0.65) {
+      beginAbsorb(shape);
+      emitShards(shape);
+    }
+  });
+
+  function releaseDrag(pointerId) {
+    const shape = scene.shapes.find((entry) => entry.id === scene.pointer.dragId);
+    scene.pointer.down = false;
+
+    if (!shape) {
+      scene.pointer.dragId = null;
+      return;
+    }
+
+    if (shape.state !== "absorbing") {
+      shape.state = "free";
+      shape.vx = scene.pointer.vx * 0.28;
+      shape.vy = scene.pointer.vy * 0.28;
+
+      const dx = scene.hole.x - shape.x;
+      const dy = scene.hole.y - shape.y;
+      if (Math.hypot(dx, dy) < scene.hole.radius + shape.radius * 0.9) {
+        beginAbsorb(shape);
+        emitShards(shape);
+      }
+    }
+
+    scene.pointer.dragId = null;
+    setStatus("FIELD STABLE");
+
+    if (canvas.hasPointerCapture(pointerId)) {
+      canvas.releasePointerCapture(pointerId);
+    }
   }
 
-  if (action === "dismiss-score") {
-    state.scoreSaved = true;
-    hideScoreEntry();
-    setView("log");
-    void refreshScores();
-    setStatus("[SKIP] score discarded", "Skipped");
-  }
-}
+  canvas.addEventListener("pointerup", (event) => {
+    releaseDrag(event.pointerId);
+  });
 
-function drawBoard() {
-  ctx.clearRect(0, 0, ui.canvas.width, ui.canvas.height);
-  ctx.fillStyle = "#000";
-  ctx.fillRect(0, 0, ui.canvas.width, ui.canvas.height);
+  canvas.addEventListener("pointercancel", (event) => {
+    releaseDrag(event.pointerId);
+  });
 
-  state.map.forEach((row, rowIndex) => {
-    row.forEach((cell, colIndex) => {
-      const x = colIndex * TILE_SIZE;
-      const y = rowIndex * TILE_SIZE;
+  window.addEventListener("resize", resizeScene);
 
-      if (cell === "#") {
-        ctx.fillStyle = "#1b38ff";
-        ctx.fillRect(x + 3, y + 3, TILE_SIZE - 6, TILE_SIZE - 6);
-        ctx.strokeStyle = "#5fc6ff";
-        ctx.lineWidth = 2;
-        ctx.strokeRect(x + 6, y + 6, TILE_SIZE - 12, TILE_SIZE - 12);
+  function updateFreeShape(shape, dt) {
+    const drag = Math.exp(-1.2 * dt);
+    shape.vx *= drag;
+    shape.vy *= drag;
+    shape.vy += 880 * dt;
+
+    const dx = scene.hole.x - shape.x;
+    const dy = scene.hole.y - shape.y;
+    const dist = Math.hypot(dx, dy);
+
+    if (dist < scene.hole.influence) {
+      const strength = (1 - dist / scene.hole.influence) * 760;
+      const nx = dx / Math.max(1, dist);
+      const ny = dy / Math.max(1, dist);
+      shape.vx += nx * strength * dt;
+      shape.vy += ny * strength * dt;
+
+      if (dist < scene.hole.radius + shape.radius * 0.52) {
+        beginAbsorb(shape);
+        emitShards(shape);
         return;
       }
+    }
 
-      if (cell === "." || cell === "o") {
-        ctx.fillStyle = cell === "o" ? "#ff8ad8" : "#ffe66d";
-        ctx.beginPath();
-        ctx.arc(
-          x + TILE_SIZE / 2,
-          y + TILE_SIZE / 2,
-          cell === "o" ? 5 : 3,
-          0,
-          Math.PI * 2
-        );
-        ctx.fill();
+    shape.x += shape.vx * dt;
+    shape.y += shape.vy * dt;
+    shape.angle += shape.spin * dt;
+
+    const left = shape.radius + 8;
+    const right = scene.width - shape.radius - 8;
+    const top = shape.radius + 8;
+    const bottom = scene.height - shape.radius - 8;
+    const bounce = 0.78;
+
+    if (shape.x < left) {
+      shape.x = left;
+      shape.vx = Math.abs(shape.vx) * bounce;
+    } else if (shape.x > right) {
+      shape.x = right;
+      shape.vx = -Math.abs(shape.vx) * bounce;
+    }
+
+    if (shape.y < top) {
+      shape.y = top;
+      shape.vy = Math.abs(shape.vy) * bounce;
+    } else if (shape.y > bottom) {
+      shape.y = bottom;
+      shape.vy = -Math.abs(shape.vy) * bounce;
+      shape.spin *= 0.98;
+    }
+  }
+
+  function resolveCollisions() {
+    for (let outer = 0; outer < scene.shapes.length; outer += 1) {
+      const a = scene.shapes[outer];
+      if (a.state !== "free") {
+        continue;
+      }
+
+      for (let inner = outer + 1; inner < scene.shapes.length; inner += 1) {
+        const b = scene.shapes[inner];
+        if (b.state !== "free") {
+          continue;
+        }
+
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const dist = Math.hypot(dx, dy) || 0.001;
+        const minDist = a.radius + b.radius;
+
+        if (dist >= minDist) {
+          continue;
+        }
+
+        const nx = dx / dist;
+        const ny = dy / dist;
+        const overlap = minDist - dist;
+        const totalMass = a.mass + b.mass;
+
+        a.x -= nx * overlap * (b.mass / totalMass);
+        a.y -= ny * overlap * (b.mass / totalMass);
+        b.x += nx * overlap * (a.mass / totalMass);
+        b.y += ny * overlap * (a.mass / totalMass);
+
+        const rvx = b.vx - a.vx;
+        const rvy = b.vy - a.vy;
+        const velocityAlongNormal = rvx * nx + rvy * ny;
+        if (velocityAlongNormal > 0) {
+          continue;
+        }
+
+        const impulse = (-1.02 * velocityAlongNormal) / ((1 / a.mass) + (1 / b.mass));
+        const ix = impulse * nx;
+        const iy = impulse * ny;
+
+        a.vx -= ix / a.mass;
+        a.vy -= iy / a.mass;
+        b.vx += ix / b.mass;
+        b.vy += iy / b.mass;
+      }
+    }
+  }
+
+  function updateAbsorbingShape(shape, dt) {
+    shape.absorb += dt * 1.35;
+    const pull = 5.5 + shape.absorb * 9;
+    shape.x += (scene.hole.x - shape.x) * Math.min(1, dt * pull);
+    shape.y += (scene.hole.y - shape.y) * Math.min(1, dt * pull);
+    shape.angle += shape.spin * (1 + shape.absorb * 3.8) * dt;
+
+    if (shape.absorb > 0.82 && !shape._burst) {
+      shape._burst = true;
+      emitShards(shape);
+    }
+
+    if (shape.absorb < 1.02) {
+      return;
+    }
+
+    scene.sinks += 1;
+    updateMetrics();
+
+    if (shape.kind === "portal") {
+      navigateShape(shape);
+      shape.state = "gone";
+      return;
+    }
+
+    delete shape._burst;
+    respawnAmbientShape(shape);
+  }
+
+  function updateParticles(dt) {
+    scene.particles = scene.particles.filter((particle) => {
+      particle.age += dt;
+
+      if (particle.kind === "shard") {
+        const dx = scene.hole.x - particle.x;
+        const dy = scene.hole.y - particle.y;
+        const dist = Math.hypot(dx, dy) || 1;
+        particle.vx += (dx / dist) * particle.pull * dt;
+        particle.vy += (dy / dist) * particle.pull * dt;
+        particle.x += particle.vx * dt;
+        particle.y += particle.vy * dt;
+        particle.rotation += particle.spin * dt;
+      }
+
+      return particle.age < particle.life;
+    });
+  }
+
+  function update(dt) {
+    scene.time += dt;
+    scene.hole.spin += dt;
+
+    scene.shapes.forEach((shape) => {
+      if (shape.state === "dragging") {
+        return;
+      }
+      if (shape.state === "absorbing") {
+        updateAbsorbingShape(shape, dt);
+        return;
+      }
+      if (shape.state === "free") {
+        updateFreeShape(shape, dt);
       }
     });
-  });
-}
 
-function drawPacman() {
-  if (!state.pacman) {
-    return;
+    resolveCollisions();
+    updateParticles(dt);
+    updateMetrics();
   }
 
-  const pacman = state.pacman;
-  const centerX = pacman.x * TILE_SIZE + TILE_SIZE / 2;
-  const centerY = pacman.y * TILE_SIZE + TILE_SIZE / 2;
-  const radius = TILE_SIZE * 0.38;
-  const baseAngle = DIRECTIONS[pacman.direction].angle;
-  const mouthOffset = pacman.mouthOpen ? 0.24 * Math.PI : 0.08 * Math.PI;
+  function drawBackground() {
+    ctx.clearRect(0, 0, scene.width, scene.height);
 
-  ctx.fillStyle = "#ffe66d";
-  ctx.beginPath();
-  ctx.moveTo(centerX, centerY);
-  ctx.arc(
-    centerX,
-    centerY,
-    radius,
-    baseAngle + mouthOffset,
-    baseAngle - mouthOffset + Math.PI * 2
-  );
-  ctx.closePath();
-  ctx.fill();
-}
+    const gradient = ctx.createLinearGradient(0, 0, 0, scene.height);
+    gradient.addColorStop(0, "rgba(6, 8, 19, 0.18)");
+    gradient.addColorStop(1, "rgba(4, 6, 14, 0.42)");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, scene.width, scene.height);
 
-function drawGhost(ghost) {
-  const left = ghost.x * TILE_SIZE + 4;
-  const top = ghost.y * TILE_SIZE + 5;
-  const width = TILE_SIZE - 8;
-  const height = TILE_SIZE - 10;
-  const bottom = top + height;
+    scene.cloudDots.forEach((dot, index) => {
+      const driftX = Math.sin(scene.time * dot.speed + dot.phase) * 8;
+      const driftY = Math.cos(scene.time * dot.speed * 0.8 + dot.phase) * 5;
+      const x = dot.x + driftX;
+      const y = dot.y + driftY;
+      const dist = Math.hypot(scene.pointer.x - x, scene.pointer.y - y);
+      const glow = dist < 120 ? 0.65 : 0.22;
 
-  ctx.fillStyle = ghost.color;
-  ctx.beginPath();
-  ctx.moveTo(left, bottom);
-  ctx.lineTo(left, top + height * 0.45);
-  ctx.quadraticCurveTo(left + width * 0.1, top, left + width * 0.35, top);
-  ctx.lineTo(left + width * 0.65, top);
-  ctx.quadraticCurveTo(left + width * 0.9, top, left + width, top + height * 0.45);
-  ctx.lineTo(left + width, bottom);
-  ctx.lineTo(left + width * 0.8, bottom - 6);
-  ctx.lineTo(left + width * 0.6, bottom);
-  ctx.lineTo(left + width * 0.4, bottom - 6);
-  ctx.lineTo(left + width * 0.2, bottom);
-  ctx.closePath();
-  ctx.fill();
+      ctx.fillStyle = `rgba(124, 255, 203, ${glow})`;
+      ctx.beginPath();
+      ctx.arc(x, y, dot.radius, 0, Math.PI * 2);
+      ctx.fill();
 
-  ctx.fillStyle = "#fff";
-  ctx.beginPath();
-  ctx.arc(left + width * 0.35, top + height * 0.42, 4, 0, Math.PI * 2);
-  ctx.arc(left + width * 0.68, top + height * 0.42, 4, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = "#111";
-  ctx.beginPath();
-  ctx.arc(left + width * 0.35, top + height * 0.45, 2, 0, Math.PI * 2);
-  ctx.arc(left + width * 0.68, top + height * 0.45, 2, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-function drawOverlay(text, detail) {
-  ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
-  ctx.fillRect(0, 0, ui.canvas.width, ui.canvas.height);
-
-  ctx.fillStyle = "#ffe66d";
-  ctx.font = 'bold 30px "Courier New", monospace';
-  ctx.textAlign = "center";
-  ctx.fillText(text, ui.canvas.width / 2, ui.canvas.height / 2 - 6);
-
-  ctx.fillStyle = "#fff5cc";
-  ctx.font = '16px "Courier New", monospace';
-  ctx.fillText(detail, ui.canvas.width / 2, ui.canvas.height / 2 + 24);
-}
-
-function drawGame() {
-  drawBoard();
-  state.ghosts.forEach(drawGhost);
-  drawPacman();
-
-  if (!state.runStarted) {
-    drawOverlay("READY", "Press Start Game to launch Pac-Man.");
-  } else if (state.over) {
-    drawOverlay("GAME OVER", state.endReason || "Run finished.");
-  } else if (!state.running) {
-    drawOverlay("PAUSED", "Resume the run or open the score log.");
-  }
-}
-
-function gameLoop(timestamp) {
-  if (!state.running) {
-    return;
+      if (index % 5 === 0 && dist < 150) {
+        ctx.strokeStyle = `rgba(104, 200, 255, ${0.16 + (1 - dist / 150) * 0.22})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(scene.pointer.x, scene.pointer.y);
+        ctx.stroke();
+      }
+    });
   }
 
-  if (!state.lastFrameTime) {
-    state.lastFrameTime = timestamp;
+  function drawBlackHole() {
+    const hole = scene.hole;
+
+    ctx.save();
+    ctx.translate(hole.x, hole.y);
+
+    for (let ring = 4; ring >= 1; ring -= 1) {
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(47, 124, 255, ${0.05 * ring})`;
+      ctx.arc(0, 0, hole.radius + ring * 20 + Math.sin(scene.time * 2 + ring) * 4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.rotate(scene.time * 0.6);
+    ctx.strokeStyle = "rgba(255, 120, 200, 0.36)";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, hole.radius + 18, hole.radius * 0.58, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.rotate(-scene.time * 1.1);
+    ctx.strokeStyle = "rgba(124, 255, 203, 0.28)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, hole.radius + 30, hole.radius * 0.3, 0.2, 0, Math.PI * 2);
+    ctx.stroke();
+
+    const coreGradient = ctx.createRadialGradient(0, 0, 6, 0, 0, hole.radius);
+    coreGradient.addColorStop(0, "rgba(0, 0, 0, 0.98)");
+    coreGradient.addColorStop(0.55, "rgba(4, 6, 18, 0.96)");
+    coreGradient.addColorStop(1, "rgba(62, 25, 96, 0.22)");
+    ctx.fillStyle = coreGradient;
+    ctx.beginPath();
+    ctx.arc(0, 0, hole.radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.fillStyle = "#000";
+    ctx.arc(0, 0, hole.core, 0, Math.PI * 2);
+    ctx.fill();
+
+    for (let index = 0; index < 8; index += 1) {
+      const angle = scene.time * (0.8 + index * 0.06) + index * 0.8;
+      const orbit = hole.radius + 16 + Math.sin(scene.time * 2 + index) * 6;
+      ctx.fillStyle = index % 2 === 0 ? "rgba(255, 231, 128, 0.85)" : "rgba(104, 200, 255, 0.85)";
+      ctx.beginPath();
+      ctx.arc(Math.cos(angle) * orbit, Math.sin(angle) * orbit * 0.52, 2.3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.restore();
   }
 
-  const delta = timestamp - state.lastFrameTime;
-  state.lastFrameTime = timestamp;
-  state.pacmanCooldown += delta;
-  state.ghostCooldown += delta;
+  function buildShapePath(shape, radius, wobble) {
+    const stepsByGeometry = {
+      triangle: 3,
+      square: 4,
+      diamond: 4,
+      hex: 6,
+    };
 
-  if (state.pacmanCooldown >= 290) {
-    movePacmanOneStep();
-    state.pacmanCooldown = 0;
+    if (shape.geometry === "circle") {
+      ctx.beginPath();
+      ctx.ellipse(0, 0, radius * (1 + wobble * 0.4), radius * (1 - wobble * 0.2), 0, 0, Math.PI * 2);
+      return;
+    }
+
+    const steps = stepsByGeometry[shape.geometry] || 6;
+    const startAngle = shape.geometry === "triangle" ? -Math.PI / 2 : Math.PI / 4;
+
+    ctx.beginPath();
+    for (let index = 0; index < steps; index += 1) {
+      const angle = startAngle + (Math.PI * 2 * index) / steps;
+      let pointRadius = radius;
+
+      if (shape.geometry === "diamond" && index % 2 === 1) {
+        pointRadius *= 0.64;
+      }
+
+      const distortion = 1 + wobble * Math.sin(angle * 3 + scene.time * 14 + radius);
+      const x = Math.cos(angle) * pointRadius * distortion;
+      const y = Math.sin(angle) * pointRadius * distortion;
+
+      if (index === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
+      }
+    }
+    ctx.closePath();
   }
 
-  if (!state.over && detectCollision()) {
-    loseLife();
+  function drawShape(shape) {
+    if (shape.state === "gone") {
+      return;
+    }
+
+    const wobble = shape.state === "absorbing" ? shape.absorb * 0.45 : 0;
+    const scale = shape.state === "absorbing" ? Math.max(0.12, 1 - shape.absorb * 0.88) : 1;
+
+    ctx.save();
+    ctx.translate(shape.x, shape.y);
+    ctx.rotate(shape.angle);
+    ctx.scale(scale, scale);
+
+    buildShapePath(shape, shape.radius, wobble);
+    ctx.fillStyle = shape.color;
+    ctx.fill();
+
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = shape.accent;
+    ctx.stroke();
+
+    if (shape.kind === "portal") {
+      ctx.fillStyle = shape.accent;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = `700 ${Math.max(11, Math.min(18, shape.radius * 0.34))}px "Courier New", monospace`;
+      ctx.fillText(shape.label, 0, 1);
+    }
+
+    ctx.restore();
   }
 
-  if (!state.over && state.ghostCooldown >= 380) {
-    moveGhostsOneStep();
-    state.ghostCooldown = 0;
+  function drawParticles() {
+    scene.particles.forEach((particle) => {
+      const progress = particle.age / particle.life;
+      const alpha = 1 - progress;
+
+      ctx.save();
+      ctx.translate(particle.x, particle.y);
+      ctx.rotate(particle.rotation + progress * 2.4);
+
+      if (particle.kind === "move") {
+        ctx.strokeStyle = `rgba(104, 200, 255, ${alpha * 0.55})`;
+        ctx.lineWidth = 1.6;
+        ctx.strokeRect(-particle.scale * progress, -particle.scale * progress, particle.scale * 2 * progress, particle.scale * 2 * progress);
+        ctx.beginPath();
+        ctx.arc(0, 0, particle.scale * progress * 0.8, 0, Math.PI * 2);
+        ctx.stroke();
+      } else if (particle.kind === "click") {
+        ctx.strokeStyle = `rgba(124, 255, 203, ${alpha * 0.8})`;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        for (let index = 0; index < 6; index += 1) {
+          const angle = (Math.PI * 2 * index) / 6;
+          const radius = particle.scale * progress * (index % 2 === 0 ? 1 : 0.68);
+          const x = Math.cos(angle) * radius;
+          const y = Math.sin(angle) * radius;
+          if (index === 0) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
+        }
+        ctx.closePath();
+        ctx.stroke();
+      } else if (particle.kind === "shard") {
+        ctx.fillStyle = particle.color.replace("rgb", "rgba");
+        ctx.globalAlpha = alpha * 0.9;
+        ctx.fillRect(-particle.scale * 0.5, -particle.scale * 0.5, particle.scale, particle.scale);
+      }
+
+      ctx.restore();
+    });
   }
 
-  if (!state.over && detectCollision()) {
-    loseLife();
+  function render() {
+    drawBackground();
+    drawBlackHole();
+    scene.shapes.forEach(drawShape);
+    drawParticles();
   }
 
-  drawGame();
-
-  if (state.running) {
-    state.frameId = window.requestAnimationFrame(gameLoop);
-  }
-}
-
-function handleKeyboardInput(event) {
-  if (document.activeElement === ui.scoreUsername) {
-    return;
+  function tick(timestamp) {
+    const dt = Math.min(0.032, (timestamp - (scene.lastTs || timestamp)) / 1000 || 0.016);
+    scene.lastTs = timestamp;
+    update(dt);
+    render();
+    window.requestAnimationFrame(tick);
   }
 
-  const direction = KEY_TO_DIRECTION[event.key];
-  if (!direction) {
-    return;
-  }
-
-  event.preventDefault();
-
-  if (!state.runStarted || state.over) {
-    return;
-  }
-
-  state.pacman.nextDirection = direction;
-}
-
-document.querySelectorAll("[data-arcade-action]").forEach((button) => {
-  button.addEventListener("click", () => {
-    handleArcadeAction(button.dataset.arcadeAction);
-  });
-});
-
-ui.scoreEntryForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-
-  const username = ui.scoreUsername.value.trim() || "Player1";
-
-  try {
-    await saveCurrentScore(username);
-  } catch (error) {
-    ui.scoreEntryMessage.textContent = `Save failed: ${error.message}`;
-    showFeedback("Score Save Failed", "System Notice", "error");
-    console.warn("Unable to save score to backend.", error);
-  }
-});
-
-document.addEventListener("keydown", handleKeyboardInput);
-
-window.addEventListener("blur", () => {
-  if (state.running) {
-    pauseRun("[PAUSE] browser focus lost");
-    drawGame();
-  }
-});
-
-setView("intro");
-updateHud();
-drawGame();
-void refreshScores();
-void refreshMissionBoard();
+  resizeScene();
+  updateMetrics();
+  setStatus("FIELD STABLE");
+  window.requestAnimationFrame(tick);
+})();
