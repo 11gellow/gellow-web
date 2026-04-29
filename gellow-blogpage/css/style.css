@@ -1135,7 +1135,7 @@ footer {
   top: 96px;
   right: 18px;
   z-index: 24;
-  width: min(420px, calc(100vw - 32px));
+  width: min(680px, calc(100vw - 36px));
   transition: opacity 0.18s ease, transform 0.18s ease;
 }
 
@@ -1143,9 +1143,13 @@ footer {
   display: none !important;
 }
 
+.game-window.is-dragging {
+  transition: none;
+}
+
 .game-window-shell {
   background: linear-gradient(180deg, rgba(42, 27, 69, 0.96), rgba(18, 13, 31, 1));
-  padding: 16px;
+  padding: 12px;
 }
 
 .game-window-head {
@@ -1153,7 +1157,14 @@ footer {
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.game-window.is-dragging .game-window-head {
+  cursor: grabbing;
 }
 
 .game-window-close {
@@ -1173,14 +1184,96 @@ footer {
   border: 3px solid var(--black);
   box-shadow: 6px 6px 0 var(--black);
   background: #000;
+  aspect-ratio: 16 / 9;
 }
 
 .game-window iframe {
   display: block;
   width: 100%;
-  height: 620px;
+  height: 100%;
   border: 0;
   background: #000;
+}
+
+.password-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 26;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(6, 4, 12, 0.68);
+  backdrop-filter: blur(6px);
+}
+
+.password-modal[hidden] {
+  display: none !important;
+}
+
+.password-modal-shell {
+  width: min(420px, 100%);
+  background: linear-gradient(180deg, rgba(42, 27, 69, 0.98), rgba(18, 13, 31, 1));
+  padding: 18px;
+}
+
+.password-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.password-modal-head h2 {
+  margin: 0;
+  font-size: clamp(24px, 5vw, 32px);
+  text-transform: uppercase;
+  text-shadow: 3px 3px 0 var(--black);
+}
+
+.password-modal-close {
+  width: 38px;
+  height: 38px;
+  border: 3px solid var(--black);
+  background: var(--red);
+  color: #fff;
+  box-shadow: 4px 4px 0 var(--black);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.password-form {
+  display: grid;
+  gap: 12px;
+}
+
+.password-field {
+  font-size: 12px;
+  color: var(--mint);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.password-form input {
+  width: 100%;
+  padding: 14px;
+  border: 4px solid var(--black);
+  background: #fff9d9;
+  color: var(--black);
+  font: inherit;
+}
+
+.password-error {
+  margin: 0;
+  color: #ff9ab0;
+  line-height: 1.6;
+}
+
+.password-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .bookmark-dock {
@@ -1256,41 +1349,6 @@ footer {
   transform: translateY(-50%) translateX(0);
 }
 
-.controller-gate {
-  position: fixed;
-  left: 12px;
-  bottom: 12px;
-  z-index: 15;
-  width: 210px;
-  user-select: none;
-}
-
-.controller-visual {
-  display: block;
-  width: 100%;
-  height: auto;
-  pointer-events: none;
-}
-
-.gate-hit {
-  position: absolute;
-  border: 0;
-  background: rgba(255, 255, 255, 0);
-  cursor: pointer;
-}
-
-.gate-hit.is-hit {
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.26);
-  border-radius: 999px;
-}
-
-.gate-up { left: 81px; top: 72px; width: 32px; height: 28px; }
-.gate-down { left: 81px; top: 122px; width: 32px; height: 28px; }
-.gate-left { left: 52px; top: 97px; width: 28px; height: 32px; }
-.gate-right { left: 114px; top: 97px; width: 28px; height: 32px; }
-.gate-green { left: 160px; top: 105px; width: 34px; height: 34px; border-radius: 999px; }
-.gate-red { left: 182px; top: 77px; width: 34px; height: 34px; border-radius: 999px; }
-
 .archive-shell,
 .post-detail {
   background: linear-gradient(180deg, rgba(36, 22, 60, 0.92), rgba(22, 18, 37, 0.98));
@@ -1354,17 +1412,6 @@ footer {
     right: 10px;
     bottom: 110px;
   }
-
-  .controller-gate {
-    width: 172px;
-  }
-
-  .gate-up { left: 66px; top: 59px; width: 26px; height: 22px; }
-  .gate-down { left: 66px; top: 100px; width: 26px; height: 22px; }
-  .gate-left { left: 42px; top: 80px; width: 22px; height: 26px; }
-  .gate-right { left: 93px; top: 80px; width: 22px; height: 26px; }
-  .gate-green { left: 130px; top: 86px; width: 28px; height: 28px; }
-  .gate-red { left: 148px; top: 63px; width: 28px; height: 28px; }
 }
 
 @media (max-width: 720px) {
@@ -1383,8 +1430,7 @@ footer {
     padding: 20px;
   }
 
-  .bookmark-dock,
-  .controller-gate {
+  .bookmark-dock {
     position: static;
   }
 
@@ -1420,9 +1466,5 @@ footer {
     right: 12px;
     left: 12px;
     width: auto;
-  }
-
-  .game-window iframe {
-    height: 68vh;
   }
 }

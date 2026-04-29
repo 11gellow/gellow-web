@@ -4,26 +4,23 @@ const ui = {
   gameWindow: document.getElementById("game-window"),
   gameFrame: document.getElementById("game-window-frame"),
   gameClose: document.getElementById("game-window-close"),
-  controllerGate: document.getElementById("controller-gate"),
+  gameHandle: document.getElementById("game-window-handle"),
+  passwordModal: document.getElementById("notes-password-modal"),
+  passwordForm: document.getElementById("notes-password-form"),
+  passwordInput: document.getElementById("notes-password-input"),
+  passwordError: document.getElementById("notes-password-error"),
+  passwordClose: document.getElementById("notes-password-close"),
+  passwordCancel: document.getElementById("notes-password-cancel"),
 };
 
-const GATE_SEQUENCE = [
-  "up",
-  "up",
-  "down",
-  "down",
-  "left",
-  "right",
-  "left",
-  "right",
-  "green",
-  "red",
-  "green",
-  "red",
-];
+const NOTES_PASSWORD = "aaa8524493";
 
-const gateState = {
-  progress: 0,
+const interactionState = {
+  clickTimer: 0,
+  dragPointerId: null,
+  dragOffsetX: 0,
+  dragOffsetY: 0,
+  positioned: false,
 };
 
 function showFeedback(message, title = "System Notice", variant = "info") {
@@ -91,6 +88,18 @@ function getArcadeUrl() {
   return "./arcade.html";
 }
 
+function applyGameWindowPosition(left, top) {
+  const maxLeft = Math.max(12, window.innerWidth - ui.gameWindow.offsetWidth - 12);
+  const maxTop = Math.max(12, window.innerHeight - ui.gameWindow.offsetHeight - 12);
+  const clampedLeft = Math.min(Math.max(12, left), maxLeft);
+  const clampedTop = Math.min(Math.max(12, top), maxTop);
+
+  ui.gameWindow.style.left = `${clampedLeft}px`;
+  ui.gameWindow.style.top = `${clampedTop}px`;
+  ui.gameWindow.style.right = "auto";
+  interactionState.positioned = true;
+}
+
 function openArcadeWindow() {
   if (!ui.gameFrame.src) {
     ui.gameFrame.src = getArcadeUrl();
@@ -98,6 +107,13 @@ function openArcadeWindow() {
 
   ui.gameWindow.hidden = false;
   ui.gameWindow.classList.add("is-open");
+
+  if (!interactionState.positioned) {
+    ui.gameWindow.style.top = "96px";
+    ui.gameWindow.style.right = "18px";
+    ui.gameWindow.style.left = "auto";
+  }
+
   showFeedback("Pac-Man Arcade 已打开", "Arcade", "navigation");
 }
 
@@ -110,47 +126,79 @@ function closeArcadeWindow() {
   }, 180);
 }
 
-function pulseGateButton(button) {
-  button.classList.remove("is-hit");
-  void button.offsetWidth;
-  button.classList.add("is-hit");
+function openPasswordModal() {
+  ui.passwordError.hidden = true;
+  ui.passwordError.textContent = "密码错误";
+  ui.passwordForm.reset();
+  ui.passwordModal.hidden = false;
+  window.setTimeout(() => ui.passwordInput.focus(), 20);
 }
 
-function handleGateInput(input, button) {
-  pulseGateButton(button);
+function closePasswordModal() {
+  ui.passwordModal.hidden = true;
+}
 
-  const expected = GATE_SEQUENCE[gateState.progress];
-  if (input === expected) {
-    gateState.progress += 1;
+function handleNotesPasswordSubmit(event) {
+  event.preventDefault();
 
-    if (gateState.progress === GATE_SEQUENCE.length) {
-      gateState.progress = 0;
-      showFeedback("Notes Console 已解锁", "Hidden Gate", "success");
-      window.setTimeout(() => {
-        window.location.href = "./notes/";
-      }, 320);
-    }
-
+  if (ui.passwordInput.value === NOTES_PASSWORD) {
+    closePasswordModal();
+    showFeedback("Notes Console 已打开", "Access Granted", "success");
+    window.setTimeout(() => {
+      window.location.href = "./notes/";
+    }, 220);
     return;
   }
 
-  gateState.progress = input === GATE_SEQUENCE[0] ? 1 : 0;
-  showFeedback("Sequence Reset", "Hidden Gate", "warning");
+  ui.passwordError.hidden = false;
+  ui.passwordError.textContent = "密码错误";
+  showFeedback("Notes Password Error", "Access Denied", "error");
+  ui.passwordInput.select();
 }
 
-function initControllerGate() {
-  if (!ui.controllerGate) {
+function startDrag(event) {
+  if (!ui.gameWindow || event.target.closest(".game-window-close")) {
     return;
   }
 
-  ui.controllerGate.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-gate-input]");
-    if (!button) {
-      return;
-    }
+  const rect = ui.gameWindow.getBoundingClientRect();
+  interactionState.dragPointerId = event.pointerId;
+  interactionState.dragOffsetX = event.clientX - rect.left;
+  interactionState.dragOffsetY = event.clientY - rect.top;
 
-    handleGateInput(button.dataset.gateInput, button);
-  });
+  applyGameWindowPosition(rect.left, rect.top);
+  ui.gameHandle.setPointerCapture(event.pointerId);
+  ui.gameWindow.classList.add("is-dragging");
+}
+
+function moveDrag(event) {
+  if (interactionState.dragPointerId !== event.pointerId) {
+    return;
+  }
+
+  const left = event.clientX - interactionState.dragOffsetX;
+  const top = event.clientY - interactionState.dragOffsetY;
+  applyGameWindowPosition(left, top);
+}
+
+function endDrag(event) {
+  if (interactionState.dragPointerId !== event.pointerId) {
+    return;
+  }
+
+  interactionState.dragPointerId = null;
+  ui.gameWindow.classList.remove("is-dragging");
+  if (ui.gameHandle.hasPointerCapture(event.pointerId)) {
+    ui.gameHandle.releasePointerCapture(event.pointerId);
+  }
+}
+
+function queueArcadeOpen() {
+  window.clearTimeout(interactionState.clickTimer);
+  interactionState.clickTimer = window.setTimeout(() => {
+    openArcadeWindow();
+    interactionState.clickTimer = 0;
+  }, 220);
 }
 
 async function initBlogHome() {
@@ -168,13 +216,40 @@ async function initBlogHome() {
   }
 }
 
-ui.pacmanButton?.addEventListener("click", openArcadeWindow);
+ui.pacmanButton?.addEventListener("click", queueArcadeOpen);
+ui.pacmanButton?.addEventListener("dblclick", () => {
+  window.clearTimeout(interactionState.clickTimer);
+  interactionState.clickTimer = 0;
+  openPasswordModal();
+});
 ui.gameClose?.addEventListener("click", closeArcadeWindow);
 ui.gameWindow?.addEventListener("click", (event) => {
   if (event.target === ui.gameWindow) {
     closeArcadeWindow();
   }
 });
+ui.gameHandle?.addEventListener("pointerdown", startDrag);
+ui.gameHandle?.addEventListener("pointermove", moveDrag);
+ui.gameHandle?.addEventListener("pointerup", endDrag);
+ui.gameHandle?.addEventListener("pointercancel", endDrag);
+ui.passwordForm?.addEventListener("submit", handleNotesPasswordSubmit);
+ui.passwordClose?.addEventListener("click", closePasswordModal);
+ui.passwordCancel?.addEventListener("click", closePasswordModal);
+ui.passwordModal?.addEventListener("click", (event) => {
+  if (event.target === ui.passwordModal) {
+    closePasswordModal();
+  }
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !ui.passwordModal?.hidden) {
+    closePasswordModal();
+  }
+});
+window.addEventListener("resize", () => {
+  if (!ui.gameWindow.hidden && interactionState.positioned) {
+    const rect = ui.gameWindow.getBoundingClientRect();
+    applyGameWindowPosition(rect.left, rect.top);
+  }
+});
 
-initControllerGate();
 void initBlogHome();

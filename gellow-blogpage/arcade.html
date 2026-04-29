@@ -4,7 +4,7 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Gellow Arcade</title>
-        <link rel="icon" type="image/svg+xml" href="./assets/favicon-blog.svg" />
+        <link rel="icon" type="image/png" href="./assets/favicon.png" />
         <link rel="stylesheet" href="./css/arcade.css" />
         <script defer src="./js/boot.js"></script>
     </head>
@@ -28,11 +28,7 @@
                 <div class="hero-main pixel">
                     <section class="hero-view hero-view-intro" id="arcade-intro-view">
                         <div class="badge">Player 1 Online</div>
-                        <h2>Pixel Lab<br />For AI Quests</h2>
-                        <p>
-                            吃豆人街机悬浮窗。<br />
-                            直接开始游戏或查看历史分数。
-                        </p>
+                        <h2>Pac-Man<br />Run</h2>
                         <div class="hero-actions">
                             <button
                                 class="btn btn-yellow"
@@ -75,10 +71,6 @@
                                 aria-label="Pac-Man game board"
                             ></canvas>
                         </div>
-
-                        <p class="arcade-help">
-                            Use arrow keys or WASD to move.
-                        </p>
 
                         <div class="hero-actions hero-actions-game">
                             <button class="btn btn-yellow" type="button" data-arcade-action="restart">
@@ -146,22 +138,6 @@
                         </div>
                     </section>
                 </div>
-
-                <aside class="status-panel pixel">
-                    <div>
-                        <div class="status-label">System Status</div>
-                        <div class="log-line">[BOOT] arcade shell ready</div>
-                        <div class="log-line">[LOAD] game board online</div>
-                        <div class="log-line">[TASK] clear pellets</div>
-                        <div class="log-line">[NOTE] save score after run</div>
-                    </div>
-                    <div>
-                        <div class="status-label bonus-label">Pac-Man Intel</div>
-                        <div class="log-line" id="arcade-status-line">[IDLE] press start to begin</div>
-                        <div class="log-line" id="arcade-score-line">[SCORE] 0</div>
-                        <div class="log-line" id="arcade-best-line">[BEST] no record yet</div>
-                    </div>
-                </aside>
             </section>
         </main>
 

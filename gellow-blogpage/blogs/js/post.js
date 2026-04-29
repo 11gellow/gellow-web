@@ -44,7 +44,7 @@ function renderDetail(post) {
     <h2>${escapeHtml(post.title)}</h2>
     <p>${escapeHtml(post.summary)}</p>
     <div class="post-detail-content">${paragraphs}</div>
-    <a class="btn btn-blue back-inline" href="./index.html">Back To All Blog</a>
+    <a class="btn btn-blue back-inline" href="../index.html">Back To Blog</a>
   `;
 
   document.title = `${post.title} | Gellow Blog`;

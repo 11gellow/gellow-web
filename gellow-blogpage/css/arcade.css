@@ -251,17 +251,17 @@ header {
 
 .hero {
     display: grid;
-    grid-template-columns: 1.2fr 0.8fr;
-    gap: 26px;
-    padding: 38px 0 22px;
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 12px 0;
 }
 
 .hero-main {
     background: var(--panel);
-    padding: 28px;
+    padding: 18px;
     position: relative;
     display: grid;
-    height: 540px;
+    height: calc(100vh - 24px);
     align-items: stretch;
     overflow: hidden;
 }
@@ -343,7 +343,7 @@ header {
 .arcade-screen-wrap {
     flex: 1;
     min-height: 0;
-    margin-top: 16px;
+    margin-top: 12px;
     background: #050505;
     border: 4px solid var(--cream);
     box-shadow: 6px 6px 0 var(--black);
@@ -370,20 +370,8 @@ header {
     image-rendering: pixelated;
 }
 
-.arcade-help,
-.log-intro {
-    margin-top: 14px;
-    line-height: 1.7;
-    color: #eadcff;
-    font-size: 15px;
-}
-
-.arcade-help {
-    display: none;
-}
-
 .hero-actions-game {
-    margin-top: 16px;
+    margin-top: 12px;
     align-items: center;
 }
 
@@ -519,29 +507,11 @@ header {
     text-shadow: 4px 4px 0 var(--black);
 }
 
-.hero p {
-    font-size: 18px;
-    line-height: 1.8;
-    color: #ffd6f6;
-    max-width: 760px;
-    margin: 22px 0 0;
-}
-
 .hero-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 14px;
-    margin-top: 28px;
-}
-
-.status-panel {
-    background: #111;
-    border: 4px solid var(--cream);
-    padding: 22px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 540px;
+    margin-top: 22px;
 }
 
 .video-frame {
@@ -592,27 +562,6 @@ header {
     font-weight: 900;
     margin: 0 0 18px;
     text-shadow: 3px 3px 0 var(--black);
-}
-
-.status-label {
-    font-size: 12px;
-    color: var(--green);
-    text-transform: uppercase;
-    margin-bottom: 10px;
-}
-
-.bonus-label {
-    color: var(--pink);
-    margin-top: 18px;
-}
-
-.log-line {
-    background: #1e1e1e;
-    border: 2px solid #444;
-    color: var(--mint);
-    padding: 10px 12px;
-    margin-bottom: 10px;
-    font-size: 14px;
 }
 
 .icons {
@@ -1149,16 +1098,14 @@ footer {
     }
 
     .hero-main,
-    .status-panel,
     .card,
     .panel,
     .warp {
         padding: 16px;
     }
 
-    .hero-main,
-    .status-panel {
-        height: auto;
+    .hero-main {
+        height: calc(100vh - 20px);
     }
 
     .hero p {

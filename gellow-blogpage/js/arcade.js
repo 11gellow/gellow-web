@@ -3,7 +3,6 @@ const TILE_SIZE = 28;
 const HISTORY_LIMIT = 12;
 const LOCAL_BACKEND_BASE = "http://127.0.0.1:5000";
 const PROD_BACKEND_BASE = "https://www.gellow.top";
-const PROD_BLOG_BASE = "https://blog.gellow.top";
 const BASE_MAP = [
   "###############",
   "#.............#",
@@ -43,16 +42,7 @@ function getBackendBaseUrl() {
   return window.location.origin;
 }
 
-function getBlogBaseUrl() {
-  if (typeof window.GELLOW_BLOG_BASE === "string" && window.GELLOW_BLOG_BASE.trim()) {
-    return window.GELLOW_BLOG_BASE.trim().replace(/\/$/, "");
-  }
-
-  return PROD_BLOG_BASE;
-}
-
 const SCORE_API_URL = `${getBackendBaseUrl()}/api/scores`;
-const CONTENT_API_URL = `${getBackendBaseUrl()}/api/content/public`;
 
 const DIRECTIONS = {
   up: { x: 0, y: -1, angle: -Math.PI / 2 },
@@ -97,16 +87,12 @@ const ui = {
   livesText: document.getElementById("arcade-lives"),
   pelletsText: document.getElementById("arcade-pellets"),
   stateLabel: document.getElementById("arcade-state-label"),
-  statusLine: document.getElementById("arcade-status-line"),
-  currentScoreLine: document.getElementById("arcade-score-line"),
-  bestScoreLine: document.getElementById("arcade-best-line"),
   scoreLogList: document.getElementById("score-log-list"),
   scoreLogEmpty: document.getElementById("score-log-empty"),
   scoreEntryForm: document.getElementById("score-entry-form"),
   scoreEntryMessage: document.getElementById("score-entry-message"),
   scoreUsername: document.getElementById("score-username"),
   resumeButton: document.querySelector('[data-arcade-action="resume"]'),
-  missionBoard: document.getElementById("mission-board"),
 };
 
 const ctx = ui.canvas.getContext("2d");
@@ -136,40 +122,6 @@ function showFeedback(message, title = "System Notice", variant = "info") {
   if (window.GellowFeedback?.showToast) {
     window.GellowFeedback.showToast(message, title, variant);
   }
-}
-
-function normalizeSettings(settings) {
-  return {
-    featured_home: Array.isArray(settings.featured_home) ? settings.featured_home : [],
-  };
-}
-
-function pickConfiguredPosts(posts, slugs, limit) {
-  const postMap = new Map(posts.map((post) => [post.slug, post]));
-  const picked = [];
-
-  slugs.forEach((slug) => {
-    const post = postMap.get(slug);
-    if (post && !picked.some((item) => item.slug === post.slug) && picked.length < limit) {
-      picked.push(post);
-    }
-  });
-
-  return picked;
-}
-
-async function fetchPublicContent() {
-  const response = await fetch(CONTENT_API_URL, {
-    headers: {
-      Accept: "application/json",
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Unable to load content: ${response.status}`);
-  }
-
-  return response.json();
 }
 
 function cloneMap() {
@@ -289,89 +241,6 @@ async function refreshScores() {
   }
 
   renderScoreLog();
-  updateBestScoreLine();
-}
-
-function buildBlogPostUrl(slug) {
-  return `${getBlogBaseUrl()}/blogs/post.html?slug=${encodeURIComponent(slug)}`;
-}
-
-function escapeHtml(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
-function renderMissionBoard(posts) {
-  if (!ui.missionBoard) {
-    return;
-  }
-
-  const cards = [...posts];
-  while (cards.length < 4) {
-    cards.push(null);
-  }
-
-  ui.missionBoard.innerHTML = cards
-    .map((post) => {
-      if (!post) {
-        return `
-          <div class="note note-empty">
-            <span class="note-title">去 notes 控制台里选择一篇要展示的 blog</span>
-          </div>
-        `;
-      }
-
-      return `
-        <div class="note">
-          <span class="note-title">${escapeHtml(post.title)}</span>
-          <div class="note-footer">
-            <a class="btn btn-green note-read-more" href="${buildBlogPostUrl(post.slug)}" target="_blank" rel="noopener noreferrer" data-toast-message="文章 ${escapeHtml(post.title)} 已打开">Read More</a>
-          </div>
-        </div>
-      `;
-    })
-    .join("");
-}
-
-async function refreshMissionBoard() {
-  if (!ui.missionBoard) {
-    return;
-  }
-
-  ui.missionBoard.innerHTML = `
-    <div class="note note-empty">
-      <span class="note-title">正在读取 blog 展示配置...</span>
-    </div>
-  `;
-
-  try {
-    const payload = await fetchPublicContent();
-    const posts = Array.isArray(payload.posts) ? payload.posts : [];
-    const settings = normalizeSettings(payload.settings || {});
-    const featuredPosts = pickConfiguredPosts(posts, settings.featured_home, 4);
-    renderMissionBoard(featuredPosts);
-  } catch (error) {
-    ui.missionBoard.innerHTML = `
-      <div class="note note-empty">
-        <span class="note-title">Mission Board 加载失败：${escapeHtml(error.message)}</span>
-      </div>
-    `;
-    console.warn("Unable to load mission board content.", error);
-  }
-}
-
-function updateBestScoreLine() {
-  if (state.scoreLoadFailed) {
-    ui.bestScoreLine.textContent = "[BEST] backend offline";
-    return;
-  }
-
-  const best = state.scoreHistory[0];
-  ui.bestScoreLine.textContent = best ? `[BEST] ${best.name} ${best.score}` : "[BEST] no record yet";
 }
 
 function renderScoreLog() {
@@ -431,7 +300,6 @@ function setView(viewName) {
 
 function setStatus(text, label) {
   state.statusText = text;
-  ui.statusLine.textContent = text;
   if (label) {
     ui.stateLabel.textContent = label;
   }
@@ -441,8 +309,6 @@ function updateHud() {
   ui.scoreText.textContent = String(state.score);
   ui.livesText.textContent = String(state.lives);
   ui.pelletsText.textContent = String(state.pelletsRemaining);
-  ui.currentScoreLine.textContent = `[SCORE] ${state.score}`;
-  updateBestScoreLine();
 }
 
 function resetRoundPositions() {
@@ -805,9 +671,11 @@ function drawOverlay(text, detail) {
   ctx.textAlign = "center";
   ctx.fillText(text, ui.canvas.width / 2, ui.canvas.height / 2 - 6);
 
-  ctx.fillStyle = "#fff5cc";
-  ctx.font = '16px "Courier New", monospace';
-  ctx.fillText(detail, ui.canvas.width / 2, ui.canvas.height / 2 + 24);
+  if (detail) {
+    ctx.fillStyle = "#fff5cc";
+    ctx.font = '16px "Courier New", monospace';
+    ctx.fillText(detail, ui.canvas.width / 2, ui.canvas.height / 2 + 24);
+  }
 }
 
 function drawGame() {
@@ -816,11 +684,11 @@ function drawGame() {
   drawPacman();
 
   if (!state.runStarted) {
-    drawOverlay("READY", "Press Start Game to launch Pac-Man.");
+    drawOverlay("READY", "");
   } else if (state.over) {
-    drawOverlay("GAME OVER", state.endReason || "Run finished.");
+    drawOverlay("GAME OVER", "");
   } else if (!state.running) {
-    drawOverlay("PAUSED", "Resume the run or open the score log.");
+    drawOverlay("PAUSED", "");
   }
 }
 

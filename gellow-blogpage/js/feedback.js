@@ -142,10 +142,6 @@
       return "Notes Console 已打开";
     }
 
-    if (pathname.endsWith("/blogs") || pathname.endsWith("/blogs/index.html")) {
-      return "Blog Archive 已打开";
-    }
-
     if (pathname.endsWith("/blogs/post.html")) {
       const title = getClosestHeadingText(target);
       return title ? `文章 ${title} 已打开` : "Blog Post 已打开";

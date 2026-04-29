@@ -4,7 +4,7 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Gellow Blog</title>
-        <link rel="icon" type="image/svg+xml" href="./assets/favicon-blog.svg" />
+        <link rel="icon" type="image/png" href="./assets/favicon.png" />
         <link rel="stylesheet" href="./css/style.css" />
         <script defer src="./js/boot.js"></script>
     </head>
@@ -45,9 +45,6 @@
                         <div class="subtitle">Insert Coin To Read</div>
                     </div>
                 </div>
-                <nav class="fusion-menu">
-                    <a class="fusion-link" href="./blogs/index.html" data-toast-message="Blog Archive 已打开">Archive</a>
-                </nav>
             </div>
         </header>
 
@@ -106,23 +103,9 @@
             </a>
         </aside>
 
-        <aside class="controller-gate" id="controller-gate" aria-label="Hidden notes gate">
-            <img
-                class="controller-visual"
-                src="./assets/xbox.png"
-                alt="Pixel controller"
-            />
-            <button class="gate-hit gate-up" data-gate-input="up" type="button" aria-label="Up"></button>
-            <button class="gate-hit gate-down" data-gate-input="down" type="button" aria-label="Down"></button>
-            <button class="gate-hit gate-left" data-gate-input="left" type="button" aria-label="Left"></button>
-            <button class="gate-hit gate-right" data-gate-input="right" type="button" aria-label="Right"></button>
-            <button class="gate-hit gate-green" data-gate-input="green" type="button" aria-label="Green"></button>
-            <button class="gate-hit gate-red" data-gate-input="red" type="button" aria-label="Red"></button>
-        </aside>
-
         <div class="game-window" id="game-window" hidden>
             <div class="game-window-shell pixel">
-                <div class="game-window-head">
+                <div class="game-window-head" id="game-window-handle">
                     <div>
                         <h2>Pac-Man Run</h2>
                     </div>
@@ -142,6 +125,37 @@
                         loading="lazy"
                     ></iframe>
                 </div>
+            </div>
+        </div>
+
+        <div class="password-modal" id="notes-password-modal" hidden>
+            <div class="password-modal-shell pixel" role="dialog" aria-modal="true" aria-labelledby="notes-password-title">
+                <div class="password-modal-head">
+                    <h2 id="notes-password-title">Notes Access</h2>
+                    <button
+                        class="password-modal-close"
+                        id="notes-password-close"
+                        type="button"
+                        aria-label="Close password dialog"
+                    >
+                        ×
+                    </button>
+                </div>
+                <form class="password-form" id="notes-password-form">
+                    <label class="password-field" for="notes-password-input">Password</label>
+                    <input
+                        id="notes-password-input"
+                        name="password"
+                        type="password"
+                        autocomplete="off"
+                        required
+                    />
+                    <p class="password-error" id="notes-password-error" hidden>密码错误</p>
+                    <div class="password-actions">
+                        <button class="btn btn-yellow" type="submit">Enter Notes</button>
+                        <button class="btn btn-red" id="notes-password-cancel" type="button">Cancel</button>
+                    </div>
+                </form>
             </div>
         </div>
 
