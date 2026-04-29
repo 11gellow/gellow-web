@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Gellow Arcade</title>
+        <link rel="icon" type="image/svg+xml" href="./assets/favicon-blog.svg" />
+        <link rel="stylesheet" href="./css/arcade.css" />
+        <script defer src="./js/boot.js"></script>
+    </head>
+    <body>
+        <div class="page-loader" id="page-loader">
+            <div class="loader-shell pixel">
+                <div class="loader-marquee">Insert Coin To Load</div>
+                <div class="loader-core">
+                    <div class="loader-glyph">A</div>
+                    <div class="loader-copy">
+                        <strong>Gellow Arcade</strong>
+                        <p>loading~~~</p>
+                        <div class="loader-bar"><span></span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <main class="wrap">
+            <section class="hero" id="start">
+                <div class="hero-main pixel">
+                    <section class="hero-view hero-view-intro" id="arcade-intro-view">
+                        <div class="badge">Player 1 Online</div>
+                        <h2>Pixel Lab<br />For AI Quests</h2>
+                        <p>
+                            吃豆人街机悬浮窗。<br />
+                            直接开始游戏或查看历史分数。
+                        </p>
+                        <div class="hero-actions">
+                            <button
+                                class="btn btn-yellow"
+                                type="button"
+                                data-arcade-action="start"
+                            >
+                                Start Game
+                            </button>
+                            <button
+                                class="btn btn-green"
+                                type="button"
+                                data-arcade-action="log"
+                            >
+                                Read Log
+                            </button>
+                        </div>
+                    </section>
+
+                    <section class="hero-view hero-view-game" id="arcade-game-view" hidden>
+                        <div class="arcade-hud">
+                            <div class="arcade-stat-box">
+                                <span class="arcade-stat-label">Score</span>
+                                <strong id="arcade-score">0</strong>
+                            </div>
+                            <div class="arcade-stat-box">
+                                <span class="arcade-stat-label">Lives</span>
+                                <strong id="arcade-lives">3</strong>
+                            </div>
+                            <div class="arcade-stat-box">
+                                <span class="arcade-stat-label">Pellets</span>
+                                <strong id="arcade-pellets">0</strong>
+                            </div>
+                        </div>
+
+                        <div class="arcade-screen-wrap">
+                            <canvas
+                                id="arcade-canvas"
+                                width="420"
+                                height="364"
+                                aria-label="Pac-Man game board"
+                            ></canvas>
+                        </div>
+
+                        <p class="arcade-help">
+                            Use arrow keys or WASD to move.
+                        </p>
+
+                        <div class="hero-actions hero-actions-game">
+                            <button class="btn btn-yellow" type="button" data-arcade-action="restart">
+                                Restart Run
+                            </button>
+                            <button class="btn btn-green" type="button" data-arcade-action="log">
+                                View Log
+                            </button>
+                            <button class="btn btn-red" type="button" data-arcade-action="home">
+                                Exit
+                            </button>
+                            <div class="arcade-chip arcade-chip-dark arcade-chip-status" id="arcade-state-label">
+                                Ready
+                            </div>
+                        </div>
+
+                        <form class="score-entry pixel" id="score-entry-form" hidden>
+                            <h3>Game Over</h3>
+                            <p id="score-entry-message">Enter your username to save this score.</p>
+                            <label class="score-entry-label" for="score-username">Username</label>
+                            <input
+                                id="score-username"
+                                name="username"
+                                type="text"
+                                maxlength="16"
+                                placeholder="Player1"
+                                required
+                            />
+                            <div class="score-entry-actions">
+                                <button class="btn btn-yellow" type="submit">Save Score</button>
+                                <button class="btn btn-green" type="button" data-arcade-action="dismiss-score">
+                                    Skip
+                                </button>
+                            </div>
+                        </form>
+                    </section>
+
+                    <section class="hero-view hero-view-log" id="arcade-log-view" hidden>
+                        <div class="badge">Score Archive</div>
+                        <h2>PAC-MAN Rankings</h2>
+
+                        <div class="score-log-shell pixel">
+                            <div class="score-log-head">
+                                <span>Rank</span>
+                                <span>Player</span>
+                                <span>Score</span>
+                                <span>Time</span>
+                            </div>
+                            <ol class="score-log-list" id="score-log-list"></ol>
+                            <p class="score-log-empty" id="score-log-empty">
+                                No score saved yet. Start a run first.
+                            </p>
+                        </div>
+
+                        <div class="hero-actions">
+                            <button class="btn btn-yellow" type="button" data-arcade-action="restart">
+                                New Run
+                            </button>
+                            <button class="btn btn-green" type="button" data-arcade-action="resume">
+                                Resume Run
+                            </button>
+                            <button class="btn btn-red" type="button" data-arcade-action="home">
+                                Back Home
+                            </button>
+                        </div>
+                    </section>
+                </div>
+
+                <aside class="status-panel pixel">
+                    <div>
+                        <div class="status-label">System Status</div>
+                        <div class="log-line">[BOOT] arcade shell ready</div>
+                        <div class="log-line">[LOAD] game board online</div>
+                        <div class="log-line">[TASK] clear pellets</div>
+                        <div class="log-line">[NOTE] save score after run</div>
+                    </div>
+                    <div>
+                        <div class="status-label bonus-label">Pac-Man Intel</div>
+                        <div class="log-line" id="arcade-status-line">[IDLE] press start to begin</div>
+                        <div class="log-line" id="arcade-score-line">[SCORE] 0</div>
+                        <div class="log-line" id="arcade-best-line">[BEST] no record yet</div>
+                    </div>
+                </aside>
+            </section>
+        </main>
+
+        <script src="./js/arcade.js"></script>
+    </body>
+</html>

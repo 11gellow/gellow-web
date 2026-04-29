@@ -1,7 +1,5 @@
 const ui = {
   streamList: document.getElementById("stream-list"),
-  missionTitle: document.getElementById("mission-notes-title"),
-  missionList: document.getElementById("mission-notes-list"),
   pacmanButton: document.getElementById("pacman-launch-button"),
   gameWindow: document.getElementById("game-window"),
   gameFrame: document.getElementById("game-window-frame"),
@@ -60,19 +58,6 @@ function formatDate(value) {
   });
 }
 
-function renderCommandLines(settings) {
-  ui.missionTitle.textContent = settings.mission_notes_title || "Mission Notes";
-
-  if (!Array.isArray(settings.mission_notes_items) || !settings.mission_notes_items.length) {
-    ui.missionList.innerHTML = `<div class="command-line">命令缓存暂时为空。</div>`;
-    return;
-  }
-
-  ui.missionList.innerHTML = settings.mission_notes_items
-    .map((item) => `<div class="command-line">${escapeHtml(item)}</div>`)
-    .join("");
-}
-
 function renderPostStream(posts) {
   if (!posts.length) {
     ui.streamList.innerHTML = `<article class="archive-empty pixel">还没有已发布的文章。</article>`;
@@ -103,11 +88,7 @@ function renderPostStream(posts) {
 }
 
 function getArcadeUrl() {
-  if (window.location.protocol === "file:") {
-    return "../gellow-homepage/frontend/index.html";
-  }
-
-  return "https://www.gellow.top";
+  return "./arcade.html";
 }
 
 function openArcadeWindow() {
@@ -175,9 +156,7 @@ function initControllerGate() {
 async function initBlogHome() {
   try {
     const payload = await window.GellowContentApi.fetchPublicContent();
-    const settings = window.GellowContentApi.normalizeSettings(payload.settings || {});
     const posts = window.GellowContentApi.sortPosts(Array.isArray(payload.posts) ? payload.posts : []);
-    renderCommandLines(settings);
     renderPostStream(posts);
   } catch (error) {
     ui.streamList.innerHTML = `
@@ -185,10 +164,6 @@ async function initBlogHome() {
         文章流加载失败：${escapeHtml(error.message)}
       </article>
     `;
-    renderCommandLines({
-      mission_notes_title: "Mission Notes",
-      mission_notes_items: ["内容接口暂时不可用。"],
-    });
     console.warn("Unable to initialize merged blog homepage.", error);
   }
 }

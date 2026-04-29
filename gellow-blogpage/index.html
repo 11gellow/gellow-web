@@ -16,24 +16,36 @@
                     <div class="loader-glyph loader-glyph-blog">B</div>
                     <div class="loader-copy">
                         <strong>Booting Blog</strong>
-                        <p>正在装载文章流、命令缓存和隐藏入口。</p>
+                        <p>正在装载文章流。</p>
                         <div class="loader-bar"><span></span></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <header class="fusion-header">
+        <header class="fusion-header home-header-style">
             <div class="wrap fusion-nav">
-                <div class="fusion-brand">
-                    <div class="fusion-kicker">pixel archive / command cache / side quests</div>
-                    <h1 class="title">Gellow Blog</h1>
-                    <p class="fusion-intro">
-                        把首页和 blog 合成一个更直接的入口。文章按时间向下排开，减少大块占位和重复跳转。
-                    </p>
+                <div class="brand-block">
+                    <div class="identity-card pixel">
+                        <img
+                            class="avatar"
+                            src="./assets/KindGellow.png"
+                            alt="Profile avatar"
+                        />
+                        <div class="identity-meta">
+                            <div class="presence-line">
+                                <span class="online-dot" aria-hidden="true"></span>
+                                online
+                            </div>
+                            <div class="username">KindGellow</div>
+                        </div>
+                    </div>
+                    <div class="brand-copy">
+                        <h1 class="title">Gellow Blog</h1>
+                        <div class="subtitle">Insert Coin To Read</div>
+                    </div>
                 </div>
                 <nav class="fusion-menu">
-                    <a class="fusion-link" href="#post-stream">Posts</a>
                     <a class="fusion-link" href="./blogs/index.html" data-toast-message="Blog Archive 已打开">Archive</a>
                 </nav>
             </div>
@@ -46,7 +58,7 @@
             aria-label="Open Pac-Man"
             data-toast-message="Pac-Man Arcade 已打开"
         >
-            <img src="./assets/pacman-button.svg" alt="" />
+            <img src="./assets/pacman.png" alt="" />
         </button>
 
         <aside class="bookmark-dock" aria-label="Quick bookmarks">
@@ -62,7 +74,6 @@
                 </span>
                 <span class="bookmark-preview">
                     <strong>GitHub</strong>
-                    <span>代码仓库 / 提交记录 / 项目入口</span>
                 </span>
             </a>
             <a
@@ -77,7 +88,6 @@
                 </span>
                 <span class="bookmark-preview">
                     <strong>Steam</strong>
-                    <span>游戏记录 / 收藏库 / 在线状态</span>
                 </span>
             </a>
             <a
@@ -92,7 +102,6 @@
                 </span>
                 <span class="bookmark-preview">
                     <strong>Bilibili</strong>
-                    <span>视频主页 / 收藏夹 / 动态</span>
                 </span>
             </a>
         </aside>
@@ -100,7 +109,7 @@
         <aside class="controller-gate" id="controller-gate" aria-label="Hidden notes gate">
             <img
                 class="controller-visual"
-                src="./assets/xbox-controller-pixel.svg"
+                src="./assets/xbox.png"
                 alt="Pixel controller"
             />
             <button class="gate-hit gate-up" data-gate-input="up" type="button" aria-label="Up"></button>
@@ -109,14 +118,12 @@
             <button class="gate-hit gate-right" data-gate-input="right" type="button" aria-label="Right"></button>
             <button class="gate-hit gate-green" data-gate-input="green" type="button" aria-label="Green"></button>
             <button class="gate-hit gate-red" data-gate-input="red" type="button" aria-label="Red"></button>
-            <div class="controller-hint">UP UP DOWN DOWN LEFT RIGHT LEFT RIGHT GREEN RED GREEN RED</div>
         </aside>
 
         <div class="game-window" id="game-window" hidden>
             <div class="game-window-shell pixel">
                 <div class="game-window-head">
                     <div>
-                        <div class="game-window-kicker">Arcade Overlay</div>
                         <h2>Pac-Man Run</h2>
                     </div>
                     <button
@@ -139,22 +146,8 @@
         </div>
 
         <main class="wrap fusion-shell">
-            <section class="command-card pixel">
-                <div class="command-head">
-                    <div>
-                        <div class="command-kicker">System Cache</div>
-                        <h2 id="mission-notes-title">Mission Notes</h2>
-                    </div>
-                    <a class="btn btn-blue" href="./blogs/index.html" data-toast-message="Blog Archive 已打开">
-                        Open Archive
-                    </a>
-                </div>
-                <div class="command-lines" id="mission-notes-list"></div>
-            </section>
-
             <section class="post-stream" id="post-stream">
                 <div class="stream-head">
-                    <div class="stream-kicker">Latest to oldest</div>
                     <h2>Post Stream</h2>
                 </div>
                 <div class="stream-list" id="stream-list">

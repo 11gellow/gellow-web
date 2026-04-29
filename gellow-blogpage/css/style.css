@@ -127,6 +127,79 @@ header {
   flex-wrap: wrap;
 }
 
+.brand-block {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.identity-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  background: linear-gradient(180deg, #38215f 0%, #25163e 100%);
+  flex-shrink: 0;
+}
+
+.avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  border: 4px solid var(--cream);
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #161020;
+}
+
+.identity-meta {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.presence-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--mint);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.online-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--green);
+  box-shadow:
+    0 0 0 2px var(--black),
+    0 0 12px rgba(155, 229, 100, 0.65);
+  flex-shrink: 0;
+}
+
+.brand-copy {
+  min-width: 0;
+}
+
+.username {
+  display: inline-block;
+  padding: 8px 12px;
+  border: 3px solid var(--black);
+  box-shadow: 4px 4px 0 var(--black);
+  background: var(--gold);
+  color: var(--black);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 .title {
   font-size: clamp(28px, 5vw, 44px);
   font-weight: 900;
@@ -849,10 +922,10 @@ footer {
 
 .fusion-nav {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 20px;
-  padding: 28px 0 18px;
+  padding: 18px 0;
 }
 
 .fusion-brand {
@@ -869,18 +942,10 @@ footer {
   text-transform: uppercase;
 }
 
-.fusion-intro {
-  margin: 14px 0 0;
-  max-width: 720px;
-  color: var(--text-soft);
-  line-height: 1.9;
-}
-
 .fusion-menu {
   display: flex;
   align-items: center;
   gap: 18px;
-  padding-bottom: 8px;
 }
 
 .fusion-link {
@@ -1182,16 +1247,10 @@ footer {
 
 .bookmark-preview strong {
   color: var(--yellow);
-  margin-bottom: 4px;
-}
-
-.bookmark-preview span {
-  color: var(--text-soft);
-  font-size: 13px;
 }
 
 .bookmark-tab:hover .bookmark-preview {
-  width: 230px;
+  width: 150px;
   padding: 12px 14px;
   opacity: 1;
   transform: translateY(-50%) translateX(0);
@@ -1213,15 +1272,6 @@ footer {
   pointer-events: none;
 }
 
-.controller-hint {
-  margin-top: 8px;
-  color: rgba(255, 245, 204, 0.72);
-  font-size: 10px;
-  line-height: 1.5;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
 .gate-hit {
   position: absolute;
   border: 0;
@@ -1234,12 +1284,12 @@ footer {
   border-radius: 999px;
 }
 
-.gate-up { left: 66px; top: 92px; width: 26px; height: 20px; }
-.gate-down { left: 66px; top: 132px; width: 26px; height: 20px; }
-.gate-left { left: 47px; top: 112px; width: 20px; height: 26px; }
-.gate-right { left: 91px; top: 112px; width: 20px; height: 26px; }
-.gate-green { right: 43px; top: 111px; width: 24px; height: 24px; border-radius: 999px; }
-.gate-red { right: 28px; top: 84px; width: 24px; height: 24px; border-radius: 999px; }
+.gate-up { left: 81px; top: 72px; width: 32px; height: 28px; }
+.gate-down { left: 81px; top: 122px; width: 32px; height: 28px; }
+.gate-left { left: 52px; top: 97px; width: 28px; height: 32px; }
+.gate-right { left: 114px; top: 97px; width: 28px; height: 32px; }
+.gate-green { left: 160px; top: 105px; width: 34px; height: 34px; border-radius: 999px; }
+.gate-red { left: 182px; top: 77px; width: 34px; height: 34px; border-radius: 999px; }
 
 .archive-shell,
 .post-detail {
@@ -1305,20 +1355,16 @@ footer {
     bottom: 110px;
   }
 
-  .bookmark-tab:hover .bookmark-preview {
-    width: 186px;
-  }
-
   .controller-gate {
     width: 172px;
   }
 
-  .gate-up { left: 53px; top: 76px; width: 22px; height: 18px; }
-  .gate-down { left: 53px; top: 109px; width: 22px; height: 18px; }
-  .gate-left { left: 37px; top: 92px; width: 18px; height: 22px; }
-  .gate-right { left: 73px; top: 92px; width: 18px; height: 22px; }
-  .gate-green { right: 36px; top: 91px; width: 20px; height: 20px; }
-  .gate-red { right: 23px; top: 68px; width: 20px; height: 20px; }
+  .gate-up { left: 66px; top: 59px; width: 26px; height: 22px; }
+  .gate-down { left: 66px; top: 100px; width: 26px; height: 22px; }
+  .gate-left { left: 42px; top: 80px; width: 22px; height: 26px; }
+  .gate-right { left: 93px; top: 80px; width: 22px; height: 26px; }
+  .gate-green { left: 130px; top: 86px; width: 28px; height: 28px; }
+  .gate-red { left: 148px; top: 63px; width: 28px; height: 28px; }
 }
 
 @media (max-width: 720px) {

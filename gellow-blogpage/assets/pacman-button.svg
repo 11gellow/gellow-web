@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-labelledby="title">
-  <title>Pac-Man Button</title>
-  <rect width="96" height="96" fill="#000"/>
-  <path d="M44 12H58V16H64V20H68V24H72V28H76V32H80V36H82V40H84V44H86V52H84V56H82V60H80V64H76V68H72V72H68V76H64V80H58V84H44V80H38V76H32V72H28V68H24V64H20V60H18V56H16V52H14V44H16V40H18V36H20V32H24V28H28V24H32V20H38V16H44Z" fill="#ffe100"/>
-  <path d="M48 36H96V60H48L58 48Z" fill="#000"/>
-  <rect x="54" y="44" width="6" height="6" fill="#ffeed9"/>
-  <rect x="68" y="44" width="6" height="6" fill="#ffeed9"/>
-  <rect x="82" y="44" width="6" height="6" fill="#ffeed9"/>
-</svg>
