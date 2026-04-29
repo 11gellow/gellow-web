@@ -31,12 +31,13 @@ html,
 body {
     margin: 0;
     padding: 0;
+    width: 100%;
+    height: 100%;
     min-height: 100%;
 }
 
 html {
-    scroll-behavior: smooth;
-    scroll-padding-top: 138px;
+    overflow: hidden;
 }
 
 body {
@@ -68,16 +69,12 @@ body {
         24px 24px,
         auto;
     color: var(--cream);
+    overflow: hidden;
 }
 
 a {
     color: inherit;
     text-decoration: none;
-}
-
-.wrap {
-    width: min(1180px, calc(100% - 32px));
-    margin: 0 auto;
 }
 
 .pixel {
@@ -242,55 +239,45 @@ header {
     gap: 10px;
 }
 
-#start,
-#projects,
-#log,
-#portal {
-    scroll-margin-top: 138px;
+.arcade-app {
+    width: 100%;
+    height: 100dvh;
+    padding: 10px;
 }
 
-.hero {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0;
-    padding: 12px 0;
-}
-
-.hero-main {
-    background: var(--panel);
-    padding: 18px;
+.arcade-shell {
     position: relative;
-    display: grid;
-    height: calc(100vh - 24px);
-    align-items: stretch;
+    width: 100%;
+    height: 100%;
+    background: var(--panel);
+    padding: 12px;
     overflow: hidden;
 }
 
-.hero-view {
-    grid-area: 1 / 1;
+.arcade-view {
     width: 100%;
+    height: 100%;
     min-width: 0;
     min-height: 0;
 }
 
-.hero-view-intro {
+.arcade-view-intro,
+.arcade-view-game,
+.arcade-view-log {
     display: flex;
-    height: 100%;
     flex-direction: column;
+}
+
+.arcade-view-intro {
     justify-content: center;
+    align-items: flex-start;
 }
 
-.hero-view-game,
-.hero-view-log {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-
-.hero-view-log h2 {
+.arcade-view-log h2,
+.arcade-view-intro h2 {
     margin: 0;
-    font-size: clamp(34px, 6vw, 56px);
-    line-height: 0.96;
+    font-size: clamp(28px, 6vw, 52px);
+    line-height: 0.92;
     text-transform: uppercase;
     text-shadow: 4px 4px 0 var(--black);
 }
@@ -314,51 +301,66 @@ header {
     color: var(--mint);
 }
 
+.arcade-view .btn {
+    padding: 10px 14px;
+    font-size: 14px;
+}
+
 .arcade-stat-box {
     background: rgba(0, 0, 0, 0.35);
     border: 3px solid var(--black);
     box-shadow: 4px 4px 0 var(--black);
-    padding: 14px;
+    padding: 10px;
 }
 
 .arcade-stat-label {
     display: block;
     color: var(--mint);
-    font-size: 12px;
+    font-size: 11px;
     text-transform: uppercase;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .arcade-stat-box strong {
-    font-size: 24px;
+    font-size: 20px;
 }
 
 .arcade-screen-wrap {
     flex: 1;
     min-height: 0;
-    margin-top: 12px;
     background: #050505;
     border: 4px solid var(--cream);
     box-shadow: 6px 6px 0 var(--black);
-    padding: 10px;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 118px;
-    gap: 10px;
+    padding: 8px;
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+    overflow: hidden;
+}
+
+.arcade-canvas-shell {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
     align-items: center;
+    justify-content: center;
+    overflow: hidden;
 }
 
 .arcade-side-hud {
+    width: 106px;
+    flex: 0 0 106px;
     display: grid;
-    gap: 10px;
-    align-self: stretch;
-    order: 2;
+    gap: 8px;
+    align-content: start;
 }
 
 #arcade-canvas {
     display: block;
-    width: 100%;
+    width: auto;
+    height: 100%;
     max-width: 100%;
-    height: auto;
     max-height: 100%;
     margin: 0 auto;
     background:
@@ -369,10 +371,17 @@ header {
         ),
         #000;
     image-rendering: pixelated;
+    aspect-ratio: 420 / 364;
 }
 
-.hero-actions-game {
-    margin-top: 12px;
+.arcade-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.arcade-actions-game {
     align-items: center;
 }
 
@@ -431,7 +440,7 @@ header {
 
 .score-log-shell {
     background: rgba(0, 0, 0, 0.34);
-    padding: 16px;
+    padding: 14px;
     margin-top: 12px;
     flex: 1;
     min-height: 0;
@@ -493,26 +502,11 @@ header {
     display: inline-block;
     background: var(--blue);
     color: var(--black);
-    padding: 8px 12px;
+    padding: 6px 10px;
     border: 4px solid var(--black);
     text-transform: uppercase;
-    font-size: 12px;
-    margin-bottom: 16px;
-}
-
-.hero h2 {
-    margin: 0;
-    font-size: clamp(42px, 8vw, 78px);
-    line-height: 0.95;
-    text-transform: uppercase;
-    text-shadow: 4px 4px 0 var(--black);
-}
-
-.hero-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 14px;
-    margin-top: 22px;
+    font-size: 11px;
+    margin-bottom: 10px;
 }
 
 .video-frame {
@@ -1042,7 +1036,6 @@ footer {
 }
 
 @media (max-width: 980px) {
-    .hero,
     .split,
     .cards,
     .links,
@@ -1050,15 +1043,6 @@ footer {
     .score-log-head,
     .score-log-item {
         grid-template-columns: 1fr;
-    }
-
-    .arcade-screen-wrap {
-        grid-template-columns: 1fr;
-    }
-
-    .arcade-side-hud {
-        order: 0;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
     .score-log-head {
@@ -1074,85 +1058,50 @@ footer {
 }
 
 @media (max-width: 720px) {
-    .wrap {
-        width: min(100% - 20px, 1180px);
+    .arcade-app {
+        padding: 8px;
     }
 
-    html {
-        scroll-padding-top: 116px;
+    .arcade-shell {
+        padding: 10px;
     }
 
-    .brand-block {
-        gap: 14px;
-        align-items: flex-start;
-    }
-
-    .identity-card {
-        width: 100%;
-        justify-content: flex-start;
-    }
-
-    .avatar {
-        width: 58px;
-        height: 58px;
-    }
-
-    .username {
-        font-size: 13px;
-        padding: 7px 10px;
-    }
-
-    .title {
-        font-size: 30px;
-    }
-
-    .hero-main,
-    .card,
-    .panel,
-    .warp {
-        padding: 16px;
-    }
-
-    .hero-main {
-        height: calc(100vh - 20px);
-    }
-
-    .hero p {
-        font-size: 16px;
-    }
-
-    .status-title,
-    .section-title {
-        font-size: 24px;
-    }
-
-    .btn {
-        width: 100%;
+    .arcade-view .btn {
+        width: auto;
         text-align: center;
     }
 
-    .menu .btn {
-        width: auto;
+    .arcade-view-intro h2,
+    .arcade-view-log h2 {
+        font-size: clamp(24px, 8vw, 38px);
     }
 
-    #start,
-    #projects,
-    #log,
-    #portal {
-        scroll-margin-top: 116px;
+    .arcade-screen-wrap {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .arcade-canvas-shell {
+        flex: 1;
+    }
+
+    #arcade-canvas {
+        width: 100%;
+        height: auto;
+    }
+
+    .arcade-side-hud {
+        width: 100%;
+        flex: 0 0 auto;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
     .score-entry {
         width: calc(100% - 12px);
     }
 
-    .score-entry-actions,
-    .hero-actions {
+    .score-entry-actions {
         flex-direction: column;
-    }
-
-    .arcade-side-hud {
-        grid-template-columns: 1fr;
     }
 
     .arcade-chip-status {
