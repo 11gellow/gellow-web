@@ -25,7 +25,10 @@
 
         <main class="arcade-app">
             <div class="arcade-shell pixel">
-                <section class="arcade-view arcade-view-intro" id="arcade-intro-view">
+                <section
+                    class="arcade-view arcade-view-intro"
+                    id="arcade-intro-view"
+                >
                     <div class="badge">Player 1 Online</div>
                     <h2>Pac-Man<br />Run</h2>
                     <div class="arcade-actions">
@@ -46,12 +49,16 @@
                     </div>
                 </section>
 
-                <section class="arcade-view arcade-view-game" id="arcade-game-view" hidden>
+                <section
+                    class="arcade-view arcade-view-game"
+                    id="arcade-game-view"
+                    hidden
+                >
                     <div class="arcade-screen-wrap">
                         <div class="arcade-canvas-shell">
                             <canvas
                                 id="arcade-canvas"
-                                width="420"
+                                width="364"
                                 height="364"
                                 aria-label="Pac-Man game board"
                             ></canvas>
@@ -73,24 +80,47 @@
                     </div>
 
                     <div class="arcade-actions arcade-actions-game">
-                        <button class="btn btn-yellow" type="button" data-arcade-action="restart">
+                        <button
+                            class="btn btn-yellow"
+                            type="button"
+                            data-arcade-action="restart"
+                        >
                             Restart Run
                         </button>
-                        <button class="btn btn-green" type="button" data-arcade-action="log">
+                        <button
+                            class="btn btn-green"
+                            type="button"
+                            data-arcade-action="log"
+                        >
                             View Log
                         </button>
-                        <button class="btn btn-red" type="button" data-arcade-action="home">
+                        <button
+                            class="btn btn-red"
+                            type="button"
+                            data-arcade-action="home"
+                        >
                             Exit
                         </button>
-                        <div class="arcade-chip arcade-chip-dark arcade-chip-status" id="arcade-state-label">
+                        <div
+                            class="arcade-chip arcade-chip-dark arcade-chip-status"
+                            id="arcade-state-label"
+                        >
                             Ready
                         </div>
                     </div>
 
-                    <form class="score-entry pixel" id="score-entry-form" hidden>
+                    <form
+                        class="score-entry pixel"
+                        id="score-entry-form"
+                        hidden
+                    >
                         <h3>Game Over</h3>
-                        <p id="score-entry-message">Enter your username to save this score.</p>
-                        <label class="score-entry-label" for="score-username">Username</label>
+                        <p id="score-entry-message">
+                            Enter your username to save this score.
+                        </p>
+                        <label class="score-entry-label" for="score-username"
+                            >Username</label
+                        >
                         <input
                             id="score-username"
                             name="username"
@@ -100,15 +130,25 @@
                             required
                         />
                         <div class="score-entry-actions">
-                            <button class="btn btn-yellow" type="submit">Save Score</button>
-                            <button class="btn btn-green" type="button" data-arcade-action="dismiss-score">
+                            <button class="btn btn-yellow" type="submit">
+                                Save Score
+                            </button>
+                            <button
+                                class="btn btn-green"
+                                type="button"
+                                data-arcade-action="dismiss-score"
+                            >
                                 Skip
                             </button>
                         </div>
                     </form>
                 </section>
 
-                <section class="arcade-view arcade-view-log" id="arcade-log-view" hidden>
+                <section
+                    class="arcade-view arcade-view-log"
+                    id="arcade-log-view"
+                    hidden
+                >
                     <div class="badge">Score Archive</div>
                     <h2>PAC-MAN Rankings</h2>
 
@@ -126,13 +166,25 @@
                     </div>
 
                     <div class="arcade-actions">
-                        <button class="btn btn-yellow" type="button" data-arcade-action="restart">
+                        <button
+                            class="btn btn-yellow"
+                            type="button"
+                            data-arcade-action="restart"
+                        >
                             New Run
                         </button>
-                        <button class="btn btn-green" type="button" data-arcade-action="resume">
+                        <button
+                            class="btn btn-green"
+                            type="button"
+                            data-arcade-action="resume"
+                        >
                             Resume Run
                         </button>
-                        <button class="btn btn-red" type="button" data-arcade-action="home">
+                        <button
+                            class="btn btn-red"
+                            type="button"
+                            data-arcade-action="home"
+                        >
                             Back Home
                         </button>
                     </div>
