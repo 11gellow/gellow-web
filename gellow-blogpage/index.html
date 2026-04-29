@@ -53,7 +53,6 @@
             id="pacman-launch-button"
             type="button"
             aria-label="Open Pac-Man"
-            data-toast-message="Pac-Man Arcade 已打开"
         >
             <img src="./assets/pacman.png" alt="" />
         </button>
@@ -114,6 +113,7 @@
                         id="game-window-close"
                         type="button"
                         aria-label="Close Pac-Man"
+                        data-toast-message="Pac-Man Arcade 已关闭"
                     >
                         ×
                     </button>
@@ -137,6 +137,7 @@
                         id="notes-password-close"
                         type="button"
                         aria-label="Close password dialog"
+                        data-toast-message="Notes Access 已关闭"
                     >
                         ×
                     </button>
@@ -152,8 +153,8 @@
                     />
                     <p class="password-error" id="notes-password-error" hidden>密码错误</p>
                     <div class="password-actions">
-                        <button class="btn btn-yellow" type="submit">Enter Notes</button>
-                        <button class="btn btn-red" id="notes-password-cancel" type="button">Cancel</button>
+                        <button class="btn btn-yellow" type="submit" data-toast-defer>Enter Notes</button>
+                        <button class="btn btn-red" id="notes-password-cancel" type="button" data-toast-message="Notes Access 已关闭">Cancel</button>
                     </div>
                 </form>
             </div>

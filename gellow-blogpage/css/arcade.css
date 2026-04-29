@@ -314,13 +314,6 @@ header {
     color: var(--mint);
 }
 
-.arcade-hud {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-top: 0;
-}
-
 .arcade-stat-box {
     background: rgba(0, 0, 0, 0.35);
     border: 3px solid var(--black);
@@ -348,14 +341,22 @@ header {
     border: 4px solid var(--cream);
     box-shadow: 6px 6px 0 var(--black);
     padding: 10px;
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 118px;
+    gap: 10px;
     align-items: center;
-    justify-content: center;
+}
+
+.arcade-side-hud {
+    display: grid;
+    gap: 10px;
+    align-self: stretch;
+    order: 2;
 }
 
 #arcade-canvas {
     display: block;
-    width: auto;
+    width: 100%;
     max-width: 100%;
     height: auto;
     max-height: 100%;
@@ -1046,10 +1047,18 @@ footer {
     .cards,
     .links,
     .board,
-    .arcade-hud,
     .score-log-head,
     .score-log-item {
         grid-template-columns: 1fr;
+    }
+
+    .arcade-screen-wrap {
+        grid-template-columns: 1fr;
+    }
+
+    .arcade-side-hud {
+        order: 0;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
     .score-log-head {
@@ -1140,6 +1149,10 @@ footer {
     .score-entry-actions,
     .hero-actions {
         flex-direction: column;
+    }
+
+    .arcade-side-hud {
+        grid-template-columns: 1fr;
     }
 
     .arcade-chip-status {

@@ -113,8 +113,6 @@ function openArcadeWindow() {
     ui.gameWindow.style.right = "18px";
     ui.gameWindow.style.left = "auto";
   }
-
-  showFeedback("Pac-Man Arcade 已打开", "Arcade", "navigation");
 }
 
 function closeArcadeWindow() {

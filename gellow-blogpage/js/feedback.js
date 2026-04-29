@@ -411,11 +411,13 @@
   }
 
   document.addEventListener("click", (event) => {
-    const target = event.target.closest(
-      'a.btn, button.btn, .side-link, .link-card, .article-card, .picker-item'
-    );
+    const target = event.target.closest("a[href], button, .article-card, .picker-item");
 
     if (!target || target.closest(".toast-stack")) {
+      return;
+    }
+
+    if (target.id === "pacman-launch-button") {
       return;
     }
 
