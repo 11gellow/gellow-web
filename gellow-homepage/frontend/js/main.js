@@ -1,12 +1,8 @@
 (function initHomeScene() {
   const canvas = document.getElementById("scene-canvas");
-  const linkedCount = document.getElementById("linked-count");
-  const ambientCount = document.getElementById("ambient-count");
-  const sinkCount = document.getElementById("sink-count");
-  const statusLabel = document.getElementById("scene-status-label");
-  const shakeFieldButton = document.getElementById("shake-field-btn");
+  const titleShell = document.getElementById("title-shell");
 
-  if (!canvas) {
+  if (!canvas || !titleShell) {
     return;
   }
 
@@ -17,18 +13,18 @@
       url: "https://github.com/11gellow",
       color: "#0f172c",
       accent: "#68c8ff",
-      textColor: "#f6fbff",
-      iconSrc: "https://www.google.com/s2/favicons?domain=github.com&sz=128",
+      textColor: "#f8fcff",
+      iconSrc: "https://github.githubassets.com/favicons/favicon-dark.svg",
       mask: "circle",
       fallback: "GH",
     },
     {
       label: "STEAM",
       url: "https://steamcommunity.com/profiles/76561198444114302/",
-      color: "#111a34",
+      color: "#101a34",
       accent: "#8ab4ff",
-      textColor: "#f4f8ff",
-      iconSrc: "https://www.google.com/s2/favicons?domain=steamcommunity.com&sz=128",
+      textColor: "#f3f8ff",
+      iconSrc: "https://store.steampowered.com/favicon.ico",
       mask: "circle",
       fallback: "ST",
     },
@@ -38,7 +34,7 @@
       color: "#24102f",
       accent: "#ff78c8",
       textColor: "#fff2fb",
-      iconSrc: "https://www.google.com/s2/favicons?domain=bilibili.com&sz=128",
+      iconSrc: "https://www.bilibili.com/favicon.ico",
       mask: "rounded-square",
       fallback: "BI",
     },
@@ -48,7 +44,7 @@
       color: "#2c250d",
       accent: "#ffe780",
       textColor: "#fffbe0",
-      iconSrc: "https://www.google.com/s2/favicons?domain=blog.gellow.top&sz=128",
+      iconSrc: "https://blog.gellow.top/assets/favicon.png",
       mask: "hex",
       fallback: "BL",
     },
@@ -58,7 +54,7 @@
       color: "#10231e",
       accent: "#7cffcb",
       textColor: "#effff8",
-      iconSrc: "https://www.google.com/s2/favicons?domain=rs.gellow.top&sz=128",
+      iconSrc: "https://rs.gellow.top/favicon.ico",
       mask: "diamond",
       fallback: "RS",
     },
@@ -70,7 +66,7 @@
     dpr: Math.max(1, Math.min(window.devicePixelRatio || 1, 2)),
     time: 0,
     lastTs: 0,
-    sinks: 0,
+    sinkCount: 0,
     shapes: [],
     particles: [],
     cloudDots: [],
@@ -78,6 +74,7 @@
       x: 0,
       y: 0,
       down: false,
+      dragKind: null,
       dragId: null,
       offsetX: 0,
       offsetY: 0,
@@ -87,12 +84,18 @@
       lastRippleTs: 0,
     },
     hole: {
-      x: 138,
-      y: 122,
+      x: 118,
+      y: 112,
       radius: 66,
       core: 38,
       influence: 220,
       spin: 0,
+    },
+    panel: {
+      x: 18,
+      y: 250,
+      w: 0,
+      h: 0,
     },
   };
 
@@ -100,28 +103,6 @@
     if (window.GellowFeedback?.showToast) {
       window.GellowFeedback.showToast(message, title, variant);
     }
-  }
-
-  function setStatus(text) {
-    if (statusLabel) {
-      statusLabel.textContent = text;
-    }
-  }
-
-  function preloadPortalIcons() {
-    PORTALS.forEach((portal) => {
-      const image = new Image();
-      image.decoding = "async";
-      image.src = portal.iconSrc;
-      portal.iconImage = image;
-      portal.iconReady = false;
-      image.addEventListener("load", () => {
-        portal.iconReady = true;
-      });
-      image.addEventListener("error", () => {
-        portal.iconReady = false;
-      });
-    });
   }
 
   function createCloudDots() {
@@ -141,14 +122,30 @@
     return dots;
   }
 
+  function preloadPortalIcons() {
+    PORTALS.forEach((portal) => {
+      const image = new Image();
+      image.decoding = "async";
+      image.referrerPolicy = "no-referrer";
+      image.src = portal.iconSrc;
+      portal.iconImage = image;
+      image.addEventListener("error", () => {
+        portal.iconImage = null;
+      });
+    });
+  }
+
   function createShape(spec, kind, index) {
-    const radius = spec.radius || (kind === "portal" ? 88 + Math.random() * 12 : 36 + Math.random() * 56);
+    const radius =
+      spec.radius ||
+      (kind === "portal" ? 88 + Math.random() * 12 : 36 + Math.random() * 56);
     const spawnX = scene.width * (0.54 + Math.random() * 0.4);
     const spawnY = -Math.random() * scene.height * 0.75 - index * 52;
 
     return {
       id: `${kind}-${index}-${Math.random().toString(16).slice(2, 7)}`,
       kind,
+      portalIndex: typeof spec.portalIndex === "number" ? spec.portalIndex : -1,
       label: spec.label || "",
       url: spec.url || "",
       color: spec.color,
@@ -158,14 +155,13 @@
       geometry: spec.geometry,
       mask: spec.mask || "circle",
       iconImage: spec.iconImage || null,
-      iconReady: Boolean(spec.iconReady),
       radius,
       x: spawnX,
       y: spawnY,
       vx: (Math.random() - 0.5) * 110,
       vy: 80 + Math.random() * 140,
       angle: Math.random() * Math.PI * 2,
-      spin: (Math.random() - 0.5) * 2.4,
+      spin: (Math.random() - 0.5) * 2.2,
       mass: radius * radius,
       state: "free",
       absorb: 0,
@@ -187,11 +183,31 @@
   }
 
   function rebuildShapes() {
-    scene.shapes = PORTALS.map((portal, index) => createShape(portal, "portal", index));
+    scene.shapes = PORTALS.map((portal, index) =>
+      createShape({ ...portal, portalIndex: index }, "portal", index)
+    );
 
     for (let index = 0; index < AMBIENT_TOTAL; index += 1) {
       scene.shapes.push(createShape(createAmbientSpec(), "ambient", index));
     }
+  }
+
+  function clampPanelPosition() {
+    scene.panel.x = Math.min(
+      Math.max(10, scene.panel.x),
+      Math.max(10, scene.width - scene.panel.w - 10)
+    );
+    scene.panel.y = Math.min(
+      Math.max(10, scene.panel.y),
+      Math.max(10, scene.height - scene.panel.h - 10)
+    );
+  }
+
+  function syncPanelMetrics() {
+    scene.panel.w = titleShell.offsetWidth;
+    scene.panel.h = titleShell.offsetHeight;
+    clampPanelPosition();
+    titleShell.style.transform = `translate(${scene.panel.x}px, ${scene.panel.y}px)`;
   }
 
   function resizeScene() {
@@ -204,12 +220,13 @@
     canvas.style.height = `${scene.height}px`;
     ctx.setTransform(scene.dpr, 0, 0, scene.dpr, 0, 0);
 
-    scene.hole.x = Math.min(138, scene.width * 0.14);
-    scene.hole.y = Math.min(122, scene.height * 0.17);
+    scene.hole.x = Math.min(118, scene.width * 0.13);
+    scene.hole.y = Math.min(112, scene.height * 0.16);
     scene.hole.radius = scene.width < 700 ? 56 : 66;
     scene.hole.core = scene.width < 700 ? 30 : 38;
-    scene.hole.influence = scene.width < 700 ? 188 : 220;
+    scene.hole.influence = scene.width < 700 ? 190 : 220;
     scene.cloudDots = createCloudDots();
+    syncPanelMetrics();
 
     if (!scene.shapes.length) {
       rebuildShapes();
@@ -217,22 +234,15 @@
     }
 
     scene.shapes.forEach((shape) => {
-      shape.x = Math.min(Math.max(shape.radius + 10, shape.x), scene.width - shape.radius - 10);
-      shape.y = Math.min(Math.max(shape.radius + 10, shape.y), scene.height - shape.radius - 10);
+      shape.x = Math.min(
+        Math.max(shape.radius + 10, shape.x),
+        scene.width - shape.radius - 10
+      );
+      shape.y = Math.min(
+        Math.max(shape.radius + 10, shape.y),
+        scene.height - shape.radius - 10
+      );
     });
-  }
-
-  function updateMetrics() {
-    if (linkedCount) {
-      linkedCount.textContent = String(PORTALS.length);
-    }
-    if (ambientCount) {
-      const ambient = scene.shapes.filter((shape) => shape.kind === "ambient" && shape.state !== "gone").length;
-      ambientCount.textContent = String(ambient);
-    }
-    if (sinkCount) {
-      sinkCount.textContent = String(scene.sinks);
-    }
   }
 
   function emitPointerRipple(x, y, kind) {
@@ -268,7 +278,30 @@
     }
   }
 
-  function hitTest(x, y) {
+  function updatePointerPosition(event, targetElement) {
+    const rect = (targetElement || canvas).getBoundingClientRect();
+    const nextX = event.clientX - rect.left;
+    const nextY = event.clientY - rect.top;
+    const dt = Math.max(16, event.timeStamp - (scene.pointer.lastMoveTs || event.timeStamp));
+
+    scene.pointer.vx = ((event.clientX - scene.pointer.x) / dt) * 1000;
+    scene.pointer.vy = ((event.clientY - scene.pointer.y) / dt) * 1000;
+    scene.pointer.x = event.clientX;
+    scene.pointer.y = event.clientY;
+    scene.pointer.lastMoveTs = event.timeStamp;
+
+    return { x: nextX, y: nextY };
+  }
+
+  function canvasPoint(event) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+    };
+  }
+
+  function hitTestShape(x, y) {
     for (let index = scene.shapes.length - 1; index >= 0; index -= 1) {
       const shape = scene.shapes[index];
       if (shape.state === "absorbing" || shape.state === "gone") {
@@ -281,7 +314,14 @@
         return shape;
       }
     }
+
     return null;
+  }
+
+  function hitTestHole(x, y) {
+    const dx = x - scene.hole.x;
+    const dy = y - scene.hole.y;
+    return dx * dx + dy * dy <= (scene.hole.radius + 16) * (scene.hole.radius + 16);
   }
 
   function moveShapeToFront(shape) {
@@ -300,19 +340,41 @@
     shape.state = "absorbing";
     shape.absorb = 0;
     shape.spin = (shape.spin >= 0 ? 1 : -1) * (4.2 + Math.random() * 1.8);
-    scene.pointer.dragId = scene.pointer.dragId === shape.id ? null : scene.pointer.dragId;
+    if (scene.pointer.dragKind === "shape" && scene.pointer.dragId === shape.id) {
+      scene.pointer.dragKind = null;
+      scene.pointer.dragId = null;
+    }
 
     if (shape.url && !shape.triggered) {
       shape.triggered = true;
-      const variant = /(^|\.)gellow\.top$/i.test(new URL(shape.url).hostname) ? "nav" : "open";
+      const variant = /(^|\.)gellow\.top$/i.test(new URL(shape.url).hostname)
+        ? "nav"
+        : "open";
       showFeedback(`${shape.label} portal armed`, "Singularity Route", variant);
-      setStatus(`ROUTING ${shape.label}`);
     }
   }
 
   function respawnAmbientShape(shape) {
-    const replacement = createShape(createAmbientSpec(), "ambient", Math.floor(Math.random() * 10000));
+    const replacement = createShape(
+      createAmbientSpec(),
+      "ambient",
+      Math.floor(Math.random() * 10000)
+    );
     Object.assign(shape, replacement);
+  }
+
+  function respawnPortalShape(shape) {
+    const template = PORTALS[shape.portalIndex];
+    if (!template) {
+      return;
+    }
+
+    const replacement = createShape(
+      { ...template, portalIndex: shape.portalIndex },
+      "portal",
+      Math.floor(Math.random() * 10000)
+    );
+    scene.shapes.push(replacement);
   }
 
   function navigateShape(shape) {
@@ -326,84 +388,21 @@
     }, 240);
   }
 
-  function updatePointerPosition(event) {
-    const rect = canvas.getBoundingClientRect();
-    const nextX = event.clientX - rect.left;
-    const nextY = event.clientY - rect.top;
-    const dt = Math.max(16, event.timeStamp - (scene.pointer.lastMoveTs || event.timeStamp));
-
-    scene.pointer.vx = ((nextX - scene.pointer.x) / dt) * 1000;
-    scene.pointer.vy = ((nextY - scene.pointer.y) / dt) * 1000;
-    scene.pointer.x = nextX;
-    scene.pointer.y = nextY;
-    scene.pointer.lastMoveTs = event.timeStamp;
-  }
-
-  canvas.addEventListener("pointerdown", (event) => {
-    updatePointerPosition(event);
-    emitPointerRipple(scene.pointer.x, scene.pointer.y, "click");
-    scene.pointer.down = true;
-
-    const shape = hitTest(scene.pointer.x, scene.pointer.y);
-    if (!shape) {
-      setStatus("FIELD STABLE");
-      return;
-    }
-
-    scene.pointer.dragId = shape.id;
-    scene.pointer.offsetX = scene.pointer.x - shape.x;
-    scene.pointer.offsetY = scene.pointer.y - shape.y;
-    shape.state = "dragging";
-    shape.vx = 0;
-    shape.vy = 0;
-    moveShapeToFront(shape);
-    setStatus(shape.label ? `DRAG ${shape.label}` : "DRAG DEBRIS");
-    canvas.setPointerCapture(event.pointerId);
-  });
-
-  canvas.addEventListener("pointermove", (event) => {
-    updatePointerPosition(event);
-
-    if (event.timeStamp - scene.pointer.lastRippleTs > 38) {
-      emitPointerRipple(scene.pointer.x, scene.pointer.y, "move");
-      scene.pointer.lastRippleTs = event.timeStamp;
-    }
-
-    if (!scene.pointer.dragId) {
-      return;
-    }
-
-    const shape = scene.shapes.find((entry) => entry.id === scene.pointer.dragId);
-    if (!shape) {
-      return;
-    }
-
-    shape.x = scene.pointer.x - scene.pointer.offsetX;
-    shape.y = scene.pointer.y - scene.pointer.offsetY;
-    shape.angle += 0.06;
-
-    const dx = scene.hole.x - shape.x;
-    const dy = scene.hole.y - shape.y;
-    const dist = Math.hypot(dx, dy);
-    if (dist < scene.hole.radius + shape.radius * 0.65) {
-      beginAbsorb(shape);
-      emitShards(shape);
-    }
-  });
-
-  function releaseDrag(pointerId) {
+  function releaseShapeDrag(pointerId) {
     const shape = scene.shapes.find((entry) => entry.id === scene.pointer.dragId);
     scene.pointer.down = false;
 
     if (!shape) {
+      scene.pointer.dragKind = null;
       scene.pointer.dragId = null;
       return;
     }
 
     if (shape.state !== "absorbing") {
       shape.state = "free";
-      shape.vx = scene.pointer.vx * 0.28;
-      shape.vy = scene.pointer.vy * 0.28;
+      shape.vx = scene.pointer.vx * 0.38;
+      shape.vy = scene.pointer.vy * 0.38;
+      shape.spin += (Math.random() - 0.5) * 0.6;
 
       const dx = scene.hole.x - shape.x;
       const dy = scene.hole.y - shape.y;
@@ -413,45 +412,207 @@
       }
     }
 
+    scene.pointer.dragKind = null;
     scene.pointer.dragId = null;
-    setStatus("FIELD STABLE");
 
     if (canvas.hasPointerCapture(pointerId)) {
       canvas.releasePointerCapture(pointerId);
     }
   }
 
-  canvas.addEventListener("pointerup", (event) => {
-    releaseDrag(event.pointerId);
+  canvas.addEventListener("pointerdown", (event) => {
+    const point = canvasPoint(event);
+    updatePointerPosition(event, canvas);
+    emitPointerRipple(point.x, point.y, "click");
+    scene.pointer.down = true;
+
+    const shape = hitTestShape(point.x, point.y);
+    if (shape) {
+      scene.pointer.dragKind = "shape";
+      scene.pointer.dragId = shape.id;
+      scene.pointer.offsetX = point.x - shape.x;
+      scene.pointer.offsetY = point.y - shape.y;
+      shape.state = "dragging";
+      shape.vx = 0;
+      shape.vy = 0;
+      moveShapeToFront(shape);
+      canvas.setPointerCapture(event.pointerId);
+      return;
+    }
+
+    if (hitTestHole(point.x, point.y)) {
+      scene.pointer.dragKind = "hole";
+      scene.pointer.dragId = "hole";
+      scene.pointer.offsetX = point.x - scene.hole.x;
+      scene.pointer.offsetY = point.y - scene.hole.y;
+      canvas.setPointerCapture(event.pointerId);
+    }
   });
 
-  canvas.addEventListener("pointercancel", (event) => {
-    releaseDrag(event.pointerId);
-  });
+  canvas.addEventListener("pointermove", (event) => {
+    const point = canvasPoint(event);
+    updatePointerPosition(event, canvas);
 
-  function shakeField() {
-    scene.shapes.forEach((shape) => {
-      if (shape.state !== "free") {
+    if (event.timeStamp - scene.pointer.lastRippleTs > 38) {
+      emitPointerRipple(point.x, point.y, "move");
+      scene.pointer.lastRippleTs = event.timeStamp;
+    }
+
+    if (scene.pointer.dragKind === "shape") {
+      const shape = scene.shapes.find((entry) => entry.id === scene.pointer.dragId);
+      if (!shape) {
         return;
       }
 
-      shape.vx += (Math.random() - 0.5) * 880;
-      shape.vy += -180 - Math.random() * 360;
-      shape.spin += (Math.random() - 0.5) * 4.4;
-    });
+      shape.x = point.x - scene.pointer.offsetX;
+      shape.y = point.y - scene.pointer.offsetY;
+      shape.angle += 0.06;
 
-    emitPointerRipple(scene.width * 0.76, 72, "click");
-    setStatus("FIELD SHAKEN");
+      const dx = scene.hole.x - shape.x;
+      const dy = scene.hole.y - shape.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist < scene.hole.radius + shape.radius * 0.65) {
+        beginAbsorb(shape);
+        emitShards(shape);
+      }
+      return;
+    }
+
+    if (scene.pointer.dragKind === "hole") {
+      scene.hole.x = point.x - scene.pointer.offsetX;
+      scene.hole.y = point.y - scene.pointer.offsetY;
+      scene.hole.x = Math.min(
+        Math.max(scene.hole.radius + 10, scene.hole.x),
+        scene.width - scene.hole.radius - 10
+      );
+      scene.hole.y = Math.min(
+        Math.max(scene.hole.radius + 10, scene.hole.y),
+        scene.height - scene.hole.radius - 10
+      );
+    }
+  });
+
+  canvas.addEventListener("pointerup", (event) => {
+    if (scene.pointer.dragKind === "shape") {
+      releaseShapeDrag(event.pointerId);
+      return;
+    }
+
+    scene.pointer.down = false;
+    scene.pointer.dragKind = null;
+    scene.pointer.dragId = null;
+    if (canvas.hasPointerCapture(event.pointerId)) {
+      canvas.releasePointerCapture(event.pointerId);
+    }
+  });
+
+  canvas.addEventListener("pointercancel", (event) => {
+    if (scene.pointer.dragKind === "shape") {
+      releaseShapeDrag(event.pointerId);
+      return;
+    }
+
+    scene.pointer.down = false;
+    scene.pointer.dragKind = null;
+    scene.pointer.dragId = null;
+    if (canvas.hasPointerCapture(event.pointerId)) {
+      canvas.releasePointerCapture(event.pointerId);
+    }
+  });
+
+  titleShell.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    scene.pointer.dragKind = "panel";
+    scene.pointer.dragId = "panel";
+    scene.pointer.offsetX = event.clientX - scene.panel.x;
+    scene.pointer.offsetY = event.clientY - scene.panel.y;
+    titleShell.classList.add("is-dragging");
+    titleShell.setPointerCapture(event.pointerId);
+  });
+
+  titleShell.addEventListener("pointermove", (event) => {
+    if (scene.pointer.dragKind !== "panel") {
+      return;
+    }
+
+    scene.panel.x = event.clientX - scene.pointer.offsetX;
+    scene.panel.y = event.clientY - scene.pointer.offsetY;
+    clampPanelPosition();
+    syncPanelMetrics();
+  });
+
+  function releasePanelDrag(event) {
+    if (scene.pointer.dragKind !== "panel") {
+      return;
+    }
+
+    scene.pointer.dragKind = null;
+    scene.pointer.dragId = null;
+    titleShell.classList.remove("is-dragging");
+
+    if (titleShell.hasPointerCapture(event.pointerId)) {
+      titleShell.releasePointerCapture(event.pointerId);
+    }
   }
 
-  shakeFieldButton?.addEventListener("click", shakeField);
+  titleShell.addEventListener("pointerup", releasePanelDrag);
+  titleShell.addEventListener("pointercancel", releasePanelDrag);
   window.addEventListener("resize", resizeScene);
+
+  function collideShapeWithRect(shape, rect) {
+    const nearestX = Math.max(rect.x, Math.min(shape.x, rect.x + rect.w));
+    const nearestY = Math.max(rect.y, Math.min(shape.y, rect.y + rect.h));
+    let dx = shape.x - nearestX;
+    let dy = shape.y - nearestY;
+    let distance = Math.hypot(dx, dy);
+
+    if (distance >= shape.radius) {
+      return;
+    }
+
+    if (distance === 0) {
+      const centerX = rect.x + rect.w * 0.5;
+      const centerY = rect.y + rect.h * 0.5;
+      const diffX = shape.x - centerX;
+      const diffY = shape.y - centerY;
+      if (Math.abs(diffX) > Math.abs(diffY)) {
+        dx = diffX >= 0 ? 1 : -1;
+        dy = 0;
+      } else {
+        dx = 0;
+        dy = diffY >= 0 ? 1 : -1;
+      }
+      distance = 1;
+    }
+
+    const nx = dx / distance;
+    const ny = dy / distance;
+    const overlap = shape.radius - distance;
+    shape.x += nx * overlap;
+    shape.y += ny * overlap;
+
+    const velocityAlongNormal = shape.vx * nx + shape.vy * ny;
+    if (velocityAlongNormal < 0) {
+      shape.vx -= 1.72 * velocityAlongNormal * nx;
+      shape.vy -= 1.72 * velocityAlongNormal * ny;
+    }
+
+    if (Math.abs(shape.vx) < 28 && Math.abs(shape.vy) < 42) {
+      shape.spin = 0;
+    }
+  }
 
   function updateFreeShape(shape, dt) {
     const drag = Math.exp(-1.18 * dt);
     shape.vx *= drag;
     shape.vy *= drag;
     shape.vy += 860 * dt;
+    shape.spin *= Math.exp(-2.8 * dt);
+
+    if (Math.abs(shape.spin) < 0.04) {
+      shape.spin = 0;
+    }
 
     const dx = scene.hole.x - shape.x;
     const dy = scene.hole.y - shape.y;
@@ -495,7 +656,15 @@
     } else if (shape.y > bottom) {
       shape.y = bottom;
       shape.vy = -Math.abs(shape.vy) * bounce;
-      shape.spin *= 0.985;
+      if (Math.abs(shape.vx) < 24 && Math.abs(shape.vy) < 44) {
+        shape.spin = 0;
+      }
+    }
+
+    collideShapeWithRect(shape, scene.panel);
+
+    if (Math.hypot(shape.vx, shape.vy) < 26) {
+      shape.spin = 0;
     }
   }
 
@@ -566,10 +735,10 @@
       return;
     }
 
-    scene.sinks += 1;
-    updateMetrics();
+    scene.sinkCount += 1;
 
     if (shape.kind === "portal") {
+      respawnPortalShape(shape);
       navigateShape(shape);
       shape.state = "gone";
       return;
@@ -617,7 +786,6 @@
 
     resolveCollisions();
     updateParticles(dt);
-    updateMetrics();
   }
 
   function drawBackground() {
@@ -655,6 +823,7 @@
 
   function drawBlackHole() {
     const hole = scene.hole;
+    const hover = hitTestHole(scene.pointer.x, scene.pointer.y) && scene.pointer.dragKind !== "shape";
 
     ctx.save();
     ctx.translate(hole.x, hole.y);
@@ -662,13 +831,19 @@
     for (let ring = 4; ring >= 1; ring -= 1) {
       ctx.beginPath();
       ctx.fillStyle = `rgba(47, 124, 255, ${0.05 * ring})`;
-      ctx.arc(0, 0, hole.radius + ring * 20 + Math.sin(scene.time * 2 + ring) * 4, 0, Math.PI * 2);
+      ctx.arc(
+        0,
+        0,
+        hole.radius + ring * 20 + Math.sin(scene.time * 2 + ring) * 4,
+        0,
+        Math.PI * 2
+      );
       ctx.fill();
     }
 
     ctx.rotate(scene.time * 0.6);
-    ctx.strokeStyle = "rgba(255, 120, 200, 0.36)";
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = hover ? "rgba(255, 231, 128, 0.72)" : "rgba(255, 120, 200, 0.36)";
+    ctx.lineWidth = hover ? 4 : 3;
     ctx.beginPath();
     ctx.ellipse(0, 0, hole.radius + 18, hole.radius * 0.58, 0, 0, Math.PI * 2);
     ctx.stroke();
@@ -694,14 +869,11 @@
     ctx.arc(0, 0, hole.core, 0, Math.PI * 2);
     ctx.fill();
 
-    for (let index = 0; index < 8; index += 1) {
-      const angle = scene.time * (0.8 + index * 0.06) + index * 0.8;
-      const orbit = hole.radius + 16 + Math.sin(scene.time * 2 + index) * 6;
-      ctx.fillStyle = index % 2 === 0 ? "rgba(255, 231, 128, 0.85)" : "rgba(104, 200, 255, 0.85)";
-      ctx.beginPath();
-      ctx.arc(Math.cos(angle) * orbit, Math.sin(angle) * orbit * 0.52, 2.3, 0, Math.PI * 2);
-      ctx.fill();
-    }
+    ctx.fillStyle = "rgba(124, 255, 203, 0.72)";
+    ctx.font = '700 10px "Courier New", monospace';
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("DRAG", 0, -hole.radius - 18);
 
     ctx.restore();
   }
@@ -773,7 +945,15 @@
       case "circle":
       default:
         ctx.beginPath();
-        ctx.ellipse(0, 0, radius * (1 + wobble * 0.4), radius * (1 - wobble * 0.2), 0, 0, Math.PI * 2);
+        ctx.ellipse(
+          0,
+          0,
+          radius * (1 + wobble * 0.4),
+          radius * (1 - wobble * 0.2),
+          0,
+          0,
+          Math.PI * 2
+        );
         ctx.closePath();
     }
   }
@@ -802,7 +982,7 @@
     buildMaskPath(shape, shape.radius * 0.84, wobble * 0.7);
     ctx.clip();
 
-    if (shape.iconImage && shape.iconImage.complete && shape.iconReady) {
+    if (shape.iconImage && shape.iconImage.complete && shape.iconImage.naturalWidth > 0) {
       const iconSize = shape.radius * 1.14;
       ctx.drawImage(shape.iconImage, -iconSize * 0.5, -iconSize * 0.5, iconSize, iconSize);
     } else {
@@ -904,39 +1084,6 @@
     });
   }
 
-  function drawBackground() {
-    ctx.clearRect(0, 0, scene.width, scene.height);
-
-    const gradient = ctx.createLinearGradient(0, 0, 0, scene.height);
-    gradient.addColorStop(0, "rgba(6, 8, 19, 0.18)");
-    gradient.addColorStop(1, "rgba(4, 6, 14, 0.42)");
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, scene.width, scene.height);
-
-    scene.cloudDots.forEach((dot, index) => {
-      const driftX = Math.sin(scene.time * dot.speed + dot.phase) * 8;
-      const driftY = Math.cos(scene.time * dot.speed * 0.8 + dot.phase) * 5;
-      const x = dot.x + driftX;
-      const y = dot.y + driftY;
-      const dist = Math.hypot(scene.pointer.x - x, scene.pointer.y - y);
-      const glow = dist < 120 ? 0.65 : 0.22;
-
-      ctx.fillStyle = `rgba(124, 255, 203, ${glow})`;
-      ctx.beginPath();
-      ctx.arc(x, y, dot.radius, 0, Math.PI * 2);
-      ctx.fill();
-
-      if (index % 5 === 0 && dist < 150) {
-        ctx.strokeStyle = `rgba(104, 200, 255, ${0.16 + (1 - dist / 150) * 0.22})`;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(scene.pointer.x, scene.pointer.y);
-        ctx.stroke();
-      }
-    });
-  }
-
   function render() {
     drawBackground();
     drawBlackHole();
@@ -966,7 +1113,8 @@
 
   preloadPortalIcons();
   resizeScene();
-  updateMetrics();
-  setStatus("FIELD STABLE");
+  window.requestAnimationFrame(() => {
+    syncPanelMetrics();
+  });
   window.requestAnimationFrame(tick);
 })();

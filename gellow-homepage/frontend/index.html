@@ -26,46 +26,9 @@
         <canvas id="scene-canvas" aria-label="Interactive portal field"></canvas>
 
         <div class="scene-overlay">
-            <aside class="command-shell pixel">
-                <div class="command-kicker">gellow home / node field</div>
-                <h1>Portal Singularity</h1>
-                <div class="command-lines">
-                    <div class="command-line">status: singularity online</div>
-                    <div class="command-line">linked nodes: github / steam / bilibili / blog / rs</div>
-                    <div class="command-line">ambient debris: active</div>
-                    <div class="command-line">pointer mode: drag / throw / route</div>
-                </div>
-            </aside>
-
-            <aside class="status-shell pixel">
-                <div class="status-head">
-                    <span class="status-dot"></span>
-                    <span id="scene-status-label">FIELD STABLE</span>
-                </div>
-                <div class="status-metrics">
-                    <div class="status-metric">
-                        <span>linked</span>
-                        <strong id="linked-count">5</strong>
-                    </div>
-                    <div class="status-metric">
-                        <span>ambient</span>
-                        <strong id="ambient-count">0</strong>
-                    </div>
-                    <div class="status-metric">
-                        <span>sink</span>
-                        <strong id="sink-count">0</strong>
-                    </div>
-                </div>
-                <div class="scene-controls">
-                    <button
-                        class="btn btn-blue"
-                        id="shake-field-btn"
-                        type="button"
-                        data-toast-message="Field Shake 已执行"
-                    >
-                        Shake
-                    </button>
-                </div>
+            <aside class="title-shell pixel" id="title-shell" aria-label="Home title panel">
+                <h1 class="home-title" data-text="Gellow Home">Gellow Home</h1>
+                <p class="wormhole-tagline" data-text="Wormhole Gateway">Wormhole Gateway</p>
             </aside>
         </div>
 
