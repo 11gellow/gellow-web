@@ -124,6 +124,29 @@ function showFeedback(message, title = "System Notice", variant = "info") {
   }
 }
 
+function showPendingFeedback(message, title = "System Notice") {
+  if (window.GellowFeedback?.showPendingToast) {
+    return window.GellowFeedback.showPendingToast(message, title);
+  }
+  return null;
+}
+
+function resolvePendingFeedback(toast, message, title = "System Notice", variant = "success") {
+  if (window.GellowFeedback?.resolvePendingToast) {
+    window.GellowFeedback.resolvePendingToast(toast, message, title, variant);
+    return;
+  }
+  showFeedback(message, title, variant);
+}
+
+function failPendingFeedback(toast, message, title = "System Notice") {
+  if (window.GellowFeedback?.failPendingToast) {
+    window.GellowFeedback.failPendingToast(toast, message, title);
+    return;
+  }
+  showFeedback(message, title, "error");
+}
+
 function cloneMap() {
   return BASE_MAP.map((row) => row.split(""));
 }
@@ -505,7 +528,6 @@ async function saveCurrentScore(name) {
   await refreshScores();
   setView("log");
   setStatus("[SAVE] score stored in database", "Saved");
-  showFeedback("Score Saved", "System Notice", "success");
 }
 
 function handleArcadeAction(action) {
@@ -760,12 +782,15 @@ ui.scoreEntryForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const username = ui.scoreUsername.value.trim() || "Player1";
+  let pendingToast = null;
 
   try {
+    pendingToast = showPendingFeedback("Saving score to database...", "System Notice");
     await saveCurrentScore(username);
+    resolvePendingFeedback(pendingToast, "Score Saved", "System Notice", "success");
   } catch (error) {
     ui.scoreEntryMessage.textContent = `Save failed: ${error.message}`;
-    showFeedback("Score Save Failed", "System Notice", "error");
+    failPendingFeedback(pendingToast, "Score Save Failed", "System Notice");
     console.warn("Unable to save score to backend.", error);
   }
 });

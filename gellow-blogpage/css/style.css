@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=ZCOOL+QingKe+HuangYou&family=ZCOOL+XiaoWei&display=swap");
+
 :root {
     --bg: #120d1f;
     --panel: #2a1b45;
@@ -13,6 +15,9 @@
     --black: #000;
     --mint: #7cffcb;
     --text-soft: #eadcff;
+    --font-body-cn: "LXGW WenKai TC", "LXGW WenKai", "Microsoft YaHei", serif;
+    --font-title-cn: "ZCOOL XiaoWei", "STSong", serif;
+    --font-slug-cn: "ZCOOL QingKe HuangYou", "Microsoft YaHei", cursive;
 }
 
 * {
@@ -790,6 +795,13 @@ header {
         0 0 0 6px #ffd36a;
 }
 
+.toast-card.toast-pending {
+    background: linear-gradient(180deg, #4b4b54 0%, #2d2f36 100%);
+    box-shadow:
+        0 0 0 3px var(--black),
+        0 0 0 6px #8f96a8;
+}
+
 .toast-card.is-visible {
     transform: translateX(0);
     opacity: 1;
@@ -821,6 +833,10 @@ header {
 
 .toast-card.toast-open .toast-title {
     color: #ffe48f;
+}
+
+.toast-card.toast-pending .toast-title {
+    color: #f4f5f7;
 }
 
 .toast-message {
@@ -866,6 +882,43 @@ header {
     background: linear-gradient(90deg, #ffe48f, #ffd36a, #ffb347);
 }
 
+.toast-progress-pending {
+    display: grid;
+    place-items: center;
+    overflow: visible;
+}
+
+.toast-mobius {
+    position: relative;
+    width: 72px;
+    height: 22px;
+    animation: toast-mobius-roll 1.15s linear infinite;
+}
+
+.toast-mobius::before,
+.toast-mobius::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 28px;
+    height: 14px;
+    border: 3px solid #d4d9e6;
+    border-radius: 999px;
+    transform-origin: center;
+    background: rgba(255, 255, 255, 0.04);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.14);
+}
+
+.toast-mobius::before {
+    left: 8px;
+    transform: translateY(-50%) rotate(28deg);
+}
+
+.toast-mobius::after {
+    right: 8px;
+    transform: translateY(-50%) rotate(-28deg);
+}
+
 @keyframes toast-countdown {
     from {
         transform: scaleX(1);
@@ -873,6 +926,23 @@ header {
 
     to {
         transform: scaleX(0);
+    }
+}
+
+@keyframes toast-mobius-roll {
+    0% {
+        transform: translateX(-14px) rotate(0deg);
+        opacity: 0.7;
+    }
+
+    50% {
+        transform: translateX(14px) rotate(180deg);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateX(-14px) rotate(360deg);
+        opacity: 0.7;
     }
 }
 
@@ -1122,6 +1192,8 @@ footer {
 .tag {
     background: var(--blue);
     color: var(--black);
+    font-family: var(--font-slug-cn);
+    letter-spacing: 0.05em;
 }
 
 .date {
@@ -1134,6 +1206,7 @@ footer {
     font-size: clamp(28px, 5vw, 40px);
     line-height: 1.08;
     text-transform: uppercase;
+    font-family: var(--font-title-cn);
 }
 
 .blog-entry h3 a {
@@ -1149,6 +1222,7 @@ footer {
     color: var(--text-soft);
     line-height: 1.9;
     font-size: 17px;
+    font-family: var(--font-title-cn);
 }
 
 .entry-readmore {
@@ -1461,19 +1535,33 @@ footer {
     font-size: clamp(32px, 6vw, 52px);
     line-height: 1.08;
     text-transform: uppercase;
+    font-family: var(--font-title-cn);
 }
 
 .post-detail-content {
     display: grid;
     gap: 18px;
     margin-top: 20px;
+    font-family: var(--font-body-cn);
+    font-size: 18px;
+}
+
+.post-detail > p {
+    font-family: var(--font-title-cn);
+    font-size: 24px;
 }
 
 .post-detail-content p {
     margin: 0;
     line-height: 1.95;
     color: var(--text-soft);
-    font-size: 17px;
+    font-size: 18px;
+}
+
+.post-detail-content h1,
+.post-detail-content h2,
+.post-detail-content h3 {
+    font-family: var(--font-title-cn);
 }
 
 .post-detail-content :is(p, li, blockquote, figcaption) {

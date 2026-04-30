@@ -294,13 +294,7 @@
     const toast = document.createElement("div");
     toast.className = `toast-card toast-${variant} pixel`;
     toast.dataset.toastKey = encodeURIComponent(toastKey);
-    toast.innerHTML = `
-      <h3 class="toast-title">${title}</h3>
-      <p class="toast-message">${message}</p>
-      <div class="toast-progress">
-        <div class="toast-progress-bar"></div>
-      </div>
-    `;
+    setResolvedToastContent(toast, message, title);
 
     stack.prepend(toast);
 
@@ -319,6 +313,56 @@
     progressBar.style.animation = "none";
     void progressBar.offsetWidth;
     progressBar.style.animation = "";
+  }
+
+  function setResolvedToastContent(toast, message, title) {
+    toast.innerHTML = `
+      <h3 class="toast-title">${title}</h3>
+      <p class="toast-message">${message}</p>
+      <div class="toast-progress">
+        <div class="toast-progress-bar"></div>
+      </div>
+    `;
+  }
+
+  function setPendingToastContent(toast, message, title) {
+    toast.innerHTML = `
+      <h3 class="toast-title">${title}</h3>
+      <p class="toast-message">${message}</p>
+      <div class="toast-progress toast-progress-pending">
+        <div class="toast-mobius" aria-hidden="true"></div>
+      </div>
+    `;
+  }
+
+  function showPendingToast(message, title = "System Notice") {
+    const toast = document.createElement("div");
+    toast.className = "toast-card toast-pending pixel";
+    toast.dataset.pending = "true";
+    setPendingToastContent(toast, message, title);
+    stack.prepend(toast);
+
+    window.requestAnimationFrame(() => {
+      toast.classList.add("is-visible");
+    });
+
+    return toast;
+  }
+
+  function resolvePendingToast(toast, message, title = "System Notice", variant = "success") {
+    if (!toast || !toast.isConnected) {
+      createToast(message, title, variant);
+      return;
+    }
+
+    toast.className = `toast-card toast-${variant} pixel is-visible`;
+    delete toast.dataset.pending;
+    setResolvedToastContent(toast, message, title);
+    resetToastLifetime(toast);
+  }
+
+  function failPendingToast(toast, message, title = "System Notice") {
+    resolvePendingToast(toast, message, title, "error");
   }
 
   function resetToastLifetime(toast) {
@@ -343,6 +387,9 @@
 
   window.GellowFeedback = {
     showToast: createToast,
+    showPendingToast,
+    resolvePendingToast,
+    failPendingToast,
   };
 
   function shouldCarryToastToNextPage(url) {

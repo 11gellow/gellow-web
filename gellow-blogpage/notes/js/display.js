@@ -27,6 +27,29 @@ function showFeedback(message, title = "System Notice", variant = "info") {
   }
 }
 
+function showPendingFeedback(message, title = "System Notice") {
+  if (window.GellowFeedback?.showPendingToast) {
+    return window.GellowFeedback.showPendingToast(message, title);
+  }
+  return null;
+}
+
+function resolvePendingFeedback(toast, message, title = "System Notice", variant = "success") {
+  if (window.GellowFeedback?.resolvePendingToast) {
+    window.GellowFeedback.resolvePendingToast(toast, message, title, variant);
+    return;
+  }
+  showFeedback(message, title, variant);
+}
+
+function failPendingFeedback(toast, message, title = "System Notice") {
+  if (window.GellowFeedback?.failPendingToast) {
+    window.GellowFeedback.failPendingToast(toast, message, title);
+    return;
+  }
+  showFeedback(message, title, "error");
+}
+
 function escapeHtml(value) {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -237,13 +260,14 @@ async function initDisplayConsole() {
 
   ui.addHomeButton.addEventListener("click", openPicker);
   ui.saveButton.addEventListener("click", async () => {
+    const pendingToast = showPendingFeedback("Saving display layout...", "System Notice");
     try {
       await saveBoard();
       setSaveHint("Mission Board 布局已保存。");
-      showFeedback("Display Layout Saved", "System Notice", "success");
+      resolvePendingFeedback(pendingToast, "Display Layout Saved", "System Notice", "success");
     } catch (error) {
       setSaveHint(`保存失败：${error.message}`);
-      showFeedback("Display Layout Save Failed", "System Notice", "error");
+      failPendingFeedback(pendingToast, "Display Layout Save Failed", "System Notice");
       console.warn("Unable to save mission board display layout.", error);
     }
   });
