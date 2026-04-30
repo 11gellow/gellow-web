@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Gellow Post Editor</title>
+        <meta
+            name="description"
+            content="Standalone post editor for managing blog content."
+        />
+        <link
+            rel="icon"
+            type="image/svg+xml"
+            href="../assets/favicon-notes.svg"
+        />
+        <link rel="stylesheet" href="../css/style.css" />
+        <link rel="stylesheet" href="./css/style.css" />
+        <script defer src="../js/boot.js"></script>
+    </head>
+    <body>
+        <div class="page-loader" id="page-loader">
+            <div class="loader-shell pixel">
+                <div class="loader-marquee">Insert Coin To Load</div>
+                <div class="loader-core">
+                    <div class="loader-glyph loader-glyph-display">E</div>
+                    <div class="loader-copy">
+                        <strong>Post Editor</strong>
+                        <p>loading~~~</p>
+                        <div class="loader-bar"><span></span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <header class="notes-minibar">
+            <div class="wrap notes-minibar-inner">
+                <a
+                    class="btn btn-notes-hub"
+                    href="./index.html"
+                    data-toast-message="Notes Console 已打开"
+                    >Back To Notes</a
+                >
+            </div>
+        </header>
+
+        <main class="wrap editor-page-shell">
+            <div class="editor-layout">
+                <aside class="editor-meta pixel">
+                    <div class="notes-panel-kicker">Post Editor</div>
+                    <h1 class="section-title yellow">Edit Post</h1>
+
+                    <form id="article-form" class="editor-meta-form">
+                        <label class="notes-field">
+                            <span>Title</span>
+                            <input
+                                id="article-title"
+                                name="title"
+                                type="text"
+                                maxlength="120"
+                                required
+                            />
+                        </label>
+
+                        <label class="notes-field">
+                            <span>Slug</span>
+                            <input
+                                id="article-slug"
+                                name="slug"
+                                type="text"
+                                maxlength="120"
+                                required
+                            />
+                        </label>
+
+                        <label class="notes-field">
+                            <span>Status</span>
+                            <select id="article-status" name="status">
+                                <option value="draft">Draft</option>
+                                <option value="published">Published</option>
+                                <option value="archived">Archived</option>
+                            </select>
+                        </label>
+
+                        <label class="notes-field">
+                            <span>Date</span>
+                            <input
+                                id="article-date"
+                                name="publishedAt"
+                                type="date"
+                                required
+                            />
+                        </label>
+
+                        <label class="notes-field">
+                            <span>Summary</span>
+                            <textarea
+                                id="article-summary"
+                                name="summary"
+                                rows="7"
+                                maxlength="240"
+                            ></textarea>
+                        </label>
+
+                        <div class="editor-savebar">
+                            <p class="notes-hint" id="save-hint">
+                                正在读取文章...
+                            </p>
+                            <div class="meta-actions">
+                                <button
+                                    class="btn btn-yellow"
+                                    type="submit"
+                                    data-toast-defer="true"
+                                >
+                                    Save
+                                </button>
+                                <button
+                                    class="btn btn-red"
+                                    id="delete-article-btn"
+                                    type="button"
+                                    data-toast-defer="true"
+                                >
+                                    Delete
+                                </button>
+                                <a
+                                    class="btn btn-green"
+                                    href="./editor.html?mode=new"
+                                    data-toast-message="New Post Editor 已打开"
+                                    >New Post</a
+                                >
+                            </div>
+                        </div>
+                    </form>
+                </aside>
+
+                <section class="editor-workspace pixel">
+                    <div class="editor-workspace-head">
+                        <div>
+                            <div class="notes-panel-kicker">Content Stage</div>
+                            <h2 class="section-title pink">Content</h2>
+                        </div>
+                        <div class="editor-toolbar" id="editor-toolbar">
+                            <button class="tool-button" type="button" data-action="paragraph">
+                                Paragraph
+                            </button>
+                            <button class="tool-button" type="button" data-action="heading">
+                                Heading
+                            </button>
+                            <button class="tool-button" type="button" data-action="quote">
+                                Quote
+                            </button>
+                            <button class="tool-button" type="button" data-action="list">
+                                List
+                            </button>
+                            <button class="tool-button" type="button" data-action="image">
+                                Image
+                            </button>
+                            <button class="tool-button" type="button" data-action="video">
+                                Video
+                            </button>
+                            <button class="tool-button" type="button" data-action="link">
+                                Link
+                            </button>
+                            <button class="tool-button" type="button" data-action="divider">
+                                Divider
+                            </button>
+                            <button class="tool-button" type="button" data-action="html">
+                                Html
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="editor-canvas-shell">
+                        <div
+                            class="rich-editor"
+                            id="article-content"
+                            contenteditable="true"
+                            spellcheck="true"
+                            data-placeholder="在这里编辑正文。可以保留空行、插入图片、视频、链接或自定义 HTML。"
+                        ></div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="false"></div>
+
+        <script src="../js/content-api.js"></script>
+        <script src="../js/feedback.js"></script>
+        <script src="./js/editor.js"></script>
+    </body>
+</html>

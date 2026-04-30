@@ -359,11 +359,11 @@ def save_post():
     title = str(payload.get("title", "")).strip()
     slug = str(payload.get("slug", "")).strip()
     summary = str(payload.get("summary", "")).strip()
-    content = str(payload.get("content", "")).strip()
+    content = str(payload.get("content", ""))
     status = str(payload.get("status", "draft")).strip()
     published_at = str(payload.get("publishedAt", "")).strip()
 
-    if not title or not slug or not summary or not content or not published_at:
+    if not title or not slug or not summary or content == "" or not published_at:
         return jsonify({"error": "title, slug, summary, content and publishedAt are required"}), 400
 
     if status not in {"draft", "published", "archived"}:

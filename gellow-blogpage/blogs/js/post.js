@@ -30,11 +30,29 @@ function normalizeSlug(value) {
   return String(value || "").trim().normalize("NFC");
 }
 
-function renderDetail(post) {
-  const paragraphs = String(post.content)
+function looksLikeHtml(content) {
+  return /<\/?[a-z][\s\S]*>/i.test(String(content || ""));
+}
+
+function renderContent(content) {
+  const source = String(content || "");
+
+  if (!source.trim()) {
+    return "";
+  }
+
+  if (looksLikeHtml(source)) {
+    return source;
+  }
+
+  return source
     .split(/\n{2,}/)
     .map((paragraph) => `<p>${escapeHtml(paragraph).replaceAll("\n", "<br />")}</p>`)
     .join("");
+}
+
+function renderDetail(post) {
+  const contentHtml = renderContent(post.content);
 
   postDetailRoot.innerHTML = `
     <div class="blog-entry-meta">
@@ -43,7 +61,7 @@ function renderDetail(post) {
     </div>
     <h2>${escapeHtml(post.title)}</h2>
     <p>${escapeHtml(post.summary)}</p>
-    <div class="post-detail-content">${paragraphs}</div>
+    <div class="post-detail-content">${contentHtml}</div>
     <a class="btn btn-blue back-inline" href="../index.html">Back To Blog</a>
   `;
 

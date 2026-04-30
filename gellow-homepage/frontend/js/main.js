@@ -332,6 +332,10 @@
     }
   }
 
+  function isCollidableShape(shape) {
+    return shape.state === "free" || shape.state === "dragging";
+  }
+
   function beginAbsorb(shape) {
     if (!shape || shape.state === "absorbing" || shape.state === "gone") {
       return;
@@ -466,6 +470,9 @@
 
       shape.x = point.x - scene.pointer.offsetX;
       shape.y = point.y - scene.pointer.offsetY;
+      shape.vx = scene.pointer.vx * 0.32;
+      shape.vy = scene.pointer.vy * 0.32;
+      shape.spin = scene.pointer.vx * 0.0008;
       shape.angle += 0.06;
 
       const dx = scene.hole.x - shape.x;
@@ -671,13 +678,13 @@
   function resolveCollisions() {
     for (let outer = 0; outer < scene.shapes.length; outer += 1) {
       const a = scene.shapes[outer];
-      if (a.state !== "free") {
+      if (!isCollidableShape(a)) {
         continue;
       }
 
       for (let inner = outer + 1; inner < scene.shapes.length; inner += 1) {
         const b = scene.shapes[inner];
-        if (b.state !== "free") {
+        if (!isCollidableShape(b)) {
           continue;
         }
 
@@ -693,12 +700,22 @@
         const nx = dx / dist;
         const ny = dy / dist;
         const overlap = minDist - dist;
-        const totalMass = a.mass + b.mass;
+        const aDragging = a.state === "dragging";
+        const bDragging = b.state === "dragging";
 
-        a.x -= nx * overlap * (b.mass / totalMass);
-        a.y -= ny * overlap * (b.mass / totalMass);
-        b.x += nx * overlap * (a.mass / totalMass);
-        b.y += ny * overlap * (a.mass / totalMass);
+        if (aDragging && !bDragging) {
+          b.x += nx * overlap;
+          b.y += ny * overlap;
+        } else if (!aDragging && bDragging) {
+          a.x -= nx * overlap;
+          a.y -= ny * overlap;
+        } else {
+          const totalMass = a.mass + b.mass;
+          a.x -= nx * overlap * (b.mass / totalMass);
+          a.y -= ny * overlap * (b.mass / totalMass);
+          b.x += nx * overlap * (a.mass / totalMass);
+          b.y += ny * overlap * (a.mass / totalMass);
+        }
 
         const rvx = b.vx - a.vx;
         const rvy = b.vy - a.vy;
@@ -707,14 +724,25 @@
           continue;
         }
 
-        const impulse = (-1.02 * velocityAlongNormal) / ((1 / a.mass) + (1 / b.mass));
+        const inverseMassA = aDragging ? 0 : 1 / a.mass;
+        const inverseMassB = bDragging ? 0 : 1 / b.mass;
+        const inverseMassSum = inverseMassA + inverseMassB;
+        if (inverseMassSum === 0) {
+          continue;
+        }
+
+        const impulse = (-1.02 * velocityAlongNormal) / inverseMassSum;
         const ix = impulse * nx;
         const iy = impulse * ny;
 
-        a.vx -= ix / a.mass;
-        a.vy -= iy / a.mass;
-        b.vx += ix / b.mass;
-        b.vy += iy / b.mass;
+        if (!aDragging) {
+          a.vx -= ix / a.mass;
+          a.vy -= iy / a.mass;
+        }
+        if (!bDragging) {
+          b.vx += ix / b.mass;
+          b.vy += iy / b.mass;
+        }
       }
     }
   }

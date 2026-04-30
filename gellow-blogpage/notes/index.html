@@ -6,7 +6,7 @@
         <title>Gellow Notes Console</title>
         <meta
             name="description"
-            content="Pixel-style notes console for managing blog posts and the command cache."
+            content="Notes console article archive for managing blog posts."
         />
         <link
             rel="icon"
@@ -32,253 +32,37 @@
             </div>
         </div>
 
-        <header>
-            <div class="wrap nav">
-                <div>
-                    <h1 class="title">Notes Console</h1>
-                    <div class="subtitle">Insert Coin To Edit</div>
-                </div>
-                <div class="nav-actions">
-                    <nav class="menu">
-                        <a class="btn btn-red" href="#articles">Articles</a>
-                        <a class="btn btn-red" href="#commands">Commands</a>
-                        <a class="btn btn-red" href="#entries">Board</a>
-                    </nav>
-                    <a class="btn btn-notes-hub" href="../index.html" data-toast-message="Blog Home 已打开"
-                        >Back To Blog</a
-                    >
-                </div>
+        <header class="notes-minibar">
+            <div class="wrap notes-minibar-inner">
+                <a
+                    class="btn btn-notes-hub"
+                    href="../index.html"
+                    data-toast-message="Blog Home 已打开"
+                    >Back To Blog</a
+                >
             </div>
         </header>
 
-        <main class="wrap notes-page-shell">
-            <section class="hero" id="top">
-                <div class="hero-main pixel">
-                    <div class="badge">Console Online</div>
-                    <h2>Pixel Notes<br />Control Room</h2>
-                    <p>文章编辑、命令缓存设置、展示入口跳转。</p>
-                    <div class="hero-actions">
-                        <a class="btn btn-yellow" href="#articles"
-                            >Edit Posts</a
-                        >
-                        <a class="btn btn-green" href="./display.html" data-toast-message="Display Console 已打开"
-                            >Edit Board</a
-                        >
+        <main class="wrap notes-archive-shell">
+            <section class="notes-side pixel">
+                <div class="notes-panel-head notes-archive-head">
+                    <div>
+                        <div class="notes-panel-kicker">Post Index</div>
+                        <h1 class="section-title yellow">Article List</h1>
                     </div>
+                    <a
+                        class="btn btn-green"
+                        href="./editor.html?mode=new"
+                        data-toast-message="Post Editor 已打开"
+                        >New Post</a
+                    >
                 </div>
-
-                <aside class="hero-panel pixel">
-                    <h2 class="section-title green">System Log</h2>
-                    <div class="status-line">[BOOT] notes console linked</div>
-                    <div class="status-line">[LOAD] content api waiting</div>
-                    <div class="status-line">[TASK] edit / route / publish</div>
-                    <div class="status-line">
-                        [NOTE] display layout moved to console
-                    </div>
-                </aside>
-            </section>
-
-            <section class="section notes-workbench" id="articles">
-                <aside class="notes-side pixel">
-                    <div class="notes-panel-head">
-                        <div>
-                            <div class="notes-panel-kicker">Article Queue</div>
-                            <h2 class="section-title yellow">Article List</h2>
-                        </div>
-                        <button
-                            class="btn btn-green"
-                            id="new-article-btn"
-                            type="button"
-                        >
-                            New Post
-                        </button>
-                    </div>
-                    <p class="notes-copy">已保存文章的切换、修改、状态检查。</p>
-                    <div class="article-list" id="article-list"></div>
-                </aside>
-
-                <div class="notes-main">
-                    <section class="notes-form-shell pixel" id="editor">
-                        <div class="notes-panel-head">
-                            <div>
-                                <div class="notes-panel-kicker">
-                                    Post Editor
-                                </div>
-                                <h2 class="section-title pink">Post Editor</h2>
-                            </div>
-                            <div class="notes-toolbar">
-                                <button
-                                    class="btn btn-blue"
-                                    id="reset-form-btn"
-                                    type="button"
-                                >
-                                    Reset
-                                </button>
-                                <button
-                                    class="btn btn-red"
-                                    id="delete-article-btn"
-                                    type="button"
-                                    data-toast-defer="true"
-                                >
-                                    Delete
-                                </button>
-                            </div>
-                        </div>
-
-                        <form id="article-form" class="notes-form">
-                            <label class="notes-field">
-                                <span>Title</span>
-                                <input
-                                    id="article-title"
-                                    name="title"
-                                    type="text"
-                                    maxlength="80"
-                                    required
-                                />
-                            </label>
-
-                            <div class="notes-field-row">
-                                <label class="notes-field">
-                                    <span>Slug / Tag</span>
-                                    <input
-                                        id="article-slug"
-                                        name="slug"
-                                        type="text"
-                                        maxlength="80"
-                                        required
-                                    />
-                                </label>
-
-                                <label class="notes-field">
-                                    <span>Status</span>
-                                    <select id="article-status" name="status">
-                                        <option value="draft">草稿</option>
-                                        <option value="published">
-                                            Published
-                                        </option>
-                                        <option value="archived">
-                                            Archived
-                                        </option>
-                                    </select>
-                                </label>
-                            </div>
-
-                            <div class="notes-field-row">
-                                <label class="notes-field">
-                                    <span>Date</span>
-                                    <input
-                                        id="article-date"
-                                        name="publishedAt"
-                                        type="date"
-                                        required
-                                    />
-                                </label>
-
-                                <label class="notes-field">
-                                    <span>Summary</span>
-                                    <textarea
-                                        id="article-summary"
-                                        name="summary"
-                                        rows="4"
-                                        maxlength="180"
-                                    ></textarea>
-                                </label>
-                            </div>
-
-                            <label class="notes-field">
-                                <span>Content</span>
-                                <textarea
-                                    id="article-content"
-                                    name="content"
-                                    rows="14"
-                                    required
-                                ></textarea>
-                            </label>
-
-                            <div class="notes-form-footer">
-                                <p class="notes-hint" id="save-hint">
-                                    Connecting content api...
-                                </p>
-                                <button class="btn btn-yellow" type="submit" data-toast-defer="true">
-                                    Save Post
-                                </button>
-                            </div>
-                        </form>
-                    </section>
-
-                    <section class="notes-form-shell pixel" id="commands">
-                        <div class="notes-panel-head">
-                            <div>
-                                <div class="notes-panel-kicker">
-                                    Command Cache
-                                </div>
-                                <h2 class="section-title green">
-                                    Command Settings
-                                </h2>
-                            </div>
-                        </div>
-
-                        <p class="notes-copy">
-                            控制 blog 页面命令缓存区的标题和逐行内容。
-                        </p>
-
-                        <form id="command-settings-form" class="notes-form">
-                            <label class="notes-field">
-                                <span>Section Title</span>
-                                <input
-                                    id="mission-notes-title-input"
-                                    type="text"
-                                    maxlength="60"
-                                />
-                            </label>
-                            <label class="notes-field">
-                                <span>Section Lines</span>
-                                <textarea
-                                    id="mission-notes-items-input"
-                                    rows="8"
-                                ></textarea>
-                            </label>
-                            <div class="notes-form-footer">
-                                <p class="notes-hint" id="settings-save-hint">
-                                    保存后会同步更新 blog 页面命令缓存区的内容。
-                                </p>
-                                <button
-                                    class="btn btn-green"
-                                    id="save-settings-btn"
-                                    type="submit"
-                                    data-toast-defer="true"
-                                >
-                                    Save Commands
-                                </button>
-                            </div>
-                        </form>
-                    </section>
-
-                    <section class="section entry-grid" id="entries">
-                        <article class="entry-card pixel">
-                            <div class="entry-top">
-                                <h3>Mission Board</h3>
-                                <span class="lv">LV.01</span>
-                            </div>
-                            <div
-                                class="entry-screen entry-screen-console"
-                            ></div>
-                            <p>调整未来 home 页面 Mission Board 的四个展示槽位。</p>
-                            <div class="card-action">
-                                <a
-                                    class="btn btn-notes-hub"
-                                    href="./display.html"
-                                    data-toast-message="Display Console 已打开"
-                                    >Open Board</a
-                                >
-                            </div>
-                        </article>
-                    </section>
-                </div>
+                <p class="notes-hint notes-archive-status" id="archive-status">
+                    正在读取文章列表...
+                </p>
+                <div class="article-grid article-grid-archive" id="article-list"></div>
             </section>
         </main>
-
-        <footer>Gellow Notes · Pixel style content console</footer>
 
         <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="false"></div>
 
