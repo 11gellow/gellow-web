@@ -128,7 +128,7 @@ html {
 
 .article-card-meta {
     min-width: 0;
-    font-family: var(--font-title-cn);
+    font-family: var(--font-slug-cn);
 }
 
 .article-edit-link {
@@ -228,7 +228,7 @@ html {
 }
 
 #article-slug {
-    font-family: var(--font-title-cn);
+    font-family: var(--font-slug-cn);
 }
 
 .notes-field textarea {

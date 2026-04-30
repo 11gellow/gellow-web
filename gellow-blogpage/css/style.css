@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=ZCOOL+QingKe+HuangYou&family=ZCOOL+XiaoWei&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=LXGW+WenKai+TC:wght@400;700&family=ZCOOL+XiaoWei&display=swap");
 
 :root {
     --bg: #120d1f;
@@ -17,7 +17,7 @@
     --text-soft: #eadcff;
     --font-body-cn: "LXGW WenKai TC", "LXGW WenKai", "Microsoft YaHei", serif;
     --font-title-cn: "ZCOOL XiaoWei", "STSong", serif;
-    --font-slug-cn: "ZCOOL QingKe HuangYou", "Microsoft YaHei", cursive;
+    --font-slug-cn: "JetBrains Mono", "Courier New", monospace;
 }
 
 * {
