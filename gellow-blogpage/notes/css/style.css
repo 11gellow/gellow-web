@@ -389,7 +389,23 @@ html {
 }
 
 .rich-editor iframe {
-    aspect-ratio: 16 / 9;
+  aspect-ratio: 16 / 9;
+}
+
+.rich-editor .attachment-card {
+  background: linear-gradient(
+    180deg,
+    rgba(20, 26, 44, 0.96),
+    rgba(12, 16, 30, 0.98)
+  );
+}
+
+.rich-editor .attachment-name {
+  color: var(--cream);
+}
+
+.rich-editor .attachment-meta {
+  color: rgba(255, 245, 204, 0.72);
 }
 
 .rich-editor figcaption {

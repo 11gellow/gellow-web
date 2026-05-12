@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import json
 import os
+from io import BytesIO
 from pathlib import Path
 
 import libsql
 from dotenv import load_dotenv
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request, send_file, send_from_directory
 
 
 load_dotenv()
@@ -15,6 +16,7 @@ BASE_DIR = Path(__file__).resolve().parent
 FRONTEND_DIR = BASE_DIR.parent / "frontend"
 DEFAULT_SCORE_LIMIT = 12
 MAX_SCORE_LIMIT = 100
+MAX_ATTACHMENT_SIZE = 3 * 1024 * 1024
 TURSO_DATABASE_URL = os.getenv("TURSO_DATABASE_URL", "").strip()
 TURSO_AUTH_TOKEN = os.getenv("TURSO_AUTH_TOKEN", "").strip()
 
@@ -111,6 +113,57 @@ def serialize_post(row) -> dict[str, object]:
     }
 
 
+def classify_attachment(mime_type: str, filename: str) -> str:
+    mime_type = (mime_type or "").lower()
+    suffix = Path(filename).suffix.lower()
+
+    if mime_type.startswith("image/") or suffix in {
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".gif",
+        ".webp",
+        ".svg",
+        ".avif",
+    }:
+        return "image"
+    if mime_type.startswith("video/") or suffix in {".mp4", ".webm", ".ogg", ".mov", ".m4v"}:
+        return "video"
+    if mime_type.startswith("audio/") or suffix in {".mp3", ".wav", ".flac", ".aac", ".m4a", ".ogg"}:
+        return "audio"
+    if mime_type == "application/pdf" or suffix == ".pdf":
+        return "pdf"
+    return "file"
+
+
+def normalize_upload_filename(raw_name: str) -> str:
+    name = Path(str(raw_name or "").strip()).name
+    if not name:
+        return "attachment"
+
+    forbidden = '<>:"/\\|?*'
+    cleaned = "".join("_" if char in forbidden else char for char in name).strip()
+    return cleaned or "attachment"
+
+
+def serialize_attachment(row, base_url: str) -> dict[str, object]:
+    filename = row[1]
+    return {
+        "id": row[0],
+        "filename": filename,
+        "mimeType": row[2],
+        "size": row[3],
+        "kind": classify_attachment(row[2], filename),
+        "url": f"{base_url.rstrip('/')}/api/attachments/{row[0]}/{filename}",
+        "createdAt": row[4],
+    }
+
+
+def is_inline_attachment(mime_type: str, filename: str) -> bool:
+    kind = classify_attachment(mime_type, filename)
+    return kind in {"image", "video", "audio", "pdf"} or mime_type.startswith("text/")
+
+
 def parse_setting_value(raw_value: str):
     try:
         return json.loads(raw_value)
@@ -184,6 +237,18 @@ def init_db() -> None:
                 setting_key TEXT PRIMARY KEY,
                 setting_value TEXT NOT NULL,
                 updated_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+            )
+            """
+        )
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS attachments (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                filename TEXT NOT NULL,
+                mime_type TEXT NOT NULL,
+                file_size INTEGER NOT NULL,
+                file_blob BLOB NOT NULL,
+                created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
             )
             """
         )
@@ -400,6 +465,73 @@ def save_post():
         connection.commit()
 
     return jsonify({"post": serialize_post(row)})
+
+
+@app.post("/api/attachments")
+def upload_attachment():
+    uploaded_file = request.files.get("file")
+
+    if uploaded_file is None:
+        return jsonify({"error": "file is required"}), 400
+
+    original_name = uploaded_file.filename or "attachment"
+    filename = normalize_upload_filename(original_name)
+    file_bytes = uploaded_file.read()
+
+    if not file_bytes:
+        return jsonify({"error": "file is empty"}), 400
+    if len(file_bytes) > MAX_ATTACHMENT_SIZE:
+        return (
+            jsonify(
+                {
+                    "error": (
+                        f"file is too large; current limit is {MAX_ATTACHMENT_SIZE // (1024 * 1024)} MB"
+                    )
+                }
+            ),
+            413,
+        )
+
+    mime_type = (uploaded_file.mimetype or "application/octet-stream").strip() or "application/octet-stream"
+
+    with get_db_connection() as connection:
+        row = connection.execute(
+            """
+            INSERT INTO attachments (filename, mime_type, file_size, file_blob)
+            VALUES (?, ?, ?, ?)
+            RETURNING id, filename, mime_type, file_size, created_at
+            """,
+            (filename, mime_type, len(file_bytes), file_bytes),
+        ).fetchone()
+        connection.commit()
+
+    attachment = serialize_attachment(row, request.host_url.rstrip("/"))
+    return jsonify({"attachment": attachment}), 201
+
+
+@app.get("/api/attachments/<int:attachment_id>/<path:_filename>")
+def get_attachment(attachment_id: int, _filename: str):
+    with get_db_connection() as connection:
+        row = connection.execute(
+            """
+            SELECT filename, mime_type, file_blob
+            FROM attachments
+            WHERE id = ?
+            """,
+            (attachment_id,),
+        ).fetchone()
+
+    if row is None:
+        return jsonify({"error": "attachment not found"}), 404
+
+    filename, mime_type, file_blob = row
+    return send_file(
+        BytesIO(file_blob),
+        mimetype=mime_type,
+        download_name=filename,
+        as_attachment=not is_inline_attachment(mime_type, filename),
+        max_age=86400,
+    )
 
 
 @app.delete("/api/content/posts/<int:post_id>")

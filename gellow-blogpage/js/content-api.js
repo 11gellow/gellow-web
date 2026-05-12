@@ -19,13 +19,23 @@
   }
 
   async function requestJson(path, options) {
-    const response = await fetch(`${getApiBase()}${path}`, {
-      headers: {
-        Accept: "application/json",
-        ...(options && options.headers ? options.headers : {}),
-      },
-      ...options,
-    });
+    let response;
+
+    try {
+      response = await fetch(`${getApiBase()}${path}`, {
+        headers: {
+          Accept: "application/json",
+          ...(options && options.headers ? options.headers : {}),
+        },
+        ...options,
+      });
+    } catch (error) {
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : "network request failed";
+      throw new Error(message);
+    }
 
     let payload = null;
 
@@ -117,6 +127,15 @@
           "Content-Type": "application/json",
         },
         body: JSON.stringify(settings),
+      });
+    },
+    async uploadAttachment(file) {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      return requestJson("/api/attachments", {
+        method: "POST",
+        body: formData,
       });
     },
   };

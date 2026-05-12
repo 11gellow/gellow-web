@@ -9,6 +9,7 @@ const ui = {
   summary: document.getElementById("article-summary"),
   content: document.getElementById("article-content"),
   toolbar: document.getElementById("editor-toolbar"),
+  attachmentInput: document.getElementById("attachment-input"),
 };
 
 const state = {
@@ -23,6 +24,7 @@ const state = {
 };
 
 const BLOCK_SELECTOR = "p, h1, h2, h3, ul, ol, blockquote, figure, hr";
+const MAX_ATTACHMENT_SIZE = 3 * 1024 * 1024;
 
 function showFeedback(message, title = "System Notice", variant = "info") {
   if (window.GellowFeedback?.showToast) {
@@ -72,6 +74,41 @@ function getTodayString() {
 
 function setSaveHint(text) {
   ui.saveHint.textContent = text;
+}
+
+function formatFileSize(bytes) {
+  const value = Number(bytes || 0);
+
+  if (value < 1024) {
+    return `${value} B`;
+  }
+  if (value < 1024 * 1024) {
+    return `${(value / 1024).toFixed(1)} KB`;
+  }
+  return `${(value / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function getAttachmentBadgeLabel(attachment) {
+  const filename = String(attachment.filename || "");
+  const ext = filename.includes(".") ? filename.split(".").pop().toUpperCase() : "";
+  if (ext) {
+    return ext.slice(0, 4);
+  }
+
+  if (attachment.kind === "audio") {
+    return "MP3";
+  }
+  if (attachment.kind === "pdf") {
+    return "PDF";
+  }
+  if (attachment.kind === "video") {
+    return "VID";
+  }
+  if (attachment.kind === "image") {
+    return "IMG";
+  }
+
+  return "FILE";
 }
 
 function getQueryId() {
@@ -230,6 +267,58 @@ function insertTextAsParagraphs(text) {
   insertBlockHtml(html);
 }
 
+function buildAttachmentCardHtml(attachment) {
+  return `
+    <figure class="attachment-block attachment-block-file" contenteditable="false">
+      <a
+        class="attachment-card"
+        href="${escapeHtml(attachment.url)}"
+        target="_blank"
+        rel="noopener noreferrer"
+        data-file-kind="${escapeHtml(attachment.kind)}"
+      >
+        <span class="attachment-icon">${escapeHtml(getAttachmentBadgeLabel(attachment))}</span>
+        <span class="attachment-body">
+          <span class="attachment-name">${escapeHtml(attachment.filename)}</span>
+          <span class="attachment-meta">${escapeHtml(formatFileSize(attachment.size))}</span>
+        </span>
+      </a>
+    </figure>
+  `;
+}
+
+function buildImageAttachmentHtml(attachment) {
+  return `
+    <figure class="attachment-block attachment-block-media" data-attachment-id="${attachment.id}">
+      <img src="${escapeHtml(attachment.url)}" alt="${escapeHtml(attachment.filename)}" />
+      <figcaption>${escapeHtml(attachment.filename)}</figcaption>
+    </figure>
+  `;
+}
+
+function buildVideoAttachmentHtml(attachment) {
+  return `
+    <figure class="attachment-block attachment-block-media" data-attachment-id="${attachment.id}">
+      <video controls preload="metadata" src="${escapeHtml(attachment.url)}"></video>
+      <figcaption>${escapeHtml(attachment.filename)}</figcaption>
+    </figure>
+  `;
+}
+
+function insertUploadedAttachment(attachment) {
+  if (attachment.kind === "image") {
+    insertBlockHtml(buildImageAttachmentHtml(attachment), { placeInside: false });
+    return;
+  }
+
+  if (attachment.kind === "video") {
+    insertBlockHtml(buildVideoAttachmentHtml(attachment), { placeInside: false });
+    return;
+  }
+
+  insertBlockHtml(buildAttachmentCardHtml(attachment), { placeInside: false });
+}
+
 function insertMediaByUrl(url) {
   const normalized = normalizeEmbedUrl(url);
 
@@ -278,52 +367,32 @@ function insertMediaByUrl(url) {
   `);
 }
 
-function readFileAsDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result || ""));
-    reader.onerror = () => reject(new Error(`Unable to read ${file.name}`));
-    reader.readAsDataURL(file);
-  });
+async function uploadAttachment(file) {
+  if (file.size > MAX_ATTACHMENT_SIZE) {
+    throw new Error(`文件 ${file.name} 过大，当前单文件上限为 ${formatFileSize(MAX_ATTACHMENT_SIZE)}`);
+  }
+
+  const response = await window.GellowContentApi.uploadAttachment(file);
+  if (!response || !response.attachment) {
+    throw new Error(`文件 ${file.name} 上传失败`);
+  }
+  return response.attachment;
 }
 
 async function insertDroppedFiles(files) {
-  for (const file of files) {
-    const dataUrl = await readFileAsDataUrl(file);
+  const pendingToast = showPendingFeedback(`Uploading ${files.length} file(s)...`, "System Notice");
 
-    if (file.type.startsWith("image/")) {
-      insertBlockHtml(`
-        <figure>
-          <img src="${dataUrl}" alt="${escapeHtml(file.name)}" />
-        </figure>
-      `, { placeInside: false });
-      continue;
+  try {
+    for (const file of files) {
+      const attachment = await uploadAttachment(file);
+      insertUploadedAttachment(attachment);
     }
-
-    if (file.type.startsWith("video/")) {
-      insertBlockHtml(`
-        <figure>
-          <video controls preload="metadata" src="${dataUrl}"></video>
-        </figure>
-      `, { placeInside: false });
-      continue;
-    }
-
-    if (file.type.startsWith("audio/")) {
-      insertBlockHtml(`
-        <figure>
-          <audio controls src="${dataUrl}"></audio>
-        </figure>
-      `, { placeInside: false });
-      continue;
-    }
-
-    insertBlockHtml(`
-      <p>
-        <a href="${dataUrl}" download="${escapeHtml(file.name)}">${escapeHtml(file.name)}</a>
-      </p>
-    `);
+  } catch (error) {
+    failPendingFeedback(pendingToast, "File Upload Failed", "System Notice");
+    throw error;
   }
+
+  resolvePendingFeedback(pendingToast, "Files Uploaded", "System Notice", "success");
 }
 
 function insertExitParagraphAfter(node) {
@@ -436,6 +505,11 @@ function handleToolbarAction(action) {
         ></iframe>
       </figure>
     `, { placeInside: false });
+    return;
+  }
+
+  if (action === "file") {
+    ui.attachmentInput?.click();
     return;
   }
 
@@ -576,6 +650,22 @@ function bindEditorEvents() {
     }
     handleToolbarAction(button.dataset.action);
   });
+  ui.attachmentInput?.addEventListener("change", async (event) => {
+    const files = Array.from(event.target.files || []);
+    if (!files.length) {
+      return;
+    }
+
+    try {
+      await insertDroppedFiles(files);
+      setSaveHint("附件已插入正文。");
+    } catch (error) {
+      setSaveHint(`插入失败：${error.message}`);
+      console.warn("Unable to insert attachment files.", error);
+    } finally {
+      event.target.value = "";
+    }
+  });
   ui.content.addEventListener("keydown", (event) => {
     if (event.key !== "Enter" || event.shiftKey) {
       return;
@@ -614,7 +704,7 @@ function bindEditorEvents() {
       const files = Array.from(event.dataTransfer?.files || []);
       if (files.length) {
         await insertDroppedFiles(files);
-        setSaveHint("媒体文件已插入正文。");
+        setSaveHint("附件已插入正文。");
         return;
       }
 
@@ -652,7 +742,7 @@ function bindEditorEvents() {
 
     try {
       await insertDroppedFiles(files);
-      setSaveHint("剪贴板媒体已插入正文。");
+      setSaveHint("剪贴板附件已插入正文。");
     } catch (error) {
       setSaveHint(`插入失败：${error.message}`);
       console.warn("Unable to paste media into editor.", error);
