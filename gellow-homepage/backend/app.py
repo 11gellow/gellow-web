@@ -164,6 +164,13 @@ def is_inline_attachment(mime_type: str, filename: str) -> bool:
     return kind in {"image", "video", "audio", "pdf"} or mime_type.startswith("text/")
 
 
+def apply_public_cache_headers(response):
+    response.headers["Cache-Control"] = (
+        "public, max-age=60, s-maxage=300, stale-while-revalidate=600"
+    )
+    return response
+
+
 def parse_setting_value(raw_value: str):
     try:
         return json.loads(raw_value)
@@ -373,12 +380,13 @@ def get_public_content():
         ).fetchall()
         settings_map = get_settings_map(connection)
 
-    return jsonify(
+    response = jsonify(
         {
             "posts": [serialize_post(row) for row in posts],
             "settings": settings_map,
         }
     )
+    return apply_public_cache_headers(response)
 
 
 @app.get("/api/content/admin")
@@ -411,7 +419,8 @@ def get_post_by_slug(slug: str):
     if row[5] != "published":
         return jsonify({"error": "post not found"}), 404
 
-    return jsonify({"post": serialize_post(row)})
+    response = jsonify({"post": serialize_post(row)})
+    return apply_public_cache_headers(response)
 
 
 @app.post("/api/content/posts")

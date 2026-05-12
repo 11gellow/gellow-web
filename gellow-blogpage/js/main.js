@@ -200,16 +200,24 @@ function queueArcadeOpen() {
 }
 
 async function initBlogHome() {
+  const cached = window.GellowContentApi.getCachedPublicContent();
+  if (cached) {
+    const posts = window.GellowContentApi.sortPosts(Array.isArray(cached.posts) ? cached.posts : []);
+    renderPostStream(posts);
+  }
+
   try {
-    const payload = await window.GellowContentApi.fetchPublicContent();
+    const payload = await window.GellowContentApi.refreshPublicContent();
     const posts = window.GellowContentApi.sortPosts(Array.isArray(payload.posts) ? payload.posts : []);
     renderPostStream(posts);
   } catch (error) {
-    ui.streamList.innerHTML = `
-      <article class="archive-empty pixel">
-        文章流加载失败：${escapeHtml(error.message)}
-      </article>
-    `;
+    if (!cached) {
+      ui.streamList.innerHTML = `
+        <article class="archive-empty pixel">
+          文章流加载失败：${escapeHtml(error.message)}
+        </article>
+      `;
+    }
     console.warn("Unable to initialize merged blog homepage.", error);
   }
 }

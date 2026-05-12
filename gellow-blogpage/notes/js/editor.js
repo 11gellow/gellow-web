@@ -627,7 +627,7 @@ async function handleDelete() {
 }
 
 async function loadEditorData() {
-  const payload = await window.GellowContentApi.fetchAdminContent();
+  const payload = await window.GellowContentApi.refreshAdminContent();
   state.posts = window.GellowContentApi.sortPosts(Array.isArray(payload.posts) ? payload.posts : []);
   state.settings = window.GellowContentApi.normalizeSettings(payload.settings || {});
 
@@ -753,6 +753,18 @@ function bindEditorEvents() {
 async function initEditor() {
   setSaveHint("正在读取文章...");
   bindEditorEvents();
+
+  const cached = window.GellowContentApi.getCachedAdminContent();
+  if (cached) {
+    state.posts = window.GellowContentApi.sortPosts(Array.isArray(cached.posts) ? cached.posts : []);
+    state.settings = window.GellowContentApi.normalizeSettings(cached.settings || {});
+    const queryId = getQueryId();
+    const selectedPost = state.posts.find((post) => post.id === queryId) || createEmptyPost();
+    state.currentId = selectedPost.id;
+    fillForm(selectedPost);
+    document.title = `${selectedPost.title || "New Post"} | Gellow Post Editor`;
+    setSaveHint(state.currentId ? "缓存文章已载入。" : "缓存草稿已载入。");
+  }
 
   try {
     await loadEditorData();

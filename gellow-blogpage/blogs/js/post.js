@@ -77,8 +77,16 @@ async function initPostDetail() {
     return;
   }
 
+  const cached = window.GellowContentApi.getCachedPublicContent();
+  const cachedPosts = Array.isArray(cached?.posts) ? cached.posts : [];
+  const cachedPost = cachedPosts.find((entry) => normalizeSlug(entry.slug) === slug);
+
+  if (cachedPost) {
+    renderDetail(cachedPost);
+  }
+
   try {
-    const payload = await window.GellowContentApi.fetchPublicContent();
+    const payload = await window.GellowContentApi.refreshPublicContent();
     const posts = Array.isArray(payload.posts) ? payload.posts : [];
     const post = posts.find((entry) => normalizeSlug(entry.slug) === slug);
 
@@ -88,11 +96,13 @@ async function initPostDetail() {
 
     renderDetail(post);
   } catch (error) {
-    postDetailRoot.innerHTML = `
-      <div class="archive-empty">
-        文章加载失败：${escapeHtml(error.message)}
-      </div>
-    `;
+    if (!cachedPost) {
+      postDetailRoot.innerHTML = `
+        <div class="archive-empty">
+          文章加载失败：${escapeHtml(error.message)}
+        </div>
+      `;
+    }
     console.warn("Unable to load post detail.", error);
   }
 }

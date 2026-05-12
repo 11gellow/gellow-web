@@ -246,7 +246,7 @@ async function saveBoard() {
 }
 
 async function loadDisplayData() {
-  const payload = await window.GellowContentApi.fetchAdminContent();
+  const payload = await window.GellowContentApi.refreshAdminContent();
   state.posts = window.GellowContentApi.sortPosts(Array.isArray(payload.posts) ? payload.posts : []);
   state.settings = window.GellowContentApi.normalizeSettings(payload.settings || {});
   state.homeBoard = toSlotArray(state.settings.featured_home, HOME_SLOT_COUNT);
@@ -255,6 +255,15 @@ async function loadDisplayData() {
 
 async function initDisplayConsole() {
   setSaveHint("正在读取 Mission Board 布局...");
+
+  const cached = window.GellowContentApi.getCachedAdminContent();
+  if (cached) {
+    state.posts = window.GellowContentApi.sortPosts(Array.isArray(cached.posts) ? cached.posts : []);
+    state.settings = window.GellowContentApi.normalizeSettings(cached.settings || {});
+    state.homeBoard = toSlotArray(state.settings.featured_home, HOME_SLOT_COUNT);
+    renderBoard();
+    setSaveHint("Mission Board 缓存已载入。");
+  }
 
   bindBoardInteractions();
 

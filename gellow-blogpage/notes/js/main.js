@@ -91,13 +91,20 @@ function renderList() {
 }
 
 async function loadArticleIndex() {
-  const payload = await window.GellowContentApi.fetchAdminContent();
+  const payload = await window.GellowContentApi.refreshAdminContent();
   state.posts = window.GellowContentApi.sortPosts(Array.isArray(payload.posts) ? payload.posts : []);
   renderList();
 }
 
 async function initNotesIndex() {
   setStatus("正在读取文章列表...");
+
+  const cached = window.GellowContentApi.getCachedAdminContent();
+  if (cached) {
+    state.posts = window.GellowContentApi.sortPosts(Array.isArray(cached.posts) ? cached.posts : []);
+    renderList();
+    setStatus(`已载入 ${state.posts.length} 篇缓存文章。`);
+  }
 
   try {
     await loadArticleIndex();
