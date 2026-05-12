@@ -68,6 +68,34 @@ function renderDetail(post) {
   document.title = `${post.title} | Gellow Blog`;
 }
 
+function bindAttachmentBubbles() {
+  postDetailRoot.addEventListener("click", (event) => {
+    const card = event.target.closest("[data-attachment-action]");
+    if (!card) {
+      return;
+    }
+
+    event.preventDefault();
+    const block = card.closest(".attachment-block");
+    const url = card.dataset.attachmentUrl;
+    const kind = card.dataset.fileKind;
+    const preview = block?.querySelector(".attachment-preview");
+    const canPreview = preview && ["audio", "video"].includes(kind);
+
+    if (!canPreview) {
+      if (url) {
+        window.open(url, "_blank", "noopener,noreferrer");
+      }
+      return;
+    }
+
+    const willOpen = preview.hidden;
+    block.classList.toggle("is-preview-open", willOpen);
+    preview.hidden = !willOpen;
+    card.setAttribute("aria-expanded", String(willOpen));
+  });
+}
+
 async function initPostDetail() {
   const params = new URLSearchParams(window.location.search);
   const slug = normalizeSlug(params.get("slug"));
@@ -107,4 +135,5 @@ async function initPostDetail() {
   }
 }
 
+bindAttachmentBubbles();
 void initPostDetail();

@@ -34,6 +34,51 @@
     return window.location.origin.replace(/\/$/, "");
   }
 
+  function isLocalRuntime() {
+    return (
+      window.location.protocol === "file:" ||
+      window.location.hostname === "127.0.0.1" ||
+      window.location.hostname === "localhost"
+    );
+  }
+
+  function normalizeUploadFilename(rawName) {
+    const source = String(rawName || "").split(/[\\/]/).pop().trim();
+    if (!source) {
+      return "attachment";
+    }
+
+    return (
+      source
+        .split("")
+        .map((char) => ('<>:"/\\|?*'.includes(char) ? "_" : char))
+        .join("")
+        .trim() || "attachment"
+    );
+  }
+
+  function classifyAttachment(mimeType, filename) {
+    const type = String(mimeType || "").toLowerCase();
+    const lower = String(filename || "").toLowerCase();
+
+    if (type.startsWith("image/") || /\.(png|jpe?g|gif|webp|svg|avif)$/i.test(lower)) {
+      return "image";
+    }
+    if (type.startsWith("video/") || /\.(mp4|webm|ogg|mov|m4v)$/i.test(lower)) {
+      return "video";
+    }
+    if (type.startsWith("audio/") || /\.(mp3|wav|flac|aac|m4a|ogg)$/i.test(lower)) {
+      return "audio";
+    }
+    if (type === "application/pdf" || /\.pdf$/i.test(lower)) {
+      return "pdf";
+    }
+    if (/\.(docx?|pptx?|xlsx?)$/i.test(lower)) {
+      return "office";
+    }
+    return "file";
+  }
+
   function getCache(key, maxAgeMs, allowExpired = true) {
     try {
       const raw = window.localStorage.getItem(key);
@@ -317,15 +362,42 @@
       return payload;
     },
     async uploadAttachment(file) {
+      if (!isLocalRuntime()) {
+        const { upload } = await import("https://esm.sh/@vercel/blob@1.1.1/client");
+        const filename = normalizeUploadFilename(file.name);
+        const mimeType = file.type || "application/octet-stream";
+        const pathname = `attachments/${Date.now()}-${Math.random()
+          .toString(36)
+          .slice(2, 8)}-${filename}`;
+        const blob = await upload(pathname, file, {
+          access: "public",
+          handleUploadUrl: `${getBlobUploadBase()}/api/blob-upload`,
+          multipart: file.size > 4 * 1024 * 1024,
+          clientPayload: JSON.stringify({
+            filename,
+            mimeType,
+            size: file.size,
+          }),
+        });
+
+        return {
+          attachment: {
+            id: blob.pathname || pathname,
+            filename,
+            mimeType,
+            size: file.size,
+            kind: classifyAttachment(mimeType, filename),
+            url: blob.url,
+            downloadUrl: blob.downloadUrl || blob.url,
+            createdAt: new Date().toISOString(),
+          },
+        };
+      }
+
       const formData = new FormData();
       formData.append("file", file);
 
-      const uploadPath =
-        window.location.protocol === "file:" ||
-        window.location.hostname === "127.0.0.1" ||
-        window.location.hostname === "localhost"
-          ? `${getApiBase()}/api/attachments`
-          : `${getBlobUploadBase()}/api/blob-upload`;
+      const uploadPath = `${getApiBase()}/api/attachments`;
 
       let response;
       try {

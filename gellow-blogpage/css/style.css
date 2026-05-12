@@ -1626,6 +1626,13 @@ footer {
     max-width: 100%;
 }
 
+.attachment-block-file.is-preview-open {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
 .attachment-card {
     display: inline-flex;
     align-items: center;
@@ -1640,7 +1647,11 @@ footer {
         rgba(255, 255, 255, 0.1),
         rgba(255, 255, 255, 0.04)
     );
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
     text-decoration: none;
+    text-align: left;
     transition:
         transform 0.14s ease,
         box-shadow 0.14s ease,
@@ -1690,6 +1701,36 @@ footer {
 
 .attachment-card[data-file-kind="file"] .attachment-icon {
     background: linear-gradient(180deg, #c7cedf, #7382a6);
+}
+
+.attachment-card[data-file-kind="office"] .attachment-icon {
+    background: linear-gradient(180deg, #8ed8ff, #3f62b8);
+}
+
+.attachment-preview {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    padding: 6px;
+    border: 3px solid var(--black);
+    border-radius: 26px;
+    box-shadow: 4px 4px 0 var(--black);
+    background: rgba(255, 245, 204, 0.92);
+}
+
+.attachment-preview[hidden] {
+    display: none !important;
+}
+
+.attachment-preview audio {
+    width: min(380px, calc(100vw - 64px));
+    height: 48px;
+}
+
+.attachment-preview video {
+    width: min(420px, 100%);
+    max-height: 260px;
+    border-radius: 12px;
 }
 
 .attachment-body {

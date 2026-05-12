@@ -24,7 +24,7 @@ const state = {
 };
 
 const BLOCK_SELECTOR = "p, h1, h2, h3, ul, ol, blockquote, figure, hr";
-const MAX_ATTACHMENT_SIZE = 3 * 1024 * 1024;
+const MAX_ATTACHMENT_SIZE = 100 * 1024 * 1024;
 
 function showFeedback(message, title = "System Notice", variant = "info") {
   if (window.GellowFeedback?.showToast) {
@@ -101,6 +101,9 @@ function getAttachmentBadgeLabel(attachment) {
   if (attachment.kind === "pdf") {
     return "PDF";
   }
+  if (attachment.kind === "office") {
+    return "DOC";
+  }
   if (attachment.kind === "video") {
     return "VID";
   }
@@ -109,6 +112,30 @@ function getAttachmentBadgeLabel(attachment) {
   }
 
   return "FILE";
+}
+
+function canPreviewAttachment(attachment) {
+  return ["audio", "video"].includes(attachment.kind);
+}
+
+function buildAttachmentPreviewHtml(attachment) {
+  if (attachment.kind === "audio") {
+    return `
+      <div class="attachment-preview" hidden>
+        <audio controls preload="metadata" src="${escapeHtml(attachment.url)}"></audio>
+      </div>
+    `;
+  }
+
+  if (attachment.kind === "video") {
+    return `
+      <div class="attachment-preview" hidden>
+        <video controls preload="metadata" src="${escapeHtml(attachment.url)}"></video>
+      </div>
+    `;
+  }
+
+  return "";
 }
 
 function getQueryId() {
@@ -268,21 +295,25 @@ function insertTextAsParagraphs(text) {
 }
 
 function buildAttachmentCardHtml(attachment) {
+  const previewable = canPreviewAttachment(attachment);
+
   return `
     <figure class="attachment-block attachment-block-file" contenteditable="false">
-      <a
+      <button
         class="attachment-card"
-        href="${escapeHtml(attachment.url)}"
-        target="_blank"
-        rel="noopener noreferrer"
+        type="button"
+        data-attachment-action="${previewable ? "preview" : "open"}"
+        data-attachment-url="${escapeHtml(attachment.url)}"
         data-file-kind="${escapeHtml(attachment.kind)}"
+        aria-expanded="false"
       >
         <span class="attachment-icon">${escapeHtml(getAttachmentBadgeLabel(attachment))}</span>
         <span class="attachment-body">
           <span class="attachment-name">${escapeHtml(attachment.filename)}</span>
           <span class="attachment-meta">${escapeHtml(formatFileSize(attachment.size))}</span>
         </span>
-      </a>
+      </button>
+      ${buildAttachmentPreviewHtml(attachment)}
     </figure>
   `;
 }
@@ -681,6 +712,34 @@ function bindEditorEvents() {
       event.preventDefault();
       insertExitParagraphAfter(block);
     }
+  });
+  ui.content.addEventListener("click", (event) => {
+    const card = event.target.closest("[data-attachment-action]");
+    if (!card) {
+      return;
+    }
+
+    event.preventDefault();
+    const action = card.dataset.attachmentAction;
+    const block = card.closest(".attachment-block");
+
+    if (action === "open") {
+      const url = card.dataset.attachmentUrl;
+      if (url) {
+        window.open(url, "_blank", "noopener,noreferrer");
+      }
+      return;
+    }
+
+    const preview = block?.querySelector(".attachment-preview");
+    if (!preview) {
+      return;
+    }
+
+    const willOpen = preview.hidden;
+    block.classList.toggle("is-preview-open", willOpen);
+    preview.hidden = !willOpen;
+    card.setAttribute("aria-expanded", String(willOpen));
   });
   ui.content.addEventListener("dragenter", (event) => {
     event.preventDefault();

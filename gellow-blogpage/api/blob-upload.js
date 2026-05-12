@@ -1,8 +1,19 @@
-import { put } from "@vercel/blob";
+import { handleUpload } from "@vercel/blob/client";
 
-const MAX_ATTACHMENT_SIZE = 20 * 1024 * 1024;
+const DEFAULT_MAX_ATTACHMENT_MB = 100;
+const MAX_ATTACHMENT_SIZE =
+  Number(process.env.BLOB_MAX_ATTACHMENT_MB || DEFAULT_MAX_ATTACHMENT_MB) *
+  1024 *
+  1024;
 
-function json(payload, status = 200) {
+function sendJson(response, payload, status = 200) {
+  if (response && typeof response.status === "function") {
+    response.setHeader("Access-Control-Allow-Origin", "*");
+    response.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    response.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    return response.status(status).json(payload);
+  }
+
   return new Response(JSON.stringify(payload), {
     status,
     headers: {
@@ -20,11 +31,13 @@ function normalizeUploadFilename(rawName) {
     return "attachment";
   }
 
-  return source
-    .split("")
-    .map((char) => ('<>:"/\\|?*'.includes(char) ? "_" : char))
-    .join("")
-    .trim() || "attachment";
+  return (
+    source
+      .split("")
+      .map((char) => ('<>:"/\\|?*'.includes(char) ? "_" : char))
+      .join("")
+      .trim() || "attachment"
+  );
 }
 
 function classifyAttachment(mimeType, filename) {
@@ -43,15 +56,38 @@ function classifyAttachment(mimeType, filename) {
   if (type === "application/pdf" || /\.pdf$/i.test(lower)) {
     return "pdf";
   }
+  if (/\.(docx?|pptx?|xlsx?)$/i.test(lower)) {
+    return "office";
+  }
   return "file";
 }
 
-export const config = {
-  runtime: "edge",
-};
+async function readJsonBody(request) {
+  if (request && typeof request.json === "function") {
+    return request.json();
+  }
 
-export default async function handler(request) {
+  if (request?.body && typeof request.body === "object" && !Buffer.isBuffer(request.body)) {
+    return request.body;
+  }
+
+  const chunks = [];
+  for await (const chunk of request) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  }
+
+  const raw = Buffer.concat(chunks).toString("utf8");
+  return raw ? JSON.parse(raw) : {};
+}
+
+export default async function handler(request, response) {
   if (request.method === "OPTIONS") {
+    if (response && typeof response.status === "function") {
+      response.setHeader("Access-Control-Allow-Origin", "*");
+      response.setHeader("Access-Control-Allow-Headers", "Content-Type");
+      response.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+      return response.status(204).end();
+    }
     return new Response(null, {
       status: 204,
       headers: {
@@ -63,51 +99,48 @@ export default async function handler(request) {
   }
 
   if (request.method !== "POST") {
-    return json({ error: "method not allowed" }, 405);
+    return sendJson(response, { error: "method not allowed" }, 405);
   }
 
   try {
-    const formData = await request.formData();
-    const file = formData.get("file");
+    const body = await readJsonBody(request);
+    const jsonResponse = await handleUpload({
+      body,
+      request,
+      onBeforeGenerateToken: async (pathname, clientPayload) => {
+        const payload = clientPayload ? JSON.parse(clientPayload) : {};
+        const filename = normalizeUploadFilename(payload.filename || pathname);
+        const mimeType = String(payload.mimeType || "application/octet-stream");
+        const size = Number(payload.size || 0);
 
-    if (!file || typeof file.arrayBuffer !== "function") {
-      return json({ error: "file is required" }, 400);
-    }
+        if (size > MAX_ATTACHMENT_SIZE) {
+          throw new Error(
+            `file is too large; current limit is ${Math.round(
+              MAX_ATTACHMENT_SIZE / (1024 * 1024)
+            )} MB`
+          );
+        }
 
-    if (file.size > MAX_ATTACHMENT_SIZE) {
-      return json(
-        { error: `file is too large; current limit is ${MAX_ATTACHMENT_SIZE / (1024 * 1024)} MB` },
-        413
-      );
-    }
-
-    const filename = normalizeUploadFilename(file.name);
-    const key = `attachments/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${filename}`;
-    const blob = await put(key, file, {
-      access: "public",
-      addRandomSuffix: false,
-      contentType: file.type || "application/octet-stream",
+        return {
+          addRandomSuffix: true,
+          maximumSizeInBytes: MAX_ATTACHMENT_SIZE,
+          tokenPayload: JSON.stringify({
+            filename,
+            mimeType,
+            size,
+            kind: classifyAttachment(mimeType, filename),
+          }),
+        };
+      },
+      onUploadCompleted: async ({ blob, tokenPayload }) => {
+        console.log("blob upload completed", blob.pathname, tokenPayload || "");
+      },
     });
 
-    return json(
-      {
-        attachment: {
-          id: blob.pathname,
-          filename,
-          mimeType: file.type || "application/octet-stream",
-          size: file.size,
-          kind: classifyAttachment(file.type, filename),
-          url: blob.url,
-          createdAt: new Date().toISOString(),
-        },
-      },
-      201
-    );
+    return sendJson(response, jsonResponse);
   } catch (error) {
     const message =
-      error instanceof Error && error.message
-        ? error.message
-        : "blob upload failed";
-    return json({ error: message }, 500);
+      error instanceof Error && error.message ? error.message : "blob upload failed";
+    return sendJson(response, { error: message }, 400);
   }
 }

@@ -16,7 +16,7 @@ BASE_DIR = Path(__file__).resolve().parent
 FRONTEND_DIR = BASE_DIR.parent / "frontend"
 DEFAULT_SCORE_LIMIT = 12
 MAX_SCORE_LIMIT = 100
-MAX_ATTACHMENT_SIZE = 3 * 1024 * 1024
+MAX_ATTACHMENT_SIZE = int(os.getenv("MAX_ATTACHMENT_SIZE_MB", "100")) * 1024 * 1024
 TURSO_DATABASE_URL = os.getenv("TURSO_DATABASE_URL", "").strip()
 TURSO_AUTH_TOKEN = os.getenv("TURSO_AUTH_TOKEN", "").strip()
 
@@ -133,6 +133,8 @@ def classify_attachment(mime_type: str, filename: str) -> str:
         return "audio"
     if mime_type == "application/pdf" or suffix == ".pdf":
         return "pdf"
+    if suffix in {".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx"}:
+        return "office"
     return "file"
 
 
@@ -161,7 +163,7 @@ def serialize_attachment(row, base_url: str) -> dict[str, object]:
 
 def is_inline_attachment(mime_type: str, filename: str) -> bool:
     kind = classify_attachment(mime_type, filename)
-    return kind in {"image", "video", "audio", "pdf"} or mime_type.startswith("text/")
+    return kind in {"image", "video", "audio"} or mime_type.startswith("text/")
 
 
 def apply_public_cache_headers(response):
