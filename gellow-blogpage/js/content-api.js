@@ -1,6 +1,6 @@
 (function initGellowContentApi() {
   const LOCAL_API_BASE = "http://127.0.0.1:5000";
-  const PROD_API_BASE = "https://www.gellow.top";
+  const PROD_API_BASE = "https://warp.gellow.top";
   const PUBLIC_CACHE_KEY = "__gellow_public_content_cache_v1";
   const ADMIN_CACHE_KEY = "__gellow_admin_content_cache_v1";
   const PUBLIC_CACHE_TTL = 1000 * 60 * 10;

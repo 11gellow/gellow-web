@@ -2,7 +2,7 @@
 const TILE_SIZE = 28;
 const HISTORY_LIMIT = 12;
 const LOCAL_BACKEND_BASE = "http://127.0.0.1:5000";
-const PROD_BACKEND_BASE = "https://www.gellow.top";
+const PROD_BACKEND_BASE = "https://warp.gellow.top";
 const BASE_MAP = [
   "###############",
   "#.............#",
