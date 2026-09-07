@@ -13,6 +13,8 @@ const loaderCopy = computed(() => {
   const variants: Record<string, { glyph: string; glyphClass: string; title: string; copy: string }> = {
     home: { glyph: "B", glyphClass: "loader-glyph-blog", title: "Booting Blog", copy: "正在装载文章流。" },
     post: { glyph: "P", glyphClass: "loader-glyph-post", title: "Loading Post", copy: "正在装载正文和摘要。" },
+    "markdown-post": { glyph: "M", glyphClass: "loader-glyph-post", title: "Loading Markdown", copy: "正在渲染文章与目录。" },
+    "not-found": { glyph: "?", glyphClass: "loader-glyph-post", title: "Route Missing", copy: "正在返回安全区域。" },
     notes: { glyph: "N", glyphClass: "loader-glyph-notes", title: "Notes Console", copy: "loading~~~" },
     editor: { glyph: "E", glyphClass: "loader-glyph-display", title: "Post Editor", copy: "loading~~~" },
     display: { glyph: "D", glyphClass: "loader-glyph-display", title: "Display Console", copy: "loading~~~" },

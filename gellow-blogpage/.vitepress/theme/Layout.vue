@@ -4,13 +4,12 @@ import { useData } from "vitepress";
 import BlogHome from "./components/BlogHome.vue";
 import BlogPost from "./components/BlogPost.vue";
 import ArcadePage from "./components/ArcadePage.vue";
-import DisplayConsole from "./components/DisplayConsole.vue";
-import NotesIndex from "./components/NotesIndex.vue";
-import PostEditor from "./components/PostEditor.vue";
+import MarkdownPost from "./components/MarkdownPost.vue";
+import NotFound from "./components/NotFound.vue";
 import PixelLoader from "./components/PixelLoader.vue";
 
-const { frontmatter } = useData();
-const pageKind = computed(() => frontmatter.value.pageKind ?? "home");
+const { frontmatter, page } = useData();
+const pageKind = computed(() => page.value.isNotFound ? "not-found" : (frontmatter.value.pageKind ?? "home"));
 
 onMounted(() => {
   void import("../../js/feedback.js");
@@ -19,10 +18,9 @@ onMounted(() => {
 
 <template>
   <PixelLoader :kind="pageKind" />
-  <BlogPost v-if="pageKind === 'post'" />
-  <NotesIndex v-else-if="pageKind === 'notes'" />
-  <PostEditor v-else-if="pageKind === 'editor'" />
-  <DisplayConsole v-else-if="pageKind === 'display'" />
+  <MarkdownPost v-if="pageKind === 'markdown-post'" />
+  <NotFound v-else-if="pageKind === 'not-found'" />
+  <BlogPost v-else-if="pageKind === 'post'" />
   <ArcadePage v-else-if="pageKind === 'arcade'" />
   <BlogHome v-else />
   <div id="toast-stack" class="toast-stack" aria-live="polite" aria-atomic="false"></div>

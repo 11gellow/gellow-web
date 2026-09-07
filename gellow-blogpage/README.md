@@ -1,24 +1,46 @@
 # Gellow Blog
 
-像素风个人博客。公开首页、文章详情、Notes、编辑器、展示台和 Arcade 页面均已迁移到 VitePress + Vue 自定义主题。内容 API、附件上传和管理操作使用 TypeScript 模块，游戏循环作为独立引擎模块接入 Vue 页面。
+基于 VitePress + Vue 自定义主题的像素风静态博客。文章以仓库内 Markdown 文件为唯一内容来源，构建和部署不依赖内容数据库。
 
-## 本地开发
+## 写文章
+
+在 `site/posts/` 新建 Markdown 文件，并添加 frontmatter：
+
+```md
+---
+pageKind: markdown-post
+title: "文章标题"
+description: "文章摘要"
+date: "2026-09-08"
+updated: "2026-09-08"
+slug: "article-slug"
+tags: [Vue, VitePress]
+outline: [2, 3]
+---
+
+正文从这里开始。
+```
+
+完整语法参见 `docs/MARKDOWN_GUIDE.md`。首页会在构建时自动读取并按日期排序，不需要手工维护文章列表。
+
+## 本地开发与构建
 
 ```bash
 npm install
 npm run dev
-```
-
-公开文章数据仍从 `content-api.ts` 配置的 API 读取；如果以 `localhost` 或 `127.0.0.1` 打开页面，需要同时启动 `gellow-homepage/backend/app.py`（默认端口 `5000`）。
-
-## 生产构建
-
-```bash
 npm run build
 npm run preview
 ```
 
-构建结果位于 `dist/`。构建钩子只复制图片等公开资源；页面、样式和行为脚本均由 Vite/VitePress 打包。
+构建结果位于 `dist/`。Vercel 仅部署静态页面及 Arcade 相关资源。
+
+## 旧文章迁移
+
+```bash
+npm run migrate:posts
+```
+
+迁移脚本只读取旧内容 API，把文章 HTML 转换为 Markdown，并把 Base64 图片提取到 `assets/posts/`；不会修改或删除数据库。当前 7 篇旧文章已经完成迁移，清单记录在 `site/posts-migration.json`。
 
 ## 结构
 
@@ -28,36 +50,23 @@ gellow-blogpage/
 │  ├─ config.mts
 │  └─ theme/
 │     ├─ Layout.vue
-│     ├─ content-api.ts
-│     └─ components/
-│        ├─ BlogHome.vue
-│        ├─ BlogPost.vue
-│        ├─ NotesIndex.vue
-│        ├─ PostEditor.vue
-│        ├─ DisplayConsole.vue
-│        ├─ ArcadePage.vue
-│        └─ PixelLoader.vue
+│     ├─ components/
+│     │  ├─ BlogHome.vue
+│     │  ├─ MarkdownPost.vue
+│     │  ├─ MermaidDiagram.vue
+│     │  ├─ ArcadePage.vue
+│     │  └─ PixelLoader.vue
+│     ├─ components/PostEditor.vue  # 废案保留，不导入、不构建
+│     └─ content-api.ts             # 旧编辑器配套废案
 ├─ site/
 │  ├─ index.md
-│  ├─ blogs/post.md
 │  ├─ arcade.md
-│  └─ notes/
-│     ├─ index.md
-│     ├─ editor.md
-│     └─ display.md
-├─ notes/css/             # Notes 视觉样式
-├─ js/arcade.js           # 独立游戏引擎
-├─ js/feedback.js         # 全局反馈/Toast 服务
-├─ css/                   # 视觉样式的唯一来源
+│  ├─ posts.data.ts
+│  └─ posts/*.md
+├─ scripts/migrate-posts-to-markdown.mjs
+├─ css/
 ├─ assets/
-└─ api/blob-upload.js
+└─ docs/MARKDOWN_GUIDE.md
 ```
 
-## 兼容约束
-
-- 首页仍构建为 `/index.html`。
-- 文章详情仍是 `/blogs/post.html?slug=...`。
-- 原有 CSS class 保持不变，`css/style.css` 仍是视觉效果的权威来源。
-- Notes、编辑器和展示台已经使用 Vue 响应式状态；不存在运行时旧 HTML 抽取。
-- Arcade 的 DOM 由 Vue 管理，Canvas 游戏循环作为独立引擎保留，以避免把逐帧状态塞进 Vue 响应式系统。
-- 新的全局播放器、文章目录或背景层应作为 `.vitepress/theme/components/` 中的独立组件加入，避免重新耦合到页面脚本。
+旧 `/blogs/post.html?slug=...` 链接保留为兼容跳转入口。Notes、在线编辑器及双击密码入口不再生成或展示。

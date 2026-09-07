@@ -1,26 +1,10 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from "vue";
-import {
-  getCachedPublicContent,
-  refreshPublicContent,
-  sortPosts,
-  type BlogPostRecord,
-} from "../content-api";
-
-const NOTES_PASSWORD = "aaa8524493";
-
-const posts = ref<BlogPostRecord[]>([]);
-const loadError = ref("");
+import { data as posts } from "../../../site/posts.data";
 const gameOpen = ref(false);
 const gameLoaded = ref(false);
 const gameWindow = ref<HTMLElement | null>(null);
 const gameHandle = ref<HTMLElement | null>(null);
-const passwordOpen = ref(false);
-const passwordInput = ref<HTMLInputElement | null>(null);
-const passwordValue = ref("");
-const passwordError = ref(false);
-
-let clickTimer = 0;
 let dragPointerId: number | null = null;
 let dragOffsetX = 0;
 let dragOffsetY = 0;
@@ -37,24 +21,6 @@ function formatDate(value?: string) {
   });
 }
 
-function showFeedback(message: string, title = "System Notice", variant = "info") {
-  window.GellowFeedback?.showToast(message, title, variant);
-}
-
-async function loadPosts() {
-  const cached = getCachedPublicContent();
-  if (cached) posts.value = sortPosts(Array.isArray(cached.posts) ? cached.posts : []);
-
-  try {
-    const payload = await refreshPublicContent();
-    posts.value = sortPosts(Array.isArray(payload.posts) ? payload.posts : []);
-    loadError.value = "";
-  } catch (error) {
-    if (!cached) loadError.value = error instanceof Error ? error.message : "network request failed";
-    console.warn("Unable to initialize merged blog homepage.", error);
-  }
-}
-
 function applyGameWindowPosition(left: number, top: number) {
   const element = gameWindow.value;
   if (!element) return;
@@ -69,38 +35,6 @@ function applyGameWindowPosition(left: number, top: number) {
 function openArcadeWindow() {
   gameLoaded.value = true;
   gameOpen.value = true;
-}
-
-function queueArcadeOpen() {
-  window.clearTimeout(clickTimer);
-  clickTimer = window.setTimeout(() => {
-    openArcadeWindow();
-    clickTimer = 0;
-  }, 220);
-}
-
-function openPasswordModal() {
-  window.clearTimeout(clickTimer);
-  clickTimer = 0;
-  passwordError.value = false;
-  passwordValue.value = "";
-  passwordOpen.value = true;
-  window.setTimeout(() => passwordInput.value?.focus(), 20);
-}
-
-function submitPassword() {
-  if (passwordValue.value === NOTES_PASSWORD) {
-    passwordOpen.value = false;
-    showFeedback("Notes Console 已打开", "Access Granted", "success");
-    window.setTimeout(() => {
-      window.location.href = "/notes/";
-    }, 220);
-    return;
-  }
-
-  passwordError.value = true;
-  showFeedback("Notes Password Error", "Access Denied", "error");
-  passwordInput.value?.select();
 }
 
 function startDrag(event: PointerEvent) {
@@ -128,10 +62,6 @@ function endDrag(event: PointerEvent) {
   }
 }
 
-function handleEscape(event: KeyboardEvent) {
-  if (event.key === "Escape" && passwordOpen.value) passwordOpen.value = false;
-}
-
 function handleResize() {
   if (gameOpen.value && positioned && gameWindow.value) {
     const rect = gameWindow.value.getBoundingClientRect();
@@ -140,14 +70,10 @@ function handleResize() {
 }
 
 onMounted(() => {
-  void loadPosts();
-  document.addEventListener("keydown", handleEscape);
   window.addEventListener("resize", handleResize);
 });
 
 onBeforeUnmount(() => {
-  window.clearTimeout(clickTimer);
-  document.removeEventListener("keydown", handleEscape);
   window.removeEventListener("resize", handleResize);
 });
 </script>
@@ -176,8 +102,7 @@ onBeforeUnmount(() => {
     class="pacman-launch-button"
     type="button"
     aria-label="Open Pac-Man"
-    @click="queueArcadeOpen"
-    @dblclick="openPasswordModal"
+    @click="openArcadeWindow"
   >
     <img :src="'/assets/pacman.png'" alt="" />
   </button>
@@ -216,41 +141,22 @@ onBeforeUnmount(() => {
     </div>
   </div>
 
-  <div v-show="passwordOpen" class="password-modal" @click.self="passwordOpen = false">
-    <div class="password-modal-shell pixel" role="dialog" aria-modal="true" aria-labelledby="notes-password-title">
-      <div class="password-modal-head">
-        <h2 id="notes-password-title">Notes Access</h2>
-        <button class="password-modal-close" type="button" aria-label="Close password dialog" data-toast-message="Notes Access 已关闭" @click="passwordOpen = false">×</button>
-      </div>
-      <form class="password-form" @submit.prevent="submitPassword">
-        <label class="password-field" for="notes-password-input">Password</label>
-        <input id="notes-password-input" ref="passwordInput" v-model="passwordValue" name="password" type="password" autocomplete="off" required />
-        <p v-show="passwordError" class="password-error">密码错误</p>
-        <div class="password-actions">
-          <button class="btn btn-yellow" type="submit" data-toast-defer>Enter Notes</button>
-          <button class="btn btn-red" type="button" data-toast-message="Notes Access 已关闭" @click="passwordOpen = false">Cancel</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
   <main class="wrap fusion-shell">
     <section id="post-stream" class="post-stream">
       <div class="stream-head"><h2>Post Stream</h2></div>
       <div id="stream-list" class="stream-list">
-        <article v-if="loadError" class="archive-empty pixel">文章流加载失败：{{ loadError }}</article>
-        <article v-else-if="!posts.length" class="loading-card pixel">正在加载文章流...</article>
+        <article v-if="!posts.length" class="loading-card pixel">还没有 Markdown 文章。</article>
         <template v-else>
-          <article v-for="post in posts" :key="post.id" class="blog-entry pixel">
+          <article v-for="post in posts" :key="post.url" class="blog-entry pixel">
             <div class="blog-entry-meta">
               <span class="tag">{{ post.slug }}</span>
-              <span class="date">{{ formatDate(post.publishedAt) }}</span>
+              <span class="date">{{ formatDate(post.date) }}</span>
             </div>
             <h3>
-              <a :href="`/blogs/post.html?slug=${encodeURIComponent(post.slug)}`" :data-toast-message="`文章 ${post.title} 已打开`">{{ post.title }}</a>
+              <a :href="post.url" :data-toast-message="`文章 ${post.title} 已打开`">{{ post.title }}</a>
             </h3>
-            <p>{{ post.summary }}</p>
-            <a class="entry-readmore" :href="`/blogs/post.html?slug=${encodeURIComponent(post.slug)}`" :data-toast-message="`文章 ${post.title} 已打开`">Read More</a>
+            <p>{{ post.description }}</p>
+            <a class="entry-readmore" :href="post.url" :data-toast-message="`文章 ${post.title} 已打开`">Read More</a>
           </article>
         </template>
       </div>

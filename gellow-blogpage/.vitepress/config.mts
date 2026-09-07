@@ -2,6 +2,8 @@ import { cpSync, existsSync, mkdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, extname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitepress";
+import footnote from "markdown-it-footnote";
+import taskLists from "markdown-it-task-lists";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -103,6 +105,24 @@ export default defineConfig({
     ["link", { rel: "icon", type: "image/png", href: "/assets/favicon.png" }],
   ],
   themeConfig: {},
+  markdown: {
+    lineNumbers: true,
+    math: true,
+    image: { lazyLoading: true },
+    config(markdown) {
+      markdown.use(footnote);
+      markdown.use(taskLists, { enabled: true, label: true, labelAfter: true });
+      const fallbackFence = markdown.renderer.rules.fence!;
+      markdown.renderer.rules.fence = (tokens, index, options, env, self) => {
+        const token = tokens[index];
+        if (token.info.trim() === "mermaid") {
+          const encoded = Buffer.from(token.content, "utf8").toString("base64");
+          return `<MermaidDiagram code="${encoded}" />`;
+        }
+        return fallbackFence(tokens, index, options, env, self);
+      };
+    },
+  },
   vite: {
     plugins: [publicAssetDevServer()],
   },
