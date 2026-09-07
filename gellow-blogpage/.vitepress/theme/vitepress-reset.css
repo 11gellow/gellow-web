@@ -1,0 +1,8 @@
+/* VitePress only supplies the build/runtime shell. The original Gellow styles remain authoritative. */
+#app {
+  min-height: 100vh;
+}
+
+.vp-doc {
+  padding: 0;
+}
