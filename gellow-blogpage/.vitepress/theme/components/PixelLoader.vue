@@ -4,8 +4,10 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 const props = defineProps<{ kind: string }>();
 const mounted = ref(true);
 const hidden = ref(false);
+const entering = ref(false);
 let hideTimer = 0;
 let removeTimer = 0;
+let navigationTimer = 0;
 
 const loaderCopy = computed(() => {
   const variants: Record<string, { glyph: string; glyphClass: string; title: string; copy: string }> = {
@@ -22,12 +24,19 @@ const loaderCopy = computed(() => {
 function clearTimers() {
   window.clearTimeout(hideTimer);
   window.clearTimeout(removeTimer);
+  window.clearTimeout(navigationTimer);
+}
+
+function syncPageClass() {
+  document.documentElement.classList.toggle("gellow-arcade-page", props.kind === "arcade");
 }
 
 function startLoader() {
   clearTimers();
+  syncPageClass();
   mounted.value = true;
   hidden.value = false;
+  entering.value = false;
   document.documentElement.classList.add("gellow-loading");
   document.documentElement.classList.add("is-page-loading");
 
@@ -42,19 +51,49 @@ function startLoader() {
   }, 720);
 }
 
-onMounted(startLoader);
+function shouldAnimateNavigation(event: MouseEvent, link: HTMLAnchorElement) {
+  if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return false;
+  if (link.target === "_blank" || link.hasAttribute("download")) return false;
+  const href = link.getAttribute("href");
+  if (!href || href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:") || href.startsWith("javascript:")) return false;
+  const target = new URL(link.href, window.location.href);
+  const current = new URL(window.location.href);
+  return target.origin === current.origin && target.href !== current.href;
+}
+
+async function handleNavigation(event: MouseEvent) {
+  const link = (event.target as Element | null)?.closest<HTMLAnchorElement>("a[href]");
+  if (!link || !shouldAnimateNavigation(event, link)) return;
+
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  clearTimers();
+  mounted.value = true;
+  hidden.value = false;
+  entering.value = true;
+  await nextTick();
+  window.requestAnimationFrame(() => window.requestAnimationFrame(() => { entering.value = false; }));
+  navigationTimer = window.setTimeout(() => { window.location.href = link.href; }, 280);
+}
+
+onMounted(() => {
+  startLoader();
+  document.addEventListener("click", handleNavigation, true);
+});
 
 watch(() => props.kind, startLoader);
 
 onUnmounted(() => {
   clearTimers();
+  document.removeEventListener("click", handleNavigation, true);
   document.documentElement.classList.remove("gellow-loading");
   document.documentElement.classList.remove("is-page-loading");
+  document.documentElement.classList.remove("gellow-arcade-page");
 });
 </script>
 
 <template>
-  <div v-if="mounted" class="page-loader" :class="{ 'is-hidden': hidden }">
+  <div v-if="mounted" class="page-loader" :class="{ 'is-hidden': hidden, 'is-entering': entering }">
     <div class="loader-shell pixel">
       <div class="loader-marquee">Insert Coin To Load</div>
       <div class="loader-core">

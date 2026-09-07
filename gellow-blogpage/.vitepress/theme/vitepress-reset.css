@@ -6,3 +6,16 @@
 .vp-doc {
   padding: 0;
 }
+
+/* Route changes first fade the loader over the current page, then navigate. */
+.page-loader.is-entering {
+  opacity: 0;
+  visibility: visible;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-loader {
+    transition-duration: 0.01ms !important;
+  }
+}
