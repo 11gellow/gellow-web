@@ -13,7 +13,7 @@ html.gellow-loading body {
 html.gellow-loading body {
   background: #120d1f;
 }
-html.gellow-loading #app > :not(.page-loader) {
+html.gellow-loading #app > :not(.page-loader):not(.toast-stack) {
   visibility: hidden !important;
 }
 html.gellow-loading .page-loader {
@@ -24,8 +24,18 @@ html.gellow-loading .page-loader {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: #120d1f;
+  background:
+    radial-gradient(circle at 18% 20%, rgba(255, 60, 172, 0.2), transparent 24%),
+    radial-gradient(circle at 82% 26%, rgba(41, 173, 255, 0.18), transparent 24%),
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    #120d1f;
+  background-size: auto, auto, 24px 24px, 24px 24px, auto;
   color: #fff5cc;
+}
+html.gellow-loading .toast-stack {
+  visibility: visible !important;
+  z-index: 1200;
 }
 `;
 
