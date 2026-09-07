@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from "vue";
+import { nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 
 const props = defineProps<{ kind: string }>();
 const mounted = ref(true);
@@ -7,22 +7,36 @@ const hidden = ref(false);
 let hideTimer = 0;
 let removeTimer = 0;
 
-onMounted(() => {
-  const startTime = Date.now();
-  document.documentElement.classList.add("is-page-loading");
-  const waitMs = Math.max(0, 720 - (Date.now() - startTime));
-  hideTimer = window.setTimeout(() => {
-    hidden.value = true;
-    document.documentElement.classList.remove("is-page-loading");
-    removeTimer = window.setTimeout(() => {
-      mounted.value = false;
-    }, 520);
-  }, waitMs);
-});
-
-onUnmounted(() => {
+function clearTimers() {
   window.clearTimeout(hideTimer);
   window.clearTimeout(removeTimer);
+}
+
+function startLoader() {
+  clearTimers();
+  mounted.value = true;
+  hidden.value = false;
+  document.documentElement.classList.add("gellow-loading");
+  document.documentElement.classList.add("is-page-loading");
+
+  hideTimer = window.setTimeout(() => {
+    hidden.value = true;
+    removeTimer = window.setTimeout(async () => {
+      mounted.value = false;
+      await nextTick();
+      document.documentElement.classList.remove("gellow-loading");
+      document.documentElement.classList.remove("is-page-loading");
+    }, 520);
+  }, 720);
+}
+
+onMounted(startLoader);
+
+watch(() => props.kind, startLoader);
+
+onUnmounted(() => {
+  clearTimers();
+  document.documentElement.classList.remove("gellow-loading");
   document.documentElement.classList.remove("is-page-loading");
 });
 </script>

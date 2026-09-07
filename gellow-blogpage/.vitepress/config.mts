@@ -5,6 +5,30 @@ import { defineConfig } from "vitepress";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
+const loadingGateStyle = `
+html.gellow-loading,
+html.gellow-loading body {
+  overflow: hidden;
+}
+html.gellow-loading body {
+  background: #120d1f;
+}
+html.gellow-loading #app > :not(.page-loader) {
+  visibility: hidden !important;
+}
+html.gellow-loading .page-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: #120d1f;
+  color: #fff5cc;
+}
+`;
+
 const legacyEntries = ["assets", "css", "js", "notes", "arcade.html"];
 
 const contentTypes: Record<string, string> = {
@@ -65,7 +89,11 @@ export default defineConfig({
   outDir: "dist",
   publicDir: false,
   cleanUrls: false,
-  head: [["link", { rel: "icon", type: "image/png", href: "/assets/favicon.png" }]],
+  head: [
+    ["script", {}, "document.documentElement.classList.add('gellow-loading')"],
+    ["style", {}, loadingGateStyle],
+    ["link", { rel: "icon", type: "image/png", href: "/assets/favicon.png" }],
+  ],
   themeConfig: {},
   vite: {
     plugins: [legacyDevServer()],
