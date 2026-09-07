@@ -1,11 +1,23 @@
 <script setup lang="ts">
-import { nextTick, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 
 const props = defineProps<{ kind: string }>();
 const mounted = ref(true);
 const hidden = ref(false);
 let hideTimer = 0;
 let removeTimer = 0;
+
+const loaderCopy = computed(() => {
+  const variants: Record<string, { glyph: string; glyphClass: string; title: string; copy: string }> = {
+    home: { glyph: "B", glyphClass: "loader-glyph-blog", title: "Booting Blog", copy: "正在装载文章流。" },
+    post: { glyph: "P", glyphClass: "loader-glyph-post", title: "Loading Post", copy: "正在装载正文和摘要。" },
+    notes: { glyph: "N", glyphClass: "loader-glyph-notes", title: "Notes Console", copy: "loading~~~" },
+    editor: { glyph: "E", glyphClass: "loader-glyph-display", title: "Post Editor", copy: "loading~~~" },
+    display: { glyph: "D", glyphClass: "loader-glyph-display", title: "Display Console", copy: "loading~~~" },
+    arcade: { glyph: "A", glyphClass: "", title: "Gellow Arcade", copy: "loading~~~" },
+  };
+  return variants[props.kind] ?? variants.home;
+});
 
 function clearTimers() {
   window.clearTimeout(hideTimer);
@@ -46,12 +58,10 @@ onUnmounted(() => {
     <div class="loader-shell pixel">
       <div class="loader-marquee">Insert Coin To Load</div>
       <div class="loader-core">
-        <div class="loader-glyph" :class="kind === 'post' ? 'loader-glyph-post' : 'loader-glyph-blog'">
-          {{ kind === "post" ? "P" : "B" }}
-        </div>
+        <div class="loader-glyph" :class="loaderCopy.glyphClass">{{ loaderCopy.glyph }}</div>
         <div class="loader-copy">
-          <strong>{{ kind === "post" ? "Loading Post" : "Booting Blog" }}</strong>
-          <p>{{ kind === "post" ? "正在装载正文和摘要。" : "正在装载文章流。" }}</p>
+          <strong>{{ loaderCopy.title }}</strong>
+          <p>{{ loaderCopy.copy }}</p>
           <div class="loader-bar"><span></span></div>
         </div>
       </div>

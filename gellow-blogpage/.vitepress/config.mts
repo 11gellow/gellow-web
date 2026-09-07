@@ -39,7 +39,7 @@ html.gellow-loading .toast-stack {
 }
 `;
 
-const legacyEntries = ["assets", "css", "js", "notes", "arcade.html"];
+const legacyEntries = ["assets", "css", "js", "notes/css", "notes/js"];
 
 const contentTypes: Record<string, string> = {
   ".css": "text/css; charset=utf-8",
@@ -61,9 +61,13 @@ function legacyDevServer() {
     configureServer(server: { middlewares: { use(handler: Function): void } }) {
       server.middlewares.use((request: { url?: string }, response: any, next: () => void) => {
         const pathname = decodeURIComponent(new URL(request.url || "/", "http://localhost").pathname);
-        const isLegacyPath =
-          pathname === "/arcade.html" ||
-          ["/assets/", "/css/", "/js/", "/notes/"].some((prefix) => pathname.startsWith(prefix));
+        const isLegacyPath = [
+          "/assets/",
+          "/css/",
+          "/js/",
+          "/notes/css/",
+          "/notes/js/",
+        ].some((prefix) => pathname.startsWith(prefix));
 
         if (!isLegacyPath) return next();
 

@@ -3,6 +3,7 @@ import { computed, onMounted } from "vue";
 import { useData } from "vitepress";
 import BlogHome from "./components/BlogHome.vue";
 import BlogPost from "./components/BlogPost.vue";
+import LegacyVitePressPage from "./components/LegacyVitePressPage.vue";
 import PixelLoader from "./components/PixelLoader.vue";
 
 const { frontmatter } = useData();
@@ -16,6 +17,10 @@ onMounted(() => {
 <template>
   <PixelLoader :kind="pageKind" />
   <BlogPost v-if="pageKind === 'post'" />
+  <LegacyVitePressPage
+    v-else-if="['notes', 'editor', 'display', 'arcade'].includes(pageKind)"
+    :kind="pageKind"
+  />
   <BlogHome v-else />
   <div id="toast-stack" class="toast-stack" aria-live="polite" aria-atomic="false"></div>
 </template>
