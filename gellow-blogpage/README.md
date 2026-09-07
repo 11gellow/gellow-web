@@ -1,6 +1,6 @@
 # Gellow Blog
 
-像素风个人博客。公开首页、文章详情、Notes 页面和 Arcade 路由已经迁移到 VitePress + Vue 自定义主题；编辑器、小游戏、附件上传和内容 API 的内部行为保持原实现。
+像素风个人博客。公开首页、文章详情、Notes、编辑器、展示台和 Arcade 页面均已迁移到 VitePress + Vue 自定义主题。内容 API、附件上传和管理操作使用 TypeScript 模块，游戏循环作为独立引擎模块接入 Vue 页面。
 
 ## 本地开发
 
@@ -18,7 +18,7 @@ npm run build
 npm run preview
 ```
 
-构建结果位于 `dist/`。构建钩子会复制旧资源、样式和行为脚本；VitePress 负责生成首页、文章、Notes 与 Arcade 的 HTML 入口，因此现有附件预览、文章编辑和小游戏行为不会因展示层迁移而改变。
+构建结果位于 `dist/`。构建钩子只复制图片等公开资源；页面、样式和行为脚本均由 Vite/VitePress 打包。
 
 ## 结构
 
@@ -32,7 +32,10 @@ gellow-blogpage/
 │     └─ components/
 │        ├─ BlogHome.vue
 │        ├─ BlogPost.vue
-│        ├─ LegacyVitePressPage.vue
+│        ├─ NotesIndex.vue
+│        ├─ PostEditor.vue
+│        ├─ DisplayConsole.vue
+│        ├─ ArcadePage.vue
 │        └─ PixelLoader.vue
 ├─ site/
 │  ├─ index.md
@@ -42,11 +45,11 @@ gellow-blogpage/
 │     ├─ index.md
 │     ├─ editor.md
 │     └─ display.md
-├─ notes/                 # 保留的管理端
-├─ js/                    # 保留的旧页面脚本
+├─ notes/css/             # Notes 视觉样式
+├─ js/arcade.js           # 独立游戏引擎
+├─ js/feedback.js         # 全局反馈/Toast 服务
 ├─ css/                   # 视觉样式的唯一来源
 ├─ assets/
-├─ arcade.html
 └─ api/blob-upload.js
 ```
 
@@ -55,5 +58,6 @@ gellow-blogpage/
 - 首页仍构建为 `/index.html`。
 - 文章详情仍是 `/blogs/post.html?slug=...`。
 - 原有 CSS class 保持不变，`css/style.css` 仍是视觉效果的权威来源。
-- Notes 和 Arcade 已由 VitePress 管理入口与生命周期，内部业务脚本暂时复用旧实现以保证行为一致。
+- Notes、编辑器和展示台已经使用 Vue 响应式状态；不存在运行时旧 HTML 抽取。
+- Arcade 的 DOM 由 Vue 管理，Canvas 游戏循环作为独立引擎保留，以避免把逐帧状态塞进 Vue 响应式系统。
 - 新的全局播放器、文章目录或背景层应作为 `.vitepress/theme/components/` 中的独立组件加入，避免重新耦合到页面脚本。

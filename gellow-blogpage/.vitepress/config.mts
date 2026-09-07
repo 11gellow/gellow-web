@@ -39,7 +39,7 @@ html.gellow-loading .toast-stack {
 }
 `;
 
-const legacyEntries = ["assets", "css", "js", "notes/css", "notes/js"];
+const publicEntries = ["assets"];
 
 const contentTypes: Record<string, string> = {
   ".css": "text/css; charset=utf-8",
@@ -55,21 +55,15 @@ const contentTypes: Record<string, string> = {
   ".webp": "image/webp",
 };
 
-function legacyDevServer() {
+function publicAssetDevServer() {
   return {
     name: "gellow-legacy-static-pages",
     configureServer(server: { middlewares: { use(handler: Function): void } }) {
       server.middlewares.use((request: { url?: string }, response: any, next: () => void) => {
         const pathname = decodeURIComponent(new URL(request.url || "/", "http://localhost").pathname);
-        const isLegacyPath = [
-          "/assets/",
-          "/css/",
-          "/js/",
-          "/notes/css/",
-          "/notes/js/",
-        ].some((prefix) => pathname.startsWith(prefix));
+        const isPublicAsset = pathname.startsWith("/assets/");
 
-        if (!isLegacyPath) return next();
+        if (!isPublicAsset) return next();
 
         let source = resolve(projectRoot, `.${pathname}`);
         if (pathname.endsWith("/")) source = resolve(source, "index.html");
@@ -85,10 +79,10 @@ function legacyDevServer() {
   };
 }
 
-function copyLegacyPages(outDir: string) {
+function copyPublicAssets(outDir: string) {
   mkdirSync(outDir, { recursive: true });
 
-  for (const entry of legacyEntries) {
+  for (const entry of publicEntries) {
     const source = resolve(projectRoot, entry);
     if (!existsSync(source)) continue;
     cpSync(source, resolve(outDir, entry), { recursive: true });
@@ -110,9 +104,9 @@ export default defineConfig({
   ],
   themeConfig: {},
   vite: {
-    plugins: [legacyDevServer()],
+    plugins: [publicAssetDevServer()],
   },
   buildEnd(siteConfig) {
-    copyLegacyPages(siteConfig.outDir);
+    copyPublicAssets(siteConfig.outDir);
   },
 });
