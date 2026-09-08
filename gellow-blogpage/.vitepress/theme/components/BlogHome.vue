@@ -1,6 +1,38 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from "vue";
+import { useData, useRouter } from 'vitepress';
 import { data as posts } from "../../../site/posts.data";
+import WelcomeStage from './WelcomeStage.vue';
+import { welcomeSession } from '../welcome';
+import IdentityNavigation from './IdentityNavigation.vue';
+const props = defineProps<{ directory?: boolean }>();
+const { frontmatter } = useData();
+const router = useRouter();
+function safeLink(value: unknown): string | undefined {
+  if (typeof value !== 'string') return;
+  try { const url = new URL(value); return ['https:', 'http:'].includes(url.protocol) ? url.href : undefined; } catch { return; }
+}
+const welcomeOpen = ref(!props.directory && !welcomeSession.entered);
+const expandWelcome = ref(false);
+function navigateIdentity(action: 'home' | 'blog') {
+  gameOpen.value = false;
+  if (props.directory && action === 'blog') {
+    welcomeSession.entered = true;
+    void router.go('/');
+    return;
+  }
+  window.scrollTo({ top: 0, behavior: 'instant' });
+  if (action === 'home') { expandWelcome.value = true; welcomeSession.entered = false; welcomeOpen.value = true; }
+  else { welcomeSession.entered = true; welcomeOpen.value = false; }
+}
+function enterBlog() {
+  if (props.directory) {
+    welcomeSession.entered = true;
+    void router.go('/');
+  } else {
+    welcomeOpen.value = false;
+  }
+}
 const gameOpen = ref(false);
 const scrollProgress = ref(0);
 let progressFrame = 0;
@@ -100,19 +132,15 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+  <WelcomeStage v-if="welcomeOpen" :expand-from-card="expandWelcome" @enter="enterBlog" />
+  <div class="home-content" :class="{ 'awaiting-welcome': welcomeOpen }" :inert="welcomeOpen">
   <header class="fusion-header home-header-style">
     <div class="wrap fusion-nav">
       <div class="brand-block">
-        <div class="identity-card pixel">
-          <img class="avatar" :src="'/assets/KindGellow.png'" alt="Profile avatar" />
-          <div class="identity-meta">
-            <div class="presence-line"><span class="online-dot" aria-hidden="true"></span> online</div>
-            <div class="username">KindGellow</div>
-          </div>
-        </div>
+        <IdentityNavigation :active-entry="welcomeOpen ? 'home' : directory ? 'links' : 'blog'" @navigate="navigateIdentity" />
         <div class="brand-copy">
-          <h1 class="title">Gellow Blog</h1>
-          <div class="subtitle">Insert Coin To Read</div>
+          <h1 class="title">{{ directory ? frontmatter.title : 'Gellow Blog' }}</h1>
+          <div class="subtitle">{{ directory ? 'Pick A Link To Explore' : 'Insert Coin To Read' }}</div>
         </div>
       </div>
     </div>
@@ -167,8 +195,20 @@ onBeforeUnmount(() => {
 
   <main class="wrap fusion-shell">
     <section id="post-stream" class="post-stream">
-      <div class="stream-head"><h2>Post Stream</h2></div>
-      <div id="stream-list" class="stream-list">
+      <div class="stream-head"><h2>{{ directory ? 'Link Collection' : 'Post Stream' }}</h2></div>
+      <div v-if="directory" class="stream-list link-list">
+        <p v-if="!frontmatter.links?.length" class="loading-card pixel">还没有链接，请在 links.md 中添加。</p>
+        <template v-for="(link, index) in (frontmatter.links || [])" :key="index">
+          <a v-if="safeLink(link.url)" class="blog-entry pixel link-card" :href="safeLink(link.url)" target="_blank" rel="noopener noreferrer">
+            <div class="blog-entry-meta"><span class="tag">LINK {{ String(index + 1).padStart(2, '0') }}</span></div>
+            <h3>{{ link.title || link.url }}</h3>
+            <p>{{ link.url }}</p>
+            <span class="entry-readmore">Visit Link ↗</span>
+          </a>
+          <article v-else class="blog-entry pixel"><h3>{{ link.title || '未命名链接' }}</h3><p>链接格式无效，请填写完整的 https:// 或 http:// 地址。</p></article>
+        </template>
+      </div>
+      <div v-else id="stream-list" class="stream-list">
         <article v-if="!posts.length" class="loading-card pixel">还没有 Markdown 文章。</article>
         <template v-else>
           <article v-for="post in posts" :key="post.url" class="blog-entry pixel">
@@ -188,4 +228,12 @@ onBeforeUnmount(() => {
   </main>
 
   <footer class="fusion-footer">Gellow Blog · Stream view</footer>
+  </div>
 </template>
+
+<style scoped>
+.awaiting-welcome :deep(.identity-card) { visibility: hidden; }
+.link-card { display: block; color: inherit; text-decoration: none; }
+.link-card p { overflow-wrap: anywhere; text-transform: none; }
+.link-card:focus-visible { outline: 3px solid var(--mint); outline-offset: 5px; }
+</style>
