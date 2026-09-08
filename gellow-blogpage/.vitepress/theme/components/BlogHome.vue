@@ -2,6 +2,19 @@
 import { onBeforeUnmount, onMounted, ref } from "vue";
 import { data as posts } from "../../../site/posts.data";
 const gameOpen = ref(false);
+const scrollProgress = ref(0);
+let progressFrame = 0;
+let pageResizeObserver: ResizeObserver | undefined;
+
+function updateProgress() {
+  progressFrame = 0;
+  const distance = document.documentElement.scrollHeight - window.innerHeight;
+  scrollProgress.value = distance > 0 ? Math.min(1, Math.max(0, window.scrollY / distance)) : 1;
+}
+
+function scheduleProgress() {
+  if (!progressFrame) progressFrame = requestAnimationFrame(updateProgress);
+}
 const gameLoaded = ref(false);
 const gameWindow = ref<HTMLElement | null>(null);
 const gameHandle = ref<HTMLElement | null>(null);
@@ -63,6 +76,7 @@ function endDrag(event: PointerEvent) {
 }
 
 function handleResize() {
+  scheduleProgress();
   if (gameOpen.value && positioned && gameWindow.value) {
     const rect = gameWindow.value.getBoundingClientRect();
     applyGameWindowPosition(rect.left, rect.top);
@@ -71,10 +85,17 @@ function handleResize() {
 
 onMounted(() => {
   window.addEventListener("resize", handleResize);
+  window.addEventListener("scroll", scheduleProgress, { passive: true });
+  pageResizeObserver = new ResizeObserver(scheduleProgress);
+  pageResizeObserver.observe(document.body);
+  updateProgress();
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize", handleResize);
+  window.removeEventListener("scroll", scheduleProgress);
+  pageResizeObserver?.disconnect();
+  cancelAnimationFrame(progressFrame);
 });
 </script>
 
@@ -94,6 +115,9 @@ onBeforeUnmount(() => {
           <div class="subtitle">Insert Coin To Read</div>
         </div>
       </div>
+    </div>
+    <div class="reading-progress" role="progressbar" aria-label="文章列表浏览进度" :aria-valuenow="Math.round(scrollProgress * 100)" :aria-valuemin="0" :aria-valuemax="100">
+      <div :style="{ clipPath: `inset(0 ${(1 - scrollProgress) * 100}% 0 0)` }"></div>
     </div>
   </header>
 
