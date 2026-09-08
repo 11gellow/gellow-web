@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
+import { useRouter } from "vitepress";
+const router = useRouter();
 
 const props = defineProps<{ kind: string }>();
 const mounted = ref(true);
@@ -7,7 +9,6 @@ const hidden = ref(false);
 const entering = ref(false);
 let hideTimer = 0;
 let removeTimer = 0;
-let navigationTimer = 0;
 
 const loaderCopy = computed(() => {
   const variants: Record<string, { glyph: string; glyphClass: string; title: string; copy: string }> = {
@@ -26,7 +27,6 @@ const loaderCopy = computed(() => {
 function clearTimers() {
   window.clearTimeout(hideTimer);
   window.clearTimeout(removeTimer);
-  window.clearTimeout(navigationTimer);
 }
 
 function syncPageClass() {
@@ -53,41 +53,28 @@ function startLoader() {
   }, 720);
 }
 
-function shouldAnimateNavigation(event: MouseEvent, link: HTMLAnchorElement) {
-  if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return false;
-  if (link.target === "_blank" || link.hasAttribute("download")) return false;
-  const href = link.getAttribute("href");
-  if (!href || href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:") || href.startsWith("javascript:")) return false;
-  const target = new URL(link.href, window.location.href);
-  const current = new URL(window.location.href);
-  return target.origin === current.origin && target.href !== current.href;
-}
-
-async function handleNavigation(event: MouseEvent) {
-  const link = (event.target as Element | null)?.closest<HTMLAnchorElement>("a[href]");
-  if (!link || !shouldAnimateNavigation(event, link)) return;
-
-  event.preventDefault();
-  event.stopImmediatePropagation();
+async function prepareNavigation() {
   clearTimers();
   mounted.value = true;
   hidden.value = false;
   entering.value = true;
   await nextTick();
   window.requestAnimationFrame(() => window.requestAnimationFrame(() => { entering.value = false; }));
-  navigationTimer = window.setTimeout(() => { window.location.href = link.href; }, 280);
+  await new Promise<void>(resolve => window.setTimeout(resolve, 280));
 }
 
 onMounted(() => {
   startLoader();
-  document.addEventListener("click", handleNavigation, true);
+  router.onBeforePageLoad = prepareNavigation;
+  router.onAfterRouteChange = startLoader;
 });
 
-watch(() => props.kind, startLoader);
+watch(() => router.route.path, startLoader);
 
 onUnmounted(() => {
   clearTimers();
-  document.removeEventListener("click", handleNavigation, true);
+  router.onBeforePageLoad = undefined;
+  router.onAfterRouteChange = undefined;
   document.documentElement.classList.remove("gellow-loading");
   document.documentElement.classList.remove("is-page-loading");
   document.documentElement.classList.remove("gellow-arcade-page");

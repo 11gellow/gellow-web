@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
+import { useRouter } from "vitepress";
+const router = useRouter();
 import { data as posts } from "../../../site/posts.data";
 
 const message = ref("正在跳转到 Markdown 文章...");
@@ -10,7 +12,7 @@ onMounted(() => {
   const post = posts.find((item) => item.slug.trim().normalize("NFC") === slug);
   if (!post) { message.value = "没有找到对应的 Markdown 文章。"; return; }
   destination.value = post.url;
-  location.replace(post.url);
+  void router.go(post.url);
 });
 </script>
 

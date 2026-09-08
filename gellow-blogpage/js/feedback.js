@@ -436,14 +436,11 @@
     const targetName = target.getAttribute("target");
 
     if (nextUrl.origin === window.location.origin) {
-      writePendingToastToStorage(payload);
-
       if (targetName === "_blank") {
         return "suppressed";
       }
-
-      window.location.href = nextUrl.toString();
-      return "handled";
+      createToast(payload.message, payload.title, payload.variant);
+      return "suppressed";
     }
 
     const finalUrl = buildToastUrl(target, payload.message, payload.variant);
