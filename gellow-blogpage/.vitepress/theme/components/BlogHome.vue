@@ -16,14 +16,22 @@ const welcomeOpen = ref(!props.directory && !welcomeSession.entered);
 const expandWelcome = ref(false);
 function navigateIdentity(action: 'home' | 'blog') {
   gameOpen.value = false;
-  if (props.directory) {
-    welcomeSession.entered = action === 'blog';
+  if (props.directory && action === 'blog') {
+    welcomeSession.entered = true;
     void router.go('/');
     return;
   }
   window.scrollTo({ top: 0, behavior: 'instant' });
   if (action === 'home') { expandWelcome.value = true; welcomeSession.entered = false; welcomeOpen.value = true; }
   else { welcomeSession.entered = true; welcomeOpen.value = false; }
+}
+function enterBlog() {
+  if (props.directory) {
+    welcomeSession.entered = true;
+    void router.go('/');
+  } else {
+    welcomeOpen.value = false;
+  }
 }
 const gameOpen = ref(false);
 const scrollProgress = ref(0);
@@ -124,7 +132,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <WelcomeStage v-if="welcomeOpen" :expand-from-card="expandWelcome" @enter="welcomeOpen = false" />
+  <WelcomeStage v-if="welcomeOpen" :expand-from-card="expandWelcome" @enter="enterBlog" />
   <div class="home-content" :class="{ 'awaiting-welcome': welcomeOpen }" :inert="welcomeOpen">
   <header class="fusion-header home-header-style">
     <div class="wrap fusion-nav">
