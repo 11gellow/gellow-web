@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 
+import { shuffledBag } from '../shuffle.mjs';
+
 interface Track { title: string; url: string; artist?: string }
 const tracks = ref<Track[]>([
   { title: "One Summer's Day", artist: '钢琴 · 轻音乐', url: '/assets/music/one-summers-day.mp3' },
   { title: 'River Flows in You', artist: '钢琴 · 轻音乐', url: '/assets/music/river-flows-in-you.mp3' },
   { title: 'Through the Arbor', artist: '钢琴 · 轻音乐', url: '/assets/music/through-the-arbor.mp3' },
 ]);
+tracks.value.push({ title: 'One More Time, One More Chance', artist: '轻音乐', url: '/assets/music/one-more-time-one-more-chance.mp3' });
 const selected = ref(0);
 const current = computed(() => tracks.value[selected.value]);
 const audio = ref<HTMLAudioElement>();
@@ -19,7 +22,30 @@ const dismissed = ref(false);
 const expanded = computed(() => !dismissed.value && (pinned.value || hovered.value || focusWithin.value));
 const showPlaylist = ref(false);
 const showVolume = ref(false);
-const repeatOne = ref(false);
+const mode = ref<'list' | 'one' | 'shuffle'>('shuffle');
+const repeatOne = computed(() => mode.value === 'one');
+const modeLabel = computed(() => ({ list: '列表循环', one: '单曲循环', shuffle: '随机遍历' })[mode.value]);
+let bag: number[] = [];
+let history: number[] = [];
+let historyIndex = -1;
+function changeMode() {
+  mode.value = mode.value === 'shuffle' ? 'list' : mode.value === 'list' ? 'one' : 'shuffle';
+  bag = shuffledBag(tracks.value.length, selected.value);
+  history = [selected.value]; historyIndex = 0;
+}
+function nextTrack() {
+  if (mode.value !== 'shuffle') return choose(selected.value + 1);
+  if (historyIndex < history.length - 1) return choose(history[++historyIndex], false);
+  if (!bag.length) {
+    bag = shuffledBag(tracks.value.length, -1);
+    if (bag.length > 1 && bag[0] === selected.value) [bag[0], bag[1]] = [bag[1], bag[0]];
+  }
+  choose(bag.shift() ?? selected.value);
+}
+function previousTrack() {
+  if (mode.value !== 'shuffle') return choose(selected.value - 1);
+  choose(historyIndex > 0 ? history[--historyIndex] : selected.value, false);
+}
 const progressPercent = computed(() => duration.value ? elapsed.value / duration.value * 100 : 0);
 function closePanel() {
   pinned.value = false; dismissed.value = true; focusWithin.value = false;
@@ -30,7 +56,7 @@ function leavePlayer() { hovered.value = false; dismissed.value = false; }
 function handleFocusOut(event: FocusEvent) {
   focusWithin.value = (event.currentTarget as HTMLElement).contains(event.relatedTarget as Node | null);
 }
-function ended() { choose(repeatOne.value ? selected.value : selected.value + 1); }
+function ended() { if (repeatOne.value) choose(selected.value); else nextTrack(); }
 const elapsed = ref(0);
 const duration = ref(0);
 const volume = ref(0.65);
@@ -71,10 +97,12 @@ function toggle() {
   if (playing.value) { ++request; audio.value?.pause(); }
   else void play();
 }
-function choose(index: number) {
+function choose(index: number, record = true) {
   if (!tracks.value.length || !audio.value) return;
   ++request;
   selected.value = (index + tracks.value.length) % tracks.value.length;
+  bag = bag.filter(item => item !== selected.value);
+  if (record) { history.splice(historyIndex + 1); history.push(selected.value); historyIndex = history.length - 1; }
   elapsed.value = duration.value = 0;
   audio.value.src = current.value!.url;
   audio.value.volume = volume.value;
@@ -85,7 +113,9 @@ function importMusic(event: Event) {
   const additions = files.filter(file => file.type.startsWith('audio/') || /\.(mp3|wav|ogg|m4a|flac|aac)$/i.test(file.name))
     .map(file => ({ title: file.name.replace(/\.[^.]+$/, ''), url: URL.createObjectURL(file) }));
   const empty = !tracks.value.length;
+  const start = tracks.value.length;
   tracks.value.push(...additions);
+  bag.push(...additions.map((_, i) => start + i));
   if (empty && additions.length) choose(0);
   if (!additions.length) error.value = '请选择音频文件。';
   (event.target as HTMLInputElement).value = '';
@@ -108,6 +138,9 @@ onBeforeUnmount(() => {
   tracks.value.filter(track => track.url.startsWith('blob:')).forEach(track => URL.revokeObjectURL(track.url));
 });
 onMounted(() => {
+  selected.value = Math.floor(Math.random() * tracks.value.length);
+  bag = shuffledBag(tracks.value.length, selected.value);
+  history = [selected.value]; historyIndex = 0;
   if (audio.value) { audio.value.src = current.value!.url; audio.value.volume = volume.value; void play(); }
 });
 </script>
@@ -127,13 +160,14 @@ onMounted(() => {
         <div class="vinyl-artist">{{ current?.artist || '本地音乐' }}</div>
         <div class="vinyl-timeline"><span>{{ time(elapsed) }}</span><input aria-label="播放进度" type="range" min="0" :max="duration || 1" step="0.1" :value="elapsed" :disabled="!duration" :style="{ '--fill': progressPercent + '%' }" @input="seek" /><span>{{ time(duration) }}</span></div>
         <div class="vinyl-transport">
-          <button :aria-label="repeatOne ? '切换为列表循环' : '切换为单曲循环'" :aria-pressed="repeatOne" :class="{ selected: repeatOne }" @click="repeatOne = !repeatOne"><svg viewBox="0 0 24 24"><path d="M4 10V8a3 3 0 0 1 3-3h12m-3-3 3 3-3 3M20 14v2a3 3 0 0 1-3 3H5m3-3-3 3 3 3" /></svg><small v-if="repeatOne">1</small></button>
-          <button aria-label="上一首" :disabled="!current" @click="choose(selected - 1)"><svg viewBox="0 0 24 24"><path d="M6 5v14"/><path class="solid" d="m18 5-10 7 10 7Z"/></svg></button>
+          <button :aria-label="'播放模式：' + modeLabel + '，点击切换'" :title="modeLabel" :class="{ selected: mode !== 'list' }" @click="changeMode"><svg viewBox="0 0 24 24"><path d="M4 10V8a3 3 0 0 1 3-3h12m-3-3 3 3-3 3M20 14v2a3 3 0 0 1-3 3H5m3-3-3 3 3 3" /></svg><small v-if="repeatOne">1</small></button>
+          <button aria-label="上一首" :disabled="!current" @click="previousTrack"><svg viewBox="0 0 24 24"><path d="M6 5v14"/><path class="solid" d="m18 5-10 7 10 7Z"/></svg></button>
           <button class="vinyl-play" :aria-label="playing ? '暂停' : '播放'" @click="toggle"><svg viewBox="0 0 24 24"><path v-if="!playing" class="solid" d="m8 4 13 8-13 8Z"/><path v-else d="M8 5v14M16 5v14" stroke-width="4"/></svg></button>
-          <button aria-label="下一首" :disabled="!current" @click="choose(selected + 1)"><svg viewBox="0 0 24 24"><path d="M18 5v14"/><path class="solid" d="m6 5 10 7-10 7Z"/></svg></button>
+          <button aria-label="下一首" :disabled="!current" @click="nextTrack"><svg viewBox="0 0 24 24"><path d="M18 5v14"/><path class="solid" d="m6 5 10 7-10 7Z"/></svg></button>
           <button aria-label="调节音量" :aria-expanded="showVolume" @click="showVolume = !showVolume"><svg viewBox="0 0 24 24"><path class="solid" d="M3 9h4l5-4v14l-5-4H3Z"/><path d="M16 8a7 7 0 0 1 0 8m3-11a11 11 0 0 1 0 14"/></svg></button>
           <button aria-label="显示歌单" :aria-expanded="showPlaylist" @click="showPlaylist = !showPlaylist"><svg viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h12M3 6h1M3 12h1M3 18h1"/></svg></button>
         </div>
+        <div class="vinyl-mode">{{ modeLabel }} · {{ tracks.length }} 首</div>
         <label v-if="showVolume" class="vinyl-volume">音量 <input aria-label="音量" type="range" min="0" max="1" step="0.01" :value="volume" :style="{ '--fill': volume * 100 + '%' }" @input="setVolume" /></label>
         <div v-if="showPlaylist" class="vinyl-playlist"><button v-for="(track, index) in tracks" :key="track.url" :class="{ selected: selected === index }" @click="choose(index)">{{ index + 1 }}. {{ track.title }}</button><button @click="fileInput?.click()">＋ 添加本地音乐</button></div>
         <p v-if="error" class="vinyl-error" role="status">{{ error }}</p>
@@ -150,7 +184,7 @@ onMounted(() => {
 .is-expanded .vinyl-disc { transform: translateY(-16px); }
 .vinyl-record { display: grid; place-items: center; width: 100%; height: 100%; border-radius: 50%; border: 2px solid #36343b; background: repeating-radial-gradient(circle, #111116 0 2px, #302d35 3px, #131217 4px 6px); box-shadow: 0 8px 24px #0008; animation: vinyl-spin 18s linear infinite; }
 .vinyl-record img { width: 72%; height: 72%; object-fit: cover; border: 3px solid #eee9f0; border-radius: 50%; }
-.vinyl-controls { position: absolute; left: calc(100% - 6px); top: 50%; width: min(400px, calc(100vw - 152px)); max-height: min(520px, 64dvh); overflow-y: auto; scrollbar-width: thin; padding: 25px 22px 24px; border: 1px solid #343640; border-radius: 28px; background: #191b23; box-shadow: 0 16px 40px #0005; opacity: 0; visibility: hidden; transform: translate(-18px,-50%) scale(.96); transform-origin: left center; transition: opacity .25s, transform .4s, visibility .25s; pointer-events: none; text-align: center; }
+.vinyl-controls { position: absolute; left: calc(100% - 6px); top: 50%; width: min(400px, calc(100vw - 152px)); max-height: min(520px, 64dvh); overflow-y: auto; scrollbar-width: none; padding: 25px 22px 24px; border: 1px solid #343640; border-radius: 28px; background: #191b23; box-shadow: 0 16px 40px #0005; opacity: 0; visibility: hidden; transform: translate(-18px,-50%) scale(.96); transform-origin: left center; transition: opacity .25s, transform .4s, visibility .25s; pointer-events: none; text-align: center; }
 .is-expanded .vinyl-controls { opacity: 1; visibility: visible; transform: translate(0,-50%) scale(1); pointer-events: auto; }
 .vinyl-controls button { display: inline-flex; align-items: center; justify-content: center; position: relative; background: none; border: 0; padding: 5px; color: #898b93; cursor: pointer; }
 .vinyl-controls button:hover, .vinyl-controls button.selected { color: #f5a32c; }
@@ -174,6 +208,12 @@ onMounted(() => {
 .vinyl-playlist { margin-top: 15px; display: grid; max-height: 140px; overflow: auto; border-top: 1px solid #343640; padding-top: 8px; }
 .vinyl-playlist button { justify-content: flex-start; padding: 9px 5px; text-align: left; font-size: 13px; }
 .vinyl-error { font-size: 12px; line-height: 1.5; color: #ffafbd; }
+.vinyl-playlist { scrollbar-width: none; overscroll-behavior: contain; gap: 3px; }
+.vinyl-playlist::-webkit-scrollbar, .vinyl-controls::-webkit-scrollbar { display: none; }
+.vinyl-playlist button { border-radius: 9px; min-height: 36px; transition: background .2s; }
+.vinyl-playlist button:hover { background: #ffffff08; }
+.vinyl-playlist button.selected { background: #f5a32c16; box-shadow: inset 3px 0 #f5a32c; padding-left: 12px; }
+.vinyl-mode { color: #a0a8b9; font-size: 11px; letter-spacing: 1px; margin-top: 12px; }
 @keyframes vinyl-spin { to { transform: rotate(360deg); } }
 @media (max-width: 540px) { .vinyl-controls { padding: 20px 12px; border-radius: 20px; } .vinyl-avatar { width: 72px; height: 72px; } .vinyl-track { font-size: 17px; } .vinyl-transport { gap: 2px; } .vinyl-controls svg { width: 18px; height: 18px; } .vinyl-transport .vinyl-play { width: 38px; height: 38px; } .vinyl-timeline { gap: 6px; } .vinyl-timeline span { font-size: 10px; } }
 @media (prefers-reduced-motion: reduce) { .vinyl-player, .vinyl-disc, .vinyl-controls { transition: none; } .vinyl-record, .vinyl-avatar { animation: none; } }
