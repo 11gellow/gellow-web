@@ -18,7 +18,7 @@ onMounted(() => {
 
 <template>
   <PixelLoader :kind="pageKind" />
-  <MarkdownPost v-if="pageKind === 'markdown-post'" />
+  <MarkdownPost v-if="pageKind === 'markdown-post'" :key="page.relativePath" />
   <NotFound v-else-if="pageKind === 'not-found'" />
   <BlogPost v-else-if="pageKind === 'post'" />
   <ArcadePage v-else-if="pageKind === 'arcade'" />
