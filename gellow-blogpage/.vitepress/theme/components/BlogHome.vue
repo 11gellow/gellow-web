@@ -3,7 +3,14 @@ import { onBeforeUnmount, onMounted, ref } from "vue";
 import { data as posts } from "../../../site/posts.data";
 import WelcomeStage from './WelcomeStage.vue';
 import { welcomeSession } from '../welcome';
+import IdentityNavigation from './IdentityNavigation.vue';
 const welcomeOpen = ref(!welcomeSession.entered);
+function navigateIdentity(action: 'home' | 'blog') {
+  gameOpen.value = false;
+  window.scrollTo({ top: 0, behavior: 'instant' });
+  if (action === 'home') { welcomeSession.entered = false; welcomeOpen.value = true; }
+  else { welcomeSession.entered = true; welcomeOpen.value = false; }
+}
 const gameOpen = ref(false);
 const scrollProgress = ref(0);
 let progressFrame = 0;
@@ -108,13 +115,7 @@ onBeforeUnmount(() => {
   <header class="fusion-header home-header-style">
     <div class="wrap fusion-nav">
       <div class="brand-block">
-        <div class="identity-card pixel">
-          <img class="avatar" :src="'/assets/KindGellow.png'" alt="Profile avatar" />
-          <div class="identity-meta">
-            <div class="presence-line"><span class="online-dot" aria-hidden="true"></span> online</div>
-            <div class="username">KindGellow</div>
-          </div>
-        </div>
+        <IdentityNavigation @navigate="navigateIdentity" />
         <div class="brand-copy">
           <h1 class="title">Gellow Blog</h1>
           <div class="subtitle">Insert Coin To Read</div>
