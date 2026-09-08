@@ -32,18 +32,37 @@ const duration = ref(0);
 const volume = ref(0.65);
 const error = ref('');
 let request = 0;
+let waitingForGesture = false;
+function clearAutoplayRetry() {
+  waitingForGesture = false;
+  document.removeEventListener('click', retryAutoplay, true);
+  document.removeEventListener('keydown', retryAutoplay, true);
+}
+function retryAutoplay(event: Event) {
+  if (!waitingForGesture || !event.isTrusted) return;
+  if (event.target instanceof Element && event.target.closest('.vinyl-transport, .vinyl-playlist')) return;
+  void play();
+}
+function waitForGesture() {
+  waitingForGesture = true;
+  document.addEventListener('click', retryAutoplay, true);
+  document.addEventListener('keydown', retryAutoplay, true);
+}
 const time = (value: number) => `${Math.floor(value / 60)}:${String(Math.floor(value % 60)).padStart(2, '0')}`;
 
 async function play() {
   if (!audio.value || !current.value) return;
   const id = ++request;
   error.value = '';
-  try { await audio.value.play(); }
+  try { await audio.value.play(); if (id === request) clearAutoplayRetry(); }
   catch (cause) {
-    if (id === request && (cause as Error).name !== 'AbortError') error.value = '无法播放，请换一首音频或再次点击播放。';
+    if (id !== request) return;
+    if ((cause as Error).name === 'NotAllowedError') { waitForGesture(); return; }
+    if ((cause as Error).name !== 'AbortError') { clearAutoplayRetry(); error.value = '无法播放，请换一首音频或再次点击播放。'; }
   }
 }
 function toggle() {
+  clearAutoplayRetry();
   if (!current.value) { fileInput.value?.click(); return; }
   if (playing.value) { ++request; audio.value?.pause(); }
   else void play();
@@ -79,12 +98,13 @@ function setVolume(event: Event) {
   if (audio.value) audio.value.volume = volume.value;
 }
 onBeforeUnmount(() => {
+  clearAutoplayRetry();
   ++request;
   audio.value?.pause();
   tracks.value.filter(track => track.url.startsWith('blob:')).forEach(track => URL.revokeObjectURL(track.url));
 });
 onMounted(() => {
-  if (audio.value) { audio.value.src = current.value!.url; audio.value.volume = volume.value; }
+  if (audio.value) { audio.value.src = current.value!.url; audio.value.volume = volume.value; void play(); }
 });
 </script>
 
