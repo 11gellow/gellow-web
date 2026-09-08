@@ -2,7 +2,8 @@
 import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import { welcomeQuotes, welcomeSession } from '../welcome';
 
-const props = defineProps<{ reverse?: boolean }>();`r`nconst emit = defineEmits<{ enter: [] }>();
+const props = defineProps<{ reverse?: boolean }>();
+const emit = defineEmits<{ enter: [] }>();
 const stage = ref<HTMLElement>();
 const mask = ref<HTMLElement>();
 const portrait = ref<HTMLElement>();

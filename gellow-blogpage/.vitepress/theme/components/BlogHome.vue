@@ -4,7 +4,8 @@ import { data as posts } from "../../../site/posts.data";
 import WelcomeStage from './WelcomeStage.vue';
 import { welcomeSession } from '../welcome';
 import IdentityNavigation from './IdentityNavigation.vue';
-const welcomeOpen = ref(!welcomeSession.entered);`r`nconst reverseWelcome = ref(false);
+const welcomeOpen = ref(!welcomeSession.entered);
+const reverseWelcome = ref(false);
 function navigateIdentity(action: 'home' | 'blog') {
   gameOpen.value = false;
   window.scrollTo({ top: 0, behavior: 'instant' });
