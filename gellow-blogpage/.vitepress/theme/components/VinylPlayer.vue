@@ -8,6 +8,8 @@ const tracks = ref<Track[]>([
   { title: "One Summer's Day", artist: '钢琴 · 轻音乐', url: '/assets/music/one-summers-day.mp3' },
   { title: 'River Flows in You', artist: '钢琴 · 轻音乐', url: '/assets/music/river-flows-in-you.mp3' },
   { title: 'Through the Arbor', artist: '钢琴 · 轻音乐', url: '/assets/music/through-the-arbor.mp3' },
+  { title: '鳥の詩', artist: '钢琴 · 轻音乐', url: '/assets/music/niao-zhi-shi.mp3' },
+  { title: 'Lost My Pieces', artist: '钢琴 · 轻音乐', url: '/assets/music/lost-my-pieces.mp3' },
 ]);
 tracks.value.push({ title: 'One More Time, One More Chance', artist: '轻音乐', url: '/assets/music/one-more-time-one-more-chance.mp3' });
 const selected = ref(0);
