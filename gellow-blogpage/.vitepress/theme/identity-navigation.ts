@@ -10,4 +10,5 @@ export interface IdentityEntry {
 export const identityEntries: IdentityEntry[] = [
   { id: 'home', label: 'HOME', description: '返回欢迎首页', action: 'home' },
   { id: 'blog', label: 'BLOG', description: '浏览文章列表', action: 'blog' },
+  { id: 'links', label: 'LINKS', description: '浏览链接收藏', href: '/links.html' },
 ];
