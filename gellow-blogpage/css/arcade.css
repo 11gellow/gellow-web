@@ -36,7 +36,7 @@ body {
     min-height: 100%;
 }
 
-html {
+html.gellow-arcade-page {
     overflow: hidden;
 }
 
@@ -69,6 +69,9 @@ body {
         24px 24px,
         auto;
     color: var(--cream);
+}
+
+html.gellow-arcade-page body {
     overflow: hidden;
 }
 
