@@ -101,7 +101,7 @@ outline: [2, 3]
 
 普通 Markdown 图片：
 
-![测试图片](/assets/favicon.png)
+![测试图片](../../assets/favicon.png)
 
 
 ---
