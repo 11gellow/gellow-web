@@ -61,7 +61,7 @@ function handleFocusOut(event: FocusEvent) {
 function ended() { if (repeatOne.value) choose(selected.value); else nextTrack(); }
 const elapsed = ref(0);
 const duration = ref(0);
-const volume = ref(0.65);
+const volume = ref(0.10);
 const error = ref('');
 let request = 0;
 let waitingForGesture = false;
