@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from "vue";
 import { data as posts } from "../../../site/posts.data";
+import WelcomeStage from './WelcomeStage.vue';
+import { welcomeSession } from '../welcome';
+const welcomeOpen = ref(!welcomeSession.entered);
 const gameOpen = ref(false);
 const scrollProgress = ref(0);
 let progressFrame = 0;
@@ -100,6 +103,8 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+  <WelcomeStage v-if="welcomeOpen" @enter="welcomeOpen = false" />
+  <div class="home-content" :class="{ 'awaiting-welcome': welcomeOpen }" :inert="welcomeOpen">
   <header class="fusion-header home-header-style">
     <div class="wrap fusion-nav">
       <div class="brand-block">
@@ -188,4 +193,9 @@ onBeforeUnmount(() => {
   </main>
 
   <footer class="fusion-footer">Gellow Blog · Stream view</footer>
+  </div>
 </template>
+
+<style scoped>
+.awaiting-welcome :deep(.identity-card) { visibility: hidden; }
+</style>
