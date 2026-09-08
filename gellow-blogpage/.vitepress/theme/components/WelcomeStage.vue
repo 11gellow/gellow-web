@@ -2,7 +2,7 @@
 import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import { welcomeQuotes, welcomeSession } from '../welcome';
 
-const props = defineProps<{ reverse?: boolean }>();
+const props = defineProps<{ expandFromCard?: boolean }>();
 const emit = defineEmits<{ enter: [] }>();
 const stage = ref<HTMLElement>();
 const mask = ref<HTMLElement>();
@@ -10,6 +10,7 @@ const portrait = ref<HTMLElement>();
 const nameplate = ref<HTMLElement>();
 const quoteHost = ref<HTMLElement>();
 const entering = ref(false);
+const expanding = ref(!!props.expandFromCard);
 const sentence = ref(welcomeQuotes[0] || '欢迎来到 Gellow 的博客。');
 const visibleCount = ref(0);
 const quoteIndex = ref(0);
@@ -70,6 +71,36 @@ function finish() {
   welcomeSession.entered = true;
   unlock(); emit('enter');
 }
+function finishExpansion() {
+  animations.forEach(animation => animation.cancel());
+  animations = [];
+  expanding.value = false;
+  entering.value = false;
+  lastTime = 0;
+  resume();
+}
+async function expandFromCard() {
+  entering.value = true;
+  const card = document.querySelector<HTMLElement>('.home-content .identity-card');
+  if (!card || motion.matches) { finishExpansion(); return; }
+  const start = card.getBoundingClientRect();
+  const end = mask.value!.getBoundingClientRect();
+  const options: KeyframeAnimationOptions = { duration: 1150, easing: 'cubic-bezier(.76,0,.24,1)', fill: 'both' };
+  animations.push(mask.value!.animate([
+    { left: `${start.left}px`, top: `${start.top}px`, width: `${start.width}px`, height: `${start.height}px`, borderWidth: '4px' },
+    { left: `${end.left}px`, top: `${end.top}px`, width: `${end.width}px`, height: `${end.height}px`, borderWidth: '8px' },
+  ], options));
+  for (const [element, selector] of [[portrait.value!, '.avatar'], [nameplate.value!, '.identity-meta']] as const) {
+    const from = card.querySelector(selector)!.getBoundingClientRect();
+    const to = element.getBoundingClientRect();
+    animations.push(element.animate([
+      { transform: `translate(${from.left-to.left}px,${from.top-to.top}px) scale(${from.width/to.width},${from.height/to.height})` },
+      { transform: 'translate(0,0) scale(1,1)' },
+    ], options));
+  }
+  try { await Promise.all(animations.map(animation => animation.finished)); } catch { /* resize or unmount */ }
+  if (!disposed) finishExpansion();
+}
 async function enter() {
   if (entering.value || isLoading()) return;
   entering.value = true; cancelAnimationFrame(frame); frame = 0;
@@ -111,7 +142,7 @@ function touchMove(event: TouchEvent) {
   if (playerEvent(event) || event.touches.length !== 1) return;
   event.preventDefault(); if (touchStart-(event.touches[0]?.clientY ?? touchStart)>30) void enter();
 }
-function resize() { if (entering.value) { animations.forEach(a=>a.cancel()); finish(); } }
+function resize() { if (expanding.value) finishExpansion(); else if (entering.value) { animations.forEach(a=>a.cancel()); finish(); } }
 onMounted(() => {
   motion = matchMedia('(prefers-reduced-motion: reduce)');
   document.documentElement.classList.add('gellow-welcome-lock');
@@ -123,7 +154,8 @@ onMounted(() => {
   window.addEventListener('touchmove',touchMove,{passive:false});
   window.addEventListener('resize',resize);
   document.addEventListener('visibilitychange',resume);
-  resume();
+  if (props.expandFromCard) void expandFromCard();
+  else resume();
 });
 onBeforeUnmount(() => {
   disposed = true; cancelAnimationFrame(frame); animations.forEach(a=>a.cancel()); observer?.disconnect(); unlock();
@@ -134,7 +166,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section ref="stage" class="welcome-stage" :class="{ 'is-entering': entering }" aria-label="Gellow 博客欢迎页">
+  <section ref="stage" class="welcome-stage" :class="{ 'is-entering': entering || expanding }" aria-label="Gellow 博客欢迎页">
     <div ref="mask" class="welcome-mask"></div>
     <div class="welcome-decoration">
       <div class="construction-banner" :aria-label="'欢迎来的Gellow的blog，这里有各种折腾出来的小玩具，到处看看吧！'"><span class="construction-label">⚠ UNDER CONSTRUCTION</span><div class="marquee-window"><div class="marquee-track" aria-hidden="true"><span v-for="n in 2" :key="n">欢迎来的Gellow的blog，这里有各种折腾出来的小玩具，到处看看吧！&nbsp; ✦ &nbsp;</span></div></div></div>

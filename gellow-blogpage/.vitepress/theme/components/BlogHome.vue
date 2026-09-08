@@ -5,11 +5,11 @@ import WelcomeStage from './WelcomeStage.vue';
 import { welcomeSession } from '../welcome';
 import IdentityNavigation from './IdentityNavigation.vue';
 const welcomeOpen = ref(!welcomeSession.entered);
-const reverseWelcome = ref(false);
+const expandWelcome = ref(false);
 function navigateIdentity(action: 'home' | 'blog') {
   gameOpen.value = false;
   window.scrollTo({ top: 0, behavior: 'instant' });
-  if (action === 'home') { welcomeSession.entered = false; welcomeOpen.value = true; }
+  if (action === 'home') { expandWelcome.value = true; welcomeSession.entered = false; welcomeOpen.value = true; }
   else { welcomeSession.entered = true; welcomeOpen.value = false; }
 }
 const gameOpen = ref(false);
@@ -111,7 +111,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <WelcomeStage v-if="welcomeOpen" @enter="welcomeOpen = false" />
+  <WelcomeStage v-if="welcomeOpen" :expand-from-card="expandWelcome" @enter="welcomeOpen = false" />
   <div class="home-content" :class="{ 'awaiting-welcome': welcomeOpen }" :inert="welcomeOpen">
   <header class="fusion-header home-header-style">
     <div class="wrap fusion-nav">
