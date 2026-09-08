@@ -9,7 +9,7 @@ const reverseWelcome = ref(false);
 function navigateIdentity(action: 'home' | 'blog') {
   gameOpen.value = false;
   window.scrollTo({ top: 0, behavior: 'instant' });
-  if (action === 'home') { reverseWelcome.value = true; welcomeSession.entered = false; welcomeOpen.value = true; }
+  if (action === 'home') { welcomeSession.entered = false; welcomeOpen.value = true; }
   else { welcomeSession.entered = true; welcomeOpen.value = false; }
 }
 const gameOpen = ref(false);
@@ -111,7 +111,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <WelcomeStage v-if="welcomeOpen" :reverse="reverseWelcome" @enter="welcomeOpen = false" />
+  <WelcomeStage v-if="welcomeOpen" @enter="welcomeOpen = false" />
   <div class="home-content" :class="{ 'awaiting-welcome': welcomeOpen }" :inert="welcomeOpen">
   <header class="fusion-header home-header-style">
     <div class="wrap fusion-nav">
