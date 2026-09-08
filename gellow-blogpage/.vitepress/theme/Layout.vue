@@ -8,6 +8,7 @@ import MarkdownPost from "./components/MarkdownPost.vue";
 import NotFound from "./components/NotFound.vue";
 import PixelLoader from "./components/PixelLoader.vue";
 import VinylPlayer from "./components/VinylPlayer.vue";
+import AmbientBackground from "./components/AmbientBackground.vue";
 
 const { frontmatter, page } = useData();
 const pageKind = computed(() => page.value.isNotFound ? "not-found" : (frontmatter.value.pageKind ?? "home"));
@@ -18,6 +19,7 @@ onMounted(() => {
 </script>
 
 <template>
+  <AmbientBackground />
   <PixelLoader :kind="pageKind" />
   <VinylPlayer />
   <MarkdownPost v-if="pageKind === 'markdown-post'" :key="page.relativePath" />
