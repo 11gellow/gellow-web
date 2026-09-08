@@ -2,7 +2,11 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 
 interface Track { title: string; url: string; artist?: string }
-const tracks = ref<Track[]>([{ title: '卡农', artist: '钢琴 · 测试曲目', url: '/assets/music/canon.mp3' }]);
+const tracks = ref<Track[]>([
+  { title: "One Summer's Day", artist: '钢琴 · 轻音乐', url: '/assets/music/one-summers-day.mp3' },
+  { title: 'River Flows in You', artist: '钢琴 · 轻音乐', url: '/assets/music/river-flows-in-you.mp3' },
+  { title: 'Through the Arbor', artist: '钢琴 · 轻音乐', url: '/assets/music/through-the-arbor.mp3' },
+]);
 const selected = ref(0);
 const current = computed(() => tracks.value[selected.value]);
 const audio = ref<HTMLAudioElement>();
