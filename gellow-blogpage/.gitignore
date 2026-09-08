@@ -1,3 +1,5 @@
 node_modules/
 dist/
+note-dist/
+.vercel/
 .vitepress/cache/

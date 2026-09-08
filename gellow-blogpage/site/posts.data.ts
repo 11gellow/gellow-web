@@ -12,6 +12,7 @@ export interface MarkdownPostSummary {
 export default createContentLoader("posts/*.md", {
   transform(pages): MarkdownPostSummary[] {
     return pages
+      .filter(({ url }) => !url.includes('__local-draft'))
       .map(({ url, frontmatter }) => ({
         title: String(frontmatter.title || "Untitled"),
         description: String(frontmatter.description || ""),

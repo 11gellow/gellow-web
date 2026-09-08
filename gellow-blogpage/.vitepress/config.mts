@@ -1,4 +1,4 @@
-import { cpSync, existsSync, mkdirSync, readFileSync, statSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, extname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitepress";
@@ -6,6 +6,32 @@ import footnote from "markdown-it-footnote";
 import taskLists from "markdown-it-task-lists";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+
+function localDraftServer() {
+  return {
+    name: 'local-markdown-draft',
+    configureServer(server: any) {
+      server.middlewares.use('/__local-draft', async (req: any, res: any) => {
+        const origin = req.headers.origin;
+        if (req.method !== 'POST' || !origin || new URL(origin).host !== req.headers.host || !['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(req.socket.remoteAddress)) {
+          res.statusCode = 403; res.end('Local same-origin POST only'); return;
+        }
+        try {
+          let body = '';
+          for await (const chunk of req) {
+            body += chunk;
+            if (Buffer.byteLength(body) > 1024 * 1024) throw new Error('Draft exceeds 1 MB');
+          }
+          const { markdown } = JSON.parse(body);
+          if (typeof markdown !== 'string' || !markdown.startsWith('---\npageKind: markdown-post\n')) throw new Error('Invalid draft');
+          // Only this disposable local preview file can be written. No database/API access.
+          writeFileSync(resolve(projectRoot, 'site/posts/__local-draft.md'), markdown);
+          res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify({ ok: true }));
+        } catch (error) { res.statusCode = 400; res.end(String(error)); }
+      });
+    },
+  };
+}
 
 const loadingGateStyle = `
 html.gellow-loading,
@@ -96,6 +122,7 @@ export default defineConfig({
   title: "Gellow Blog",
   description: "KindGellow 的像素风个人博客",
   srcDir: "site",
+  srcExclude: ['local-editor.md', 'posts/__local-draft.md'],
   outDir: "dist",
   publicDir: false,
   cleanUrls: false,
@@ -124,7 +151,7 @@ export default defineConfig({
     },
   },
   vite: {
-    plugins: [publicAssetDevServer()],
+    plugins: [publicAssetDevServer(), localDraftServer()],
   },
   buildEnd(siteConfig) {
     copyPublicAssets(siteConfig.outDir);
