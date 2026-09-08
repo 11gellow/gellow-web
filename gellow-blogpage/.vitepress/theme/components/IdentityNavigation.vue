@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { identityEntries, type IdentityEntry } from '../identity-navigation';
+defineProps<{ activeEntry: string }>();
 const emit = defineEmits<{ navigate: [action: 'home' | 'blog'] }>();
 const hovered = ref(false);
 const focused = ref(false);
@@ -23,8 +24,8 @@ function escape() { close(); trigger.value?.focus(); }
     </button>
     <nav id="identity-links" class="identity-links" :inert="!open" aria-label="首页导航" @click.stop>
       <template v-for="entry in identityEntries" :key="entry.id">
-        <a v-if="entry.href" :href="entry.href" class="identity-link" @click="choose(entry)"><strong>{{ entry.label }}</strong><span>{{ entry.description }}</span></a>
-        <button v-else class="identity-link" :aria-current="entry.action === 'blog' ? 'page' : undefined" @click="choose(entry)"><strong>{{ entry.label }}</strong><span>{{ entry.description }}</span></button>
+        <a v-if="entry.href" :href="entry.href" class="identity-link" :aria-current="entry.id === activeEntry ? 'page' : undefined" @click="choose(entry)"><strong>{{ entry.label }}</strong><span>{{ entry.description }}</span></a>
+        <button v-else class="identity-link" :aria-current="entry.id === activeEntry ? 'page' : undefined" @click="choose(entry)"><strong>{{ entry.label }}</strong><span>{{ entry.description }}</span></button>
       </template>
     </nav>
   </div>

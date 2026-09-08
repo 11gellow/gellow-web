@@ -137,7 +137,7 @@ onBeforeUnmount(() => {
   <header class="fusion-header home-header-style">
     <div class="wrap fusion-nav">
       <div class="brand-block">
-        <IdentityNavigation @navigate="navigateIdentity" />
+        <IdentityNavigation :active-entry="welcomeOpen ? 'home' : directory ? 'links' : 'blog'" @navigate="navigateIdentity" />
         <div class="brand-copy">
           <h1 class="title">{{ directory ? frontmatter.title : 'Gellow Blog' }}</h1>
           <div class="subtitle">{{ directory ? 'Pick A Link To Explore' : 'Insert Coin To Read' }}</div>
