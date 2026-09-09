@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import { welcomeQuotes, welcomeSession } from '../welcome';
+import { createQuotePicker } from '../quote-shuffle.mjs';
 
 const props = defineProps<{ expandFromCard?: boolean }>();
 const emit = defineEmits<{ enter: [] }>();
@@ -14,6 +15,7 @@ const expanding = ref(!!props.expandFromCard);
 const sentence = ref(welcomeQuotes[0] || '欢迎来到 Gellow 的博客。');
 const visibleCount = ref(0);
 const quoteIndex = ref(0);
+const pickQuote = createQuotePicker(welcomeQuotes.length);
 let frame = 0;
 let lastTime = 0;
 let phase: 'typing' | 'holding' | 'falling' | 'waiting' = 'typing';
@@ -37,7 +39,7 @@ function startFall() {
 }
 function nextQuote() {
   particles.forEach(p => { p.element.style.transform = ''; p.element.style.opacity = ''; });
-  particles = []; quoteIndex.value = (quoteIndex.value+1)%Math.max(1,welcomeQuotes.length);
+  particles = []; quoteIndex.value = pickQuote();
   sentence.value = welcomeQuotes[quoteIndex.value] || '欢迎来到 Gellow 的博客。';
   visibleCount.value = 0; phase = 'typing'; phaseTime = 0;
 }
@@ -144,6 +146,8 @@ function touchMove(event: TouchEvent) {
 }
 function resize() { if (expanding.value) finishExpansion(); else if (entering.value) { animations.forEach(a=>a.cancel()); finish(); } }
 onMounted(() => {
+  // Choose only after hydration so server/client initial markup stays identical.
+  nextQuote();
   motion = matchMedia('(prefers-reduced-motion: reduce)');
   document.documentElement.classList.add('gellow-welcome-lock');
   window.scrollTo({ top: 0, behavior: 'instant' });
