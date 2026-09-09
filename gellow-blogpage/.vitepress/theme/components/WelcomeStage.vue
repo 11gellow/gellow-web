@@ -172,7 +172,7 @@ onBeforeUnmount(() => {
       <div class="construction-banner" :aria-label="'欢迎来的Gellow的blog，这里有各种折腾出来的小玩具，到处看看吧！'"><span class="construction-label">⚠ UNDER CONSTRUCTION</span><div class="marquee-window"><div class="marquee-track" aria-hidden="true"><span v-for="n in 2" :key="n">欢迎来的Gellow的blog，这里有各种折腾出来的小玩具，到处看看吧！&nbsp; ✦ &nbsp;</span></div></div></div>
       <p class="welcome-coordinate">PERSONAL PLAYGROUND / 001</p>
       <div class="welcome-title" aria-hidden="true">HELLO,<br /><span>EXPLORER.</span></div>
-      <div class="welcome-caption">一些代码，一点好奇心。<br />欢迎光临我的折腾现场。</div>
+      <div class="welcome-caption">一些代码，一点笔记。<br />欢迎光临我的blog。</div>
       <div class="quote-stage"><span class="quote-label">THOUGHTS IN FREE FALL / {{ String(quoteIndex+1).padStart(2,'0') }}</span><p ref="quoteHost" class="quote-line" :aria-label="sentence"><span v-for="(letter,index) in Array.from(sentence)" :key="`${quoteIndex}-${index}`" class="quote-letter" :style="{ visibility: index < visibleCount ? 'visible' : 'hidden' }" aria-hidden="true">{{ letter === ' ' ? '\u00a0' : letter }}</span><span class="typing-cursor" aria-hidden="true"></span></p></div>
       <button class="welcome-scroll" aria-label="进入文章列表" @click.stop="enter"><span>SCROLL TO EXPLORE</span><span class="scroll-circle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14m-6-6 6 6 6-6"/></svg></span></button>
       <span class="welcome-edition">GELLOW BLOG · ALWAYS IN PROGRESS</span>
