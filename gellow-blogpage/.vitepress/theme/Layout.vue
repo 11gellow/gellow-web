@@ -29,6 +29,6 @@ onMounted(() => {
   <NotFound v-else-if="pageKind === 'not-found'" />
   <BlogPost v-else-if="pageKind === 'post'" />
   <ArcadePage v-else-if="pageKind === 'arcade'" />
-  <BlogHome v-else :key="pageKind" :directory="pageKind === 'links'" />
+  <BlogHome v-else :key="pageKind" :directory="pageKind === 'links'" :notes="pageKind === 'note'" />
   <div id="toast-stack" class="toast-stack" aria-live="polite" aria-atomic="false"></div>
 </template>

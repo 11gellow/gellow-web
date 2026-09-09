@@ -7,6 +7,7 @@ export interface MarkdownPostSummary {
   updated: string;
   slug: string;
   url: string;
+  collection: 'blog' | 'note';
 }
 
 export default createContentLoader("posts/*.md", {
@@ -19,6 +20,7 @@ export default createContentLoader("posts/*.md", {
         date: String(frontmatter.date || ""),
         updated: String(frontmatter.updated || ""),
         slug: String(frontmatter.slug || ""),
+        collection: frontmatter.collection === 'note' ? 'note' : 'blog',
         url,
       }))
       .sort((left, right) => Date.parse(right.date || right.updated) - Date.parse(left.date || left.updated));

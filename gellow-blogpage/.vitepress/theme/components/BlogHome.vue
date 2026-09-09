@@ -1,22 +1,23 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useData, useRouter } from 'vitepress';
-import { data as posts } from "../../../site/posts.data";
+import { data as allPosts } from "../../../site/posts.data";
 import WelcomeStage from './WelcomeStage.vue';
 import { welcomeSession } from '../welcome';
 import IdentityNavigation from './IdentityNavigation.vue';
-const props = defineProps<{ directory?: boolean }>();
+const props = defineProps<{ directory?: boolean; notes?: boolean }>();
+const posts = computed(() => allPosts.filter(post => post.collection === (props.notes ? 'note' : 'blog')));
 const { frontmatter } = useData();
 const router = useRouter();
 function safeLink(value: unknown): string | undefined {
   if (typeof value !== 'string') return;
   try { const url = new URL(value); return ['https:', 'http:'].includes(url.protocol) ? url.href : undefined; } catch { return; }
 }
-const welcomeOpen = ref(!props.directory && !welcomeSession.entered);
+const welcomeOpen = ref(!props.directory && !props.notes && !welcomeSession.entered);
 const expandWelcome = ref(false);
 function navigateIdentity(action: 'home' | 'blog') {
   gameOpen.value = false;
-  if (props.directory && action === 'blog') {
+  if ((props.directory || props.notes) && action === 'blog') {
     welcomeSession.entered = true;
     void router.go('/');
     return;
@@ -26,7 +27,7 @@ function navigateIdentity(action: 'home' | 'blog') {
   else { welcomeSession.entered = true; welcomeOpen.value = false; }
 }
 function enterBlog() {
-  if (props.directory) {
+  if (props.directory || props.notes) {
     welcomeSession.entered = true;
     void router.go('/');
   } else {
@@ -137,9 +138,9 @@ onBeforeUnmount(() => {
   <header class="fusion-header home-header-style">
     <div class="wrap fusion-nav">
       <div class="brand-block">
-        <IdentityNavigation :active-entry="welcomeOpen ? 'home' : directory ? 'links' : 'blog'" @navigate="navigateIdentity" />
+        <IdentityNavigation :active-entry="welcomeOpen ? 'home' : directory ? 'links' : notes ? 'note' : 'blog'" @navigate="navigateIdentity" />
         <div class="brand-copy">
-          <h1 class="title">{{ directory ? frontmatter.title : 'Gellow Blog' }}</h1>
+          <h1 class="title">{{ directory || notes ? frontmatter.title : 'Gellow Blog' }}</h1>
           <div class="subtitle">{{ directory ? 'Pick A Link To Explore' : 'Insert Coin To Read' }}</div>
         </div>
       </div>
@@ -195,7 +196,7 @@ onBeforeUnmount(() => {
 
   <main class="wrap fusion-shell">
     <section id="post-stream" class="post-stream">
-      <div class="stream-head"><h2>{{ directory ? 'Link Collection' : 'Post Stream' }}</h2></div>
+      <div class="stream-head"><h2>{{ directory ? 'Link Collection' : notes ? 'Note Stream' : 'Post Stream' }}</h2></div>
       <div v-if="directory" class="stream-list link-list">
         <p v-if="!frontmatter.links?.length" class="loading-card pixel">还没有链接，请在 links.md 中添加。</p>
         <template v-for="(link, index) in (frontmatter.links || [])" :key="index">
@@ -227,7 +228,7 @@ onBeforeUnmount(() => {
     </section>
   </main>
 
-  <footer class="fusion-footer">Gellow Blog · Stream view</footer>
+  <footer class="fusion-footer">{{ notes ? 'Gellow Note' : 'Gellow Blog' }} · Stream view</footer>
   </div>
 </template>
 

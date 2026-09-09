@@ -1,5 +1,6 @@
 ---
 pageKind: markdown-post
+collection: note
 title: "LangChain 与 LangGraph 技术体系详解"
 description: "RAG相关内容"
 date: "2026-09-07"
