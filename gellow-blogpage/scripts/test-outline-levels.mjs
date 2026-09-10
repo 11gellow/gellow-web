@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import { outlineLevels } from '../.vitepress/theme/outline-levels.mjs';
+assert.deepEqual(outlineLevels([1, 3]), [1, 2, 3]);
+assert.deepEqual(outlineLevels([2, 3]), [2, 3]);
+assert.deepEqual(outlineLevels(undefined), [2, 3]);
+assert.deepEqual(outlineLevels(false), []);
+assert.deepEqual(outlineLevels('deep'), [2, 3, 4, 5, 6]);
+assert.deepEqual(outlineLevels(1), [1]);
+assert.deepEqual(outlineLevels([1, 2, 3]), [1, 2, 3]);
+assert.deepEqual(outlineLevels([6, 1]), [2, 3]);
+console.log('Outline range tests passed.');
