@@ -11,6 +11,8 @@ const tracks = ref<Track[]>([
   { title: '鳥の詩', artist: '钢琴 · 轻音乐', url: '/assets/music/niao-zhi-shi.mp3' },
   { title: 'Lost My Pieces', artist: '钢琴 · 轻音乐', url: '/assets/music/lost-my-pieces.mp3' },
   { title: '老男孩', artist: '筷子兄弟', url: '/assets/music/laonanhai.mp3' },
+  { title: 'ありがとう(谢谢你)', artist: '大橋卓弥', url: '/assets/music/ありがとう.mp3' },
+  { title: '好きだから(因为喜欢你)', artist: 'ユイカ,れん', url: '/assets/music/好きだから.mp3' },
 ]);
 tracks.value.push({ title: 'One More Time, One More Chance', artist: '轻音乐', url: '/assets/music/one-more-time-one-more-chance.mp3' });
 const selected = ref(0);
